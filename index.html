@@ -1,268 +1,72 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		
-		<title>JsDoc Reference - Index</title>
-		<meta name="generator" content="JsDoc Toolkit" />
-		
-		<style type="text/css">
-		/* default.css */
-body
-{
-	font: 12px "Lucida Grande", Tahoma, Arial, Helvetica, sans-serif;
-	width: 800px;
-}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>WONDER by hypercomm</title>
 
-.header
-{
-	clear: both;
-	background-color: #ccc;
-	padding: 8px;
-}
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>WONDER</h1>
+        <p>The Reference Implementation of Signaling On-the-Fly concept enabling seamless interoperability between different WebRTC Service Provider domains</p>
 
-h1
-{
-	font-size: 150%;
-	font-weight: bold;
-	padding: 0;
-	margin: 1em 0 0 .3em;
-}
+        <p class="view"><a href="https://github.com/hypercomm/wonder">View the Project on GitHub <small>hypercomm/wonder</small></a></p>
 
-hr
-{
-	border: none 0;
-	border-top: 1px solid #7F8FB1;
-	height: 1px;
-}
 
-pre.code
-{
-	display: block;
-	padding: 8px;
-	border: 1px dashed #ccc;
-}
+        <ul>
+          <li><a href="https://github.com/hypercomm/wonder/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/hypercomm/wonder/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/hypercomm/wonder">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="signalling-on-the-fly-for-webrtc" class="anchor" href="#signalling-on-the-fly-for-webrtc"><span class="octicon octicon-link"></span></a>Signalling On-the-Fly for WebRTC</h1>
 
-#index
-{
-	margin-top: 24px;
-	float: left;
-	width: 160px;
-	position: absolute;
-	left: 8px;
-	background-color: #F3F3F3;
-	padding: 8px;
-}
+<p>The WONDER Javascript Framework was designed and implemented to address the lack of a standard WebRTC signalling protocol by implementing the novel Signalling On-the-Fly concept, enabling seamless interoperability between different WebRTC Service Provider domains. Check here all benefits WONDER may bring to WebRTC App developers and providers.</p>
 
-#content
-{
-	margin-left: 190px;
-	width: 600px;
-}
+<h1>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>features</h1>
 
-.classList
-{
-	list-style-type: none;
-	padding: 0;
-	margin: 0 0 0 8px;
-	font-family: arial, sans-serif;
-	font-size: 1em;
-	overflow: auto;
-}
+<ul>
+<li>Multiparty Audio and Video conversations between different WebRTC domains;</li>
+<li>Multiparty Data Channel based Chat between different WebRTC domains;</li>
+<li>Multiparty Data Channel based File Transfer between different WebRTC domains;</li>
+<li>Multiparty Screen Sharing between different WebRTC domains (encrypted Identity Provider Restful services is needed)</li>
+<li>Multipart Conversation update to add additional resources e.g. to add Audio and Video to an existing text Chat only conversation</li>
+<li>Notification of incoming Conversation invitations to users that have no WebRTC app loaded</li>
+<li>Additional Data Channel based services by implementing the Data Codec class</li>
+<li>Audio and Video Interoperability with SIP and IMS endpoints by using Doubango SIPML5 Gateway</li>
+</ul><h1>
+<a name="learn-more-about-wonder-library" class="anchor" href="#learn-more-about-wonder-library"><span class="octicon octicon-link"></span></a>Learn more about WONDER library</h1>
 
-.classList li
-{
-	padding: 0;
-	margin: 0 0 8px 0;
-}
+<ul>
+<li>The Signalling On-the-Fly Concept</li>
+<li>WONDER library overview</li>
+<li><a href="http://hypercomm.github.io/wonder/">WONDER API Documentation</a></li>
+<li>WONDER App developer guide</li>
+<li>WONDER Messaging Stub developer guide i.e. how to make a Signalling Server / Protocol compliant with WONDER library</li>
+<li>Experimentations performed with WONDER library</li>
+<li>Demos</li>
+</ul><h3>
+<a name="aknowledgments" class="anchor" href="#aknowledgments"><span class="octicon octicon-link"></span></a>Aknowledgments</h3>
 
-.summaryTable { width: 100%; }
-
-h1.classTitle
-{
-	font-size:170%;
-	line-height:130%;
-}
-
-h2 { font-size: 110%; }
-caption, div.sectionTitle
-{
-	background-color: #7F8FB1;
-	color: #fff;
-	font-size:130%;
-	text-align: left;
-	padding: 2px 6px 2px 6px;
-	border: 1px #7F8FB1 solid;
-}
-
-div.sectionTitle { margin-bottom: 8px; }
-.summaryTable thead { display: none; }
-
-.summaryTable td
-{
-	vertical-align: top;
-	padding: 4px;
-	border-bottom: 1px #7F8FB1 solid;
-	border-right: 1px #7F8FB1 solid;
-}
-
-/*col#summaryAttributes {}*/
-.summaryTable td.attributes
-{
-	border-left: 1px #7F8FB1 solid;
-	width: 140px;
-	text-align: right;
-}
-
-td.attributes, .fixedFont
-{
-	line-height: 15px;
-	color: #002EBE;
-	font-family: "Courier New",Courier,monospace;
-	font-size: 13px;
-}
-
-.summaryTable td.nameDescription
-{
-	text-align: left;
-	font-size: 13px;
-	line-height: 15px;
-}
-
-.summaryTable td.nameDescription, .description
-{
-	line-height: 15px;
-	padding: 4px;
-	padding-left: 4px;
-}
-
-.summaryTable { margin-bottom: 8px; }
-
-ul.inheritsList
-{
-	list-style: square;
-	margin-left: 20px;
-	padding-left: 0;
-}
-
-.detailList {
-	margin-left: 20px; 
-	line-height: 15px;
-}
-.detailList dt { margin-left: 20px; }
-
-.detailList .heading
-{
-	font-weight: bold;
-	padding-bottom: 6px;
-	margin-left: 0;
-}
-
-.light, td.attributes, .light a:link, .light a:visited
-{
-	color: #777;
-	font-style: italic;
-}
-
-.fineprint
-{
-	text-align: right;
-	font-size: 10px;
-}
-		</style>
-	</head>
-	
-	<body>
-		<div id="header">
-</div>
-		
-		<div id="index">
-			<div align="center"><a href="index.html">Class Index</a>
-| <a href="files.html">File Index</a></div>
-<hr />
-<h2>Classes</h2>
-<ul class="classList">
-	
-	<li><i><a href="symbols/_global_.html">_global_</a></i></li>
-	
-	<li><a href="symbols/Codec.html">Codec</a></li>
-	
-	<li><a href="symbols/Conversation.html">Conversation</a></li>
-	
-	<li><a href="symbols/Identity.html">Identity</a></li>
-	
-	<li><a href="symbols/Message.html">Message</a></li>
-	
-	<li><a href="symbols/MessagingStub.html">MessagingStub</a></li>
-	
-	<li><a href="symbols/Participant.html">Participant</a></li>
-	
-	<li><a href="symbols/Resource.html">Resource</a></li>
-	
-</ul>
-<hr />
-		</div>
-		
-		<div id="content">
-			<h1 class="classTitle">Class Index</h1>
-			
-			
-			<div>
-				<h2><a href="symbols/_global_.html">_global_</a></h2>
-				
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/Codec.html">Codec</a></h2>
-				Codec Class
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/Conversation.html">Conversation</a></h2>
-				
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/Identity.html">Identity</a></h2>
-				Identity class 
-NOTE: This class can be instantiated with an id and a identity
-provider function (idp).
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/Message.html">Message</a></h2>
-				This class is a data-holder for all messages that are sent between the domains.
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/MessagingStub.html">MessagingStub</a></h2>
-				Messaging Stub Class
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/Participant.html">Participant</a></h2>
-				Participant class
-			</div>
-			<hr />
-			
-			<div>
-				<h2><a href="symbols/Resource.html">Resource</a></h2>
-				
-			</div>
-			<hr />
-			
-			
-		</div>
-		<div class="fineprint" style="clear:both">
-			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blankt">JsDoc Toolkit</a> 2.4.0 on Tue Dec 10 2013 17:00:58 GMT-0000 (GMT)
-		</div>
-	</body>
+<p>The WONDER javascript framework implementation has received funding from the European Union's Seventh Framework Programme (FP7/2007-2013) under grant agreement n° 287581 - OpenLab. <a href="http://www.ict-openlab.eu/home.html">http://www.ict-openlab.eu/home.html</a>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/hypercomm">hypercomm</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
 </html>
