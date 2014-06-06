@@ -184,7 +184,7 @@ function initialize() {
 
 
     if (document.getElementById('loginText').value != "")
-        myRtcIdentity = document.getElementById('loginText').value + "@vertx.wonder";
+        myRtcIdentity = document.getElementById('loginText').value + "@nodejs.wonder";
 
     /* Initialize the video elements and status */
     console.log('Initializing');
@@ -640,7 +640,7 @@ function seePersonsToCall(string){
     var permit = true;
     for(var i =0; i < peerstocall.length; i++){
         if(peerstocall[i].split("@").length == 1){
-            peersFinal.push(peerstocall[i] + "@vertx.wonder");
+            peersFinal.push(peerstocall[i] + "@nodejs.wonder");
         }
         else{
             if(peerstocall[i].split("@")[1] != myRtcIdentity.split("@") && peerstocall.length > 1)
