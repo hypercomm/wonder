@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>AeroGear Chrome App</title>
+    </head>
+    <body>
+        <h1>WONDER Registration App</h1>
+        <input id="username" type="text" />
+        <input id="domain" type="text" />
+        <button id="submit">submit</button>
+        
+        <div id="username_text"> </div>
+        <div id="domain_text"> </div>
+        
+        <button id="notification">Notification</button>
+        
+        <div id="messages">
+            <ul></ul>
+        </div>
+        <script src="scripts/app.js"></script>
+        <!--<script src="scripts/vendor/jquery.min.js"></script>
+        <script src="scripts/vendor/aerogear.js"></script>
+        <script src="scripts/vendor/aerogear.unifiedpush.js"></script>-->
+    </body>
+</html>
+
+
