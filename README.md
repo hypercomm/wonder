@@ -1,15 +1,17 @@
 wonder
 ======
 
-Public WebRTC Framework developed in the WONDER (Webrtc interOperability tested in coNtradictive DEployment scenaRios) project featuring seamless inter-domain interoperability.
 
-The main goal of the project is to evaluate with practical experiments how Web based service delivery mechanisms compare with IMS based service delivery mechanisms.
+The WONDER javascript library is the Reference Implementation of Signaling On-the-Fly concept enabling seamless interoperability between different WebRTC Service Provider domains.
 
-The second objective of the experiment is to test and investigate how interoperable the WebRTC and IMS approaches are.
+You may try by yourself Demo WONDER Applications  [here](https://github.com/hypercomm/wonder/wiki/Live-Demos) or to develope your own application following this [quick start tutorial](https://github.com/hypercomm/wonder/wiki/How-to-Develop-a-WONDER-App). You may also setup your own [WONDER environment](https://github.com/hypercomm/wonder/wiki/How-to-setup-your-own-WONDER-environment). The ful WONDER library itself is [here](https://github.com/hypercomm/wonder/blob/master/src/libs/wonder_full.js).
+
+Check the [Project Site] (http://hypercomm.github.io/wonder/) for more information.
+
+#### Aknowledgments
 
 The research leading to these results has received funding from the European Union's Seventh Framework Programme (FP7/2007-2013) under grant agreement n° 287581 - OpenLab. http://www.ict-openlab.eu/home.html
 
-Check [Project Site] (http://hypercomm.github.io/wonder/) .
 
 #### Disclaimer
 
