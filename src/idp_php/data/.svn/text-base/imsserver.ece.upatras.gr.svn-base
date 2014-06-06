@@ -1,0 +1,43 @@
+{
+    "offset": 0,
+    "rows": [
+        {
+            "_id": "7c528041-767f-4b57-8abf-1d0f48221274",
+            "rtcIdentity": "*@imsserver.ece.upatras.gr",
+            "notificationAddress": "",
+            "messagingAddress": "imsserver.ece.upatras.gr",
+            "password": "",
+            "url_pub": "",
+            "photo": "",
+            "group": "",
+            "mygroup": "",
+            "sip_address": "alice",
+            "sip_server": "alice",
+            "terminals": [],
+            "email": "alice@upatras",
+            "messagingStubURL": "http://150.140.184.247:8088/phase2/stubs/MessagingStub_TelekomMS.js",
+            "localMsgStubURL": "http://150.140.184.247:8088/phase2/stubs/MessagingStub_IMS2Cloud.js",
+            "call_history": [],
+            "links": [],
+            "subscribed_serv": [
+                {
+                    "id": "video"
+                },
+                {
+                    "id": "voice"
+                },
+                {
+                    "id": "chat"
+                },
+                {
+                    "id": "presence"
+                }
+            ]
+        }
+    ],
+    "total_rows": 1,
+    "query": {
+        "rtcIdentity": "*@imsserver.ece.upatras.gr"
+    },
+    "millis": 0
+}

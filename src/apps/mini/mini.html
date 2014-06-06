@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Minimal Wonder Test Application</title>
+        <!-- polyfill to switch-hit between Chrome and Firefox -->
+        <script src="../../api/adapter.js"></script>
+
+        <!-- WONDER library classes -->
+        <script src="../../api/wonder_core.js"></script>
+        <script src="../../api/wonder_conversation.js"></script>
+
+        <!-- application logic -->
+        <script src="mini.js"></script>
+    </head>
+	
+    <body>
+        <h1>Minimal Wonder Test Application</h1>
+		<div id="login">
+			<input type="text" id="loginText" value="">
+			<button id="loginButton" onclick="login()">Login</button>
+		</div>
+		<div>
+			<div id="call">
+				<input type="text" id="callTo" value="">
+				<button id="callButton" onclick="doCall()">Call</button>
+				<button id="hangup" onclick="hangup()">Hangup</button>
+			</div>
+		</div>
+		<div id="videoContainer">
+			<video id="localVideo"  width="320" height="240"
+ 	autoplay="autoplay" muted></video>
+			<video id="remoteVideo"  width="320" height="240" 
+					autoplay="autoplay" muted></video>
+		</div>
+    </body>
+</html>
