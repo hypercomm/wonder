@@ -66,7 +66,7 @@
                     <div class="col-md-9" style="border: 1px solid #F0F0F0 ; height: 700px;">
                         <div id="login">
                         <!-- checkbox for hosting-->
-                            <input type="text" id="loginText" value="test"><label>@nodejs.wonder</label><button id="loginButton" onclick="initialize()" style="margin-left: 15px;">Login</button>
+                            <input type="text" id="loginText" placeholder="username"><label>@nodejs.wonder</label><button id="loginButton" onclick="initialize()" style="margin-left: 15px;">Login</button>
                         </div>
 
                         <div id="videoContainer">
