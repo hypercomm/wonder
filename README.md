@@ -4,7 +4,7 @@ wonder
 
 The WONDER javascript library is the Reference Implementation of [Signaling On-the-Fly](https://github.com/hypercomm/wonder/wiki/Signalling-on-the-fly) concept enabling seamless interoperability between different WebRTC Service Provider domains.
 
-You may try by yourself Demo WONDER Applications  [here](https://github.com/hypercomm/wonder/wiki/Live-Demos) or to develope your own application following this [quick start tutorial](https://github.com/hypercomm/wonder/wiki/How-to-Develop-a-WONDER-App). You may also setup your own [WONDER environment](https://github.com/hypercomm/wonder/wiki/How-to-setup-your-own-WONDER-environment). The full WONDER library itself is [here](https://github.com/hypercomm/wonder/blob/master/src/libs/wonder_full.js).
+You may try by yourself Demo WONDER Applications  [here](https://github.com/hypercomm/wonder/wiki/Live-Demos) or to develop your own application following this [quick start tutorial](https://github.com/hypercomm/wonder/wiki/How-to-Develop-a-WONDER-App). You may also setup your own [WONDER environment](https://github.com/hypercomm/wonder/wiki/How-to-setup-your-own-WONDER-environment). The full WONDER library itself is [here](https://github.com/hypercomm/wonder/blob/master/src/libs/wonder_full.js).
 
 Check the [Project Site] (http://hypercomm.github.io/wonder/) for more information.
 
