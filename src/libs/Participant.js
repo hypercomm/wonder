@@ -631,7 +631,7 @@ Participant.prototype.onMessage = function(message) {
                     answerBody.to = "";
                     this.me.sendMessage(answerBody, MessageType.ACCEPTED, mediaConstraints);
                 }
-                setStatus(ParticipantStatus.PARTICIPATING); 
+                setStatus(ParticipantStatus.PARTICIPATING);
             }else{
                 if(message.body.connected.length != 0){
                     for(var i = 0; i < message.body.connected.length; i++){
@@ -668,7 +668,7 @@ Participant.prototype.onMessage = function(message) {
             break;
         case MessageType.NOT_ACCEPTED:
             //setStatus(ParticipantStatus.FAILED);
-            this.status = ParticipantStatus.FAILED; 
+            this.status = ParticipantStatus.FAILED;
             this.leave(false);
             console.log("Participant received NOT_ACCEPTED");
             this.msgHandler(message);
@@ -730,7 +730,7 @@ Participant.prototype.onMessage = function(message) {
             break;
         case MessageType.BYE:
             setStatus(ParticipantStatus.PARTICIPATED);
-            this.leave(false);
+            this.leave(true);
             console.log("Participant received BYE");
             this.msgHandler(message);
             break;
@@ -747,9 +747,6 @@ Participant.prototype.onMessage = function(message) {
             //this.msgHandler(message);
             break;
         case MessageType.RESOURCE_REMOVED:
-            this.msgHandler(message);
-            break;
-        case MessageType.REMOVE_PARTICIPANT:
             this.msgHandler(message);
             break;
         case MessageType.SHARE_RESOURCE:
@@ -918,7 +915,7 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
             if(messageBody.lastCandidate){
                 if(errorCallback)
                     errorCallback("Missing data for connectivity candidate");
-				// SD: bugfix, we also need context.id etc. in this message
+                // SD: bugfix, we also need context.id etc. in this message
                 message = MessageFactory.createCandidateMessage( this.me.identity,this.identity,this.contextId,"",messageBody.id,messageBody.connectionDescription,true);
                 thisParticipant.identity.messagingStub.sendMessage(message);
                 return;
@@ -932,8 +929,6 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     else thisParticipant.identity.messagingStub.sendMessage(message);
             break;
         case MessageType.BYE:
-            
-            
             message = new Message(this.me.identity,this.identity,"",MessageType.BYE,this.contextId); 
              if (!thisParticipant.identity.messagingStub){
                         errorCallback("Messaging Stub not well initialized");
@@ -942,20 +937,6 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     else 
                     {
                      thisParticipant.identity.messagingStub.sendMessage(message);
-                     setStatus(ParticipantStatus.NOT_PARTICIPATING); // TODO: CHECK IF ITS THE CORRECT STATE
-                    }
-            console.log("Call terminated");
-            break;
-        case MessageType.REMOVE_PARTICIPANT:
-            
-            
-            message = new Message(this.me.identity,this.identity,"",MessageType.REMOVE_PARTICIPANT,this.contextId); 
-             if (!thisParticipant.identity.messagingStub){
-                        errorCallback("Messaging Stub not well initialized");
-                        return;
-                    }
-                    else 
-                    {thisParticipant.identity.messagingStub.sendMessage(message);
                      setStatus(ParticipantStatus.NOT_PARTICIPATING); // TODO: CHECK IF ITS THE CORRECT STATE
                     }
             console.log("Call terminated");
@@ -1043,17 +1024,22 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
 Participant.prototype.leave = function(sendMessage) {
     setStatus(ParticipantStatus.PARTICIPATED);
     this.identity.messagingStub.removeListener("",this.identity.rtcIdentity,"");
-    if(this == this.me){
+
+    if(this.identity.rtcIdentity == this.me.identity.rtcIdentity){
         this.RTCPeerConnection.getLocalStreams().forEach(function(element, index, array){
             array[index].stop();
         });
+        if(sendMessage==true){
+            this.sendMessage("",MessageType.BYE,"","",function(){},function(){});  
+            //this.identity.onLastMessagingListener();
+        } 
     }
     else{
-        console.log("PARTIR ADEUS")
         if(sendMessage==true) this.sendMessage("",MessageType.BYE,"","",function(){},function(){});
         this.dataBroker.removeDataChannel(this.identity);
         if(this.RTCPeerConnection.signalingState && this.RTCPeerConnection.signalingState != "closed")
             this.RTCPeerConnection.close();
+            
     }
 }
 
@@ -1368,7 +1354,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
 
             var messageBody = new Object();
             messageBody.newConstraints=resourceConstraints;
-			messageBody.from = message.from;
+            messageBody.from = message.from;
             this.sendMessage(messageBody, MessageType.UPDATED, constraints, callback, errorCallback);
         }
         callback();

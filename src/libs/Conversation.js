@@ -470,7 +470,7 @@ Conversation.prototype.close = function() {
         this.participants.forEach(function(element,index,array){
             element.status=ParticipantStatus.PARTICIPATED;
             element.identity.messagingStub.removeListener("",element.identity.rtcIdentity,"");
-            element.sendMessage("",MessageType.REMOVE_PARTICIPANT,"","",function(){},function(){});
+            element.sendMessage("",MessageType.BYE,"","",function(){},function(){});
             if(element.RTCPeerConnection.signalingState && element.RTCPeerConnection.signalingState != "closed")
                 element.RTCPeerConnection.close();
         });
@@ -489,7 +489,7 @@ Conversation.prototype.close = function() {
  */
 Conversation.prototype.bye = function() {
     this.participants.forEach(function(element,index,array){
-                                element.leave(true);   
+                                element.leave(true);
                                 delete array[index];
     });
     this.myParticipant.leave(true);
@@ -552,12 +552,23 @@ Conversation.prototype.onMessage = function(message) {
         case MessageType.REDIRECT:
             break;
         case MessageType.BYE:
-            this.participants.forEach(function(element, index, array){
-                if(element.status==ParticipantStatus.PARTICIPATED){
-                    array.splice(index, 1);
-                }
-            });
-            if(this.participants.length==0) this.bye();
+            if(this.owner.identity.rtcIdentity == message.from.rtcIdentity){
+                this.participants.forEach(function (element, index, array) {
+                    element.leave(false);
+                    delete array[index];
+                });
+                this.myParticipant.leave(false);
+                this.setStatus(ConversationStatus.CLOSED);
+            }
+            else {
+                this.participants.forEach(function(element, index, array){
+                    if(element.status==ParticipantStatus.PARTICIPATED){
+                        array.splice(index, 1);
+                    }
+                });
+                if(this.participants.length==0) this.bye();
+            }
+            
             break;
         case MessageType.OFFER_ROLE: // set new moderator of the conversatoin
             break;
@@ -569,15 +580,7 @@ Conversation.prototype.onMessage = function(message) {
             break;
         case MessageType.RESOURCE_REMOVED:
             break;
-        case MessageType.REMOVE_PARTICIPANT:
-            // Remove everyone without sending BYE ("silently")
-            this.participants.forEach(function (element, index, array) {
-                element.leave(false);
-                delete array[index];
-            });
-            this.myParticipant.leave(false);
-            this.setStatus(ConversationStatus.CLOSED);
-            break;
+
         case MessageType.SHARE_RESOURCE:
             break;
         default:
