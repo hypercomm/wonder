@@ -1,5 +1,3 @@
-
-
 /**
  * MessagingStub Class
  *
@@ -29,6 +27,7 @@ var functCall = null;
 var calle = "";
 var size;
 var soft = false;
+var oSipSessionCall = null;
 
 function MessagingStub_sipML5(){
     this.ownRtcIdentity;
@@ -41,17 +40,35 @@ function MessagingStub_sipML5(){
     var that = this;
     handleMessages = function(full_message){
        
-        console.log("EASY", full_message.from.rtcIdentity);
+        console.log("EASY", full_message);
         var s = full_message.from;
         //while(s.charAt(0) === '0')
           //  s = s.substr(1);
-        if(/^-?[\d.]+(?:e-?\d+)?$/.test(s.split('@')[0])){ 
-            full_message.from = s.split('@')[0];
+        if(s == "webrtc-user@asterisk.wonder"){
             full_message.body.constraints = [{
-            constraints: "",
-            type: ResourceType.AUDIO_MIC,
-            direction: "in_out"
-            }];
+                constraints: "",
+                type: ResourceType.AUDIO_MIC,
+                direction: "in_out"
+                }];
+        }
+        var c = s.split('@')[0];
+        if(/^-?[\d.]+(?:e-?\d+)?$/.test(c)){ 
+           // full_message.from = s.split('@')[0];
+           var h = c.split('').join(',')
+           if(h[0] == "5"){
+                full_message.body.constraints = [{
+                constraints: "",
+                type: ResourceType.AUDIO_VIDEO,
+                direction: "in_out"
+                }];
+            
+           }else{
+                full_message.body.constraints = [{
+                constraints: "",
+                type: ResourceType.AUDIO_MIC,
+                direction: "in_out"
+                }];
+            }
         }
         console.log("S->C",full_message);
         //console.log("full_message: ", full_message);
@@ -61,6 +78,7 @@ function MessagingStub_sipML5(){
         {
           //  if(that.baseStub.listeners[0].length == 1)
                // that.eventbus.registerHandler(message.contextId, that.handleMessages);
+               
         }
 
         Idp.getInstance().createIdentity(message.from, function(identity) {
@@ -88,7 +106,7 @@ function MessagingStub_sipML5(){
  */
 MessagingStub_sipML5.prototype.callSIP = function(){
     // create call session
-  /*  callSession = o_stack.newSession('call-audiovideo', {
+   callSession = o_stack.newSession('call-audiovideo', {
         video_local: document.getElementById('localVideo'),
         video_remote: document.getElementById('remoteVideo'),
         sip_caps: [
@@ -96,9 +114,9 @@ MessagingStub_sipML5.prototype.callSIP = function(){
             { name: '+sip.ice' },
             { name: 'language', value: '\"en,fr\"' }
         ]
-    });*/
-    var configs = {
-            audio_remote: document.getElementById('audio_remote'),
+    });
+   /* var configs = {
+            audio_remote: document.getElementById('audio'),
             video_local: document.getElementById('localVideo'),
             video_remote: document.getElementById('remoteVideo'),
             bandwidth: { audio:undefined, video:undefined },
@@ -112,6 +130,7 @@ MessagingStub_sipML5.prototype.callSIP = function(){
         };
     callSession = o_stack.newSession('call-audio', configs);
     //if(/^-?[\d.]+(?:e-?\d+)?$/.test(calle)){calle = "0"+calle}
+    callSession.call(calle);*/
     callSession.call(calle);
 }
 
@@ -171,10 +190,12 @@ MessagingStub_sipML5.prototype.sendMessage = function(message){
     }
 
     if(message.body.lastCandidate){
-        sdp =message.body.connectionDescription.sdp;
+        sdp =message.body.connectionDescription;
         if(called == true){
-            console.log("ENTREIIIII",thate);
             thate.send_response(thate.o_last_iInvite, 200, "OK", true);
+             //oSipSessionCall.accept(oConfigCall);
+             //oSipSessionCall.accept(oConfigCall);
+             //oSipSessionCall.acceptTransfer();
         }else{
             this.callSIP();
         }
@@ -238,26 +259,26 @@ MessagingStub_sipML5.prototype.removeListener = function(listener, rtcIdentity, 
  */
 MessagingStub_sipML5.prototype.connect = function(ownRtcIdentity, credentials, callbackFunction){
 
-	console.log("STACK",ownRtcIdentity);
+    console.log("STACK",ownRtcIdentity);
     this.ownRtcIdentity = ownRtcIdentity;
     this.credentials = credentials;
 
     var name = ownRtcIdentity.split("@")[0]; 
-    if(ownRtcIdentity.split("@")[1] != "imsserver.ece.upatras.gr"){
-	name = name + "_friend";  	
+    if(ownRtcIdentity.split("@")[1] != "asterisk.wonder"){
+    name = name + "_friend";    
     }
     var pass = "qwerty";
     //console.log(document.getElementById('txtWebsocketServerUrl').value);
     o_stack = new SIPml.Stack({
-            realm: 'imsserver.ece.upatras.gr',
+            realm: 'asterisk.wonder',
             impi: name,
-            impu: 'sip:' + name + '@imsserver.ece.upatras.gr',
+            impu: 'sip:' + name + '@asterisk.wonder',
             password: pass,
             display_name: ownRtcIdentity,
-            websocket_proxy_url: 'ws://10.112.34.44:10060',
-            outbound_proxy_url: 'udp://10.112.34.44:5060',
+            websocket_proxy_url: 'ws://10.112.67.66:10060',
+            outbound_proxy_url: 'udp://10.112.67.66:5060',
             enable_rtcweb_breaker: true,
-	        ice_servers: "[{ url: 'stun:150.140.184.242:3478'}, { url:'turn:root@150.140.184.242:3478', credential:'w0nd3r'}]",
+            ice_servers: "[{ url: 'stun:150.140.184.242:3478'}, { url:'turn:root@150.140.184.242:3478', credential:'w0nd3r'}]",
             events_listener: { events: '*', listener: onSipEventStack },
             enable_early_ims:  true, // Must be true unless you're using a real IMS network
             sip_headers: [
@@ -331,6 +352,8 @@ function onSipEventStack(e /*SIPml.Stack.Event*/) {
         case 'i_new_call':
         {
             console.log('new call');
+            //oSipSessionCall = e.newSession;
+            //oSipSessionCall.setConfiguration(oConfigCall);
 
             break;
         }
@@ -486,61 +509,9 @@ function onSipEventSession(e /* SIPml.Session.Event */) {
     }
 }
 
-/////////////
-
-
+//
 var __b_release_mode = true;
-var Base64 = (function() {
-    var a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    var b = {encode: function(e) {
-        var c = "";
-        var m, k, h;
-        var l, j, g, f;
-        var d = 0;
-        do {
-            m = e.charCodeAt(d++);
-            k = e.charCodeAt(d++);
-            h = e.charCodeAt(d++);
-            l = m >> 2;
-            j = ((m & 3) << 4) | (k >> 4);
-            g = ((k & 15) << 2) | (h >> 6);
-            f = h & 63;
-            if (isNaN(k)) {
-                g = f = 64
-            } else {
-                if (isNaN(h)) {
-                    f = 64
-                }
-            }
-            c = c + a.charAt(l) + a.charAt(j) + a.charAt(g) + a.charAt(f)
-        } while (d < e.length);
-        return c
-    },decode: function(e) {
-        var c = "";
-        var m, k, h;
-        var l, j, g, f;
-        var d = 0;
-        e = e.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-        do {
-            l = a.indexOf(e.charAt(d++));
-            j = a.indexOf(e.charAt(d++));
-            g = a.indexOf(e.charAt(d++));
-            f = a.indexOf(e.charAt(d++));
-            m = (l << 2) | (j >> 4);
-            k = ((j & 15) << 4) | (g >> 2);
-            h = ((g & 3) << 6) | f;
-            c = c + String.fromCharCode(m);
-            if (g != 64) {
-                c = c + String.fromCharCode(k)
-            }
-            if (f != 64) {
-                c = c + String.fromCharCode(h)
-            }
-        } while (d < e.length);
-        return c
-    }};
-    return b
-})();
+
 function tsk_buff_str2ib(d) {
     if (!d) {
         tsk_utils_log_error("Invalid argument");
@@ -584,39 +555,6 @@ function tsk_buff_u8b2utf8(d) {
                 }
             }
         }
-       /* if(receivedOK == true && oneOK == false && soft == false){
-            oneOK = true;
-            console.log("callID ",callID);
-            msgAcepted = MessageFactory.createAnswer (to,from ,callID,"","");
-            var obj = new Object();
-            obj.sdp = g;
-            obj.type = "answer";
-            msgAcepted.body.connectionDescription = obj;
-
-            handleMessages(msgAcepted);
-        }
-        if(receivedUPDATE == true &&  oneUPDATE == false){
-            var msg = MessageFactory.createUpdateMessage(to, from, callID, g,"","");
-            console.log("ENTREI");
-            handleMessages(msg);
-            oneUPDATE = true;
-        }
-
-        if(receivedINVITE == true &&  oneINVITE == false && soft == false){
-            var obj = new Object();
-            obj.sdp = g;
-            obj.type = "offer";
-            msgInvt.body.connectionDescription = obj;
-
-            oneINVITE = true;
-            var dataCodecs = new Object();
-             dataCodecs.CodecLibUrl = "";
-             dataCodecs.id = callID;
-             dataCodecs.type = "chat";
-             msgInvt.body.dataCodecs = dataCodecs;
-            handleMessages(msgInvt);
-        }*/
-
         return g
     } catch (f) {
         tsk_utils_log_error(f);
@@ -690,7 +628,7 @@ tsk_fsm.prototype.act = function(k, g, f) {
         }
         if (!c.fn_condition || c.fn_condition(g, f)) {
             if (this.is_debug_enabled()) {
-                //tsk_utils_log_info("State machine: " + c.s_description)
+                tsk_utils_log_info("State machine: " + c.s_description)
             }
             if (c.i_state_to != tsk_fsm.prototype.__i_state_any) {
                 this.i_state_curr = c.i_state_to
@@ -926,20 +864,20 @@ var MD5 = (function() {
         return f(v.concat(y), 512 + 128)
     };
     var h = {hexdigest: function(t) {
-        return r(f(b(t), t.length * m))
-    },b64digest: function(t) {
-        return q(f(b(t), t.length * m))
-    },hash: function(t) {
-        return g(f(b(t), t.length * m))
-    },hmac_hexdigest: function(s, t) {
-        return r(e(s, t))
-    },hmac_b64digest: function(s, t) {
-        return q(e(s, t))
-    },hmac_hash: function(s, t) {
-        return g(e(s, t))
-    },test: function() {
-        return MD5.hexdigest("abc") === "900150983cd24fb0d6963f7d28e17f72"
-    }};
+            return r(f(b(t), t.length * m))
+        },b64digest: function(t) {
+            return q(f(b(t), t.length * m))
+        },hash: function(t) {
+            return g(f(b(t), t.length * m))
+        },hmac_hexdigest: function(s, t) {
+            return r(e(s, t))
+        },hmac_b64digest: function(s, t) {
+            return q(e(s, t))
+        },hmac_hash: function(s, t) {
+            return g(e(s, t))
+        },test: function() {
+            return MD5.hexdigest("abc") === "900150983cd24fb0d6963f7d28e17f72"
+        }};
     return h
 })();
 function tsk_param_create(c, b) {
@@ -1312,7 +1250,7 @@ function tsk_utils_log_info(a) {
 }
 function tsk_utils_log_warn(a) {
     if (window.console && (__i_debug_level >= 3)) {
-    //    window.console.warn(a)
+        window.console.warn(a)
     }
 }
 function tsk_utils_log_error(a) {
@@ -1325,13 +1263,12 @@ function tsk_utils_log_fatal(a) {
         tsk_utils_log_error(a)
     }
 }
-//tsk_utils_log_info("SIPML5 API version = 1.3.214");
+
 var tmedia_type_e = {NONE: {i_id: 0,s_name: null},GHOST: {i_id: (1 << 0),s_name: null},AUDIO: {i_id: (1 << 1),s_name: "audio"},VIDEO: {i_id: (1 << 2),s_name: "video"},CHAT: {i_id: (1 << 3),s_name: "message"},FILE: {i_id: (1 << 4),s_name: "message"},T38: {i_id: (1 << 5),s_name: "t38"},SCREEN_SHARE: {i_id: (1 << 2) | (1 << 6),s_name: "sccreen share"},MSRP: {i_id: (1 << 3) | (1 << 4),s_name: "message"},AUDIO_VIDEO: {i_id: (1 << 1) | (1 << 2),s_name: "audio/video"},ALL: {i_id: 255,s_name: "all"}};
-if (!window.__b_release_mode) {
-    tmedia_api_add_js_scripts("head", "src/tinyMEDIA/src/tmedia_webrtc4all.js", "src/tinyMEDIA/src/tmedia_defaults.js", "src/tinyMEDIA/src/tmedia_session.js")
-}
+
 w4aPeerConnection.prototype.s_configuration = null;
 w4aPeerConnection.prototype.f_IceCallback = null;
+w4aPeerConnection.prototype.f_Rfc5168Callback;
 w4aPeerConnection.prototype.o_peer = null;
 w4aPeerConnection.prototype.localDescription = null;
 w4aPeerConnection.prototype.remoteDescription = null;
@@ -1341,7 +1278,7 @@ w4aIceCandidate.prototype.label = null;
 var __o_roap_stream = null;
 var __o_jsep_stream_audio = null;
 var __o_jsep_stream_audiovideo = null;
-var WebRtcType_e = {NONE: -1,NATIVE: 0,IE: 1,NPAPI: 2,ERICSSON: 3};
+var WebRtcType_e = {NONE: -1,NATIVE: 0,IE: 1,NPAPI: 2,W4A: 3,ERICSSON: 4};
 var __webrtc_type = WebRtcType_e.NONE;
 var __b_webrtc4all_initialized = false;
 var __b_webrtc4ie_peerconn = undefined;
@@ -1357,21 +1294,23 @@ function WebRtc4all_Init() {
         } catch (a) {
         }
         try {
-            window.nativeRTCPeerConnection = (window.webkitPeerConnection00 || window.webkitRTCPeerConnection || window.mozRTCPeerConnection);
-            window.nativeRTCSessionDescription = (window.mozRTCSessionDescription || window.RTCSessionDescription);
-            window.nativeRTCIceCandidate = (window.mozRTCIceCandidate || window.RTCIceCandidate);
-            window.nativeURL = (window.webkitURL || window.URL);
-            navigator.nativeGetUserMedia = (navigator.webkitGetUserMedia || navigator.mozGetUserMedia);
-            if ((navigator.nativeGetUserMedia && window.nativeRTCPeerConnection)) {
-                __webrtc_type = WebRtcType_e.NATIVE
-            } else {
-                if (navigator.nativeGetUserMedia && window.webkitPeerConnection) {
-                    __webrtc_type = WebRtcType_e.ERICSSON
+            if (__webrtc_type == WebRtcType_e.NONE) {
+                window.nativeRTCPeerConnection = (window.webkitPeerConnection00 || window.webkitRTCPeerConnection || window.mozRTCPeerConnection);
+                window.nativeRTCSessionDescription = (window.mozRTCSessionDescription || window.RTCSessionDescription);
+                window.nativeRTCIceCandidate = (window.mozRTCIceCandidate || window.RTCIceCandidate);
+                window.nativeURL = (window.webkitURL || window.URL);
+                navigator.nativeGetUserMedia = (navigator.webkitGetUserMedia || navigator.mozGetUserMedia);
+                if ((navigator.nativeGetUserMedia && window.nativeRTCPeerConnection)) {
+                    __webrtc_type = WebRtcType_e.NATIVE
+                } else {
+                    if (navigator.nativeGetUserMedia && window.webkitPeerConnection) {
+                        __webrtc_type = WebRtcType_e.ERICSSON
+                    }
                 }
             }
         } catch (a) {
         }
-        if (__webrtc_type == WebRtcType_e.NONE) {
+        if (__webrtc_type == WebRtcType_e.NONE || __webrtc_type == WebRtcType_e.W4A) {
             try {
                 if ((__b_webrtc4ie_peerconn = new ActiveXObject("webrtc4ie.PeerConnection"))) {
                     __webrtc_type = WebRtcType_e.IE
@@ -1406,6 +1345,27 @@ function WebRtc4all_GetVersion() {
     }
     return "0.0.0.0"
 }
+function WebRtc4all_SetType(a) {
+    if (__webrtc_type != WebRtcType_e.NONE) {
+        tsk_utils_log_error("Trying not set default webrtc type after init() is not allowed");
+        return false
+    }
+    switch (a) {
+        case "w4a":
+            __webrtc_type = WebRtcType_e.W4A;
+            break;
+        case "ericsson":
+            __webrtc_type = WebRtcType_e.ERICSSON;
+            break;
+        case "native":
+            __webrtc_type = WebRtcType_e.NATIVE;
+            break;
+        default:
+            tsk_utils_log_error("[" + a + "] not valid as default webrtc type");
+            return false
+    }
+    return true
+}
 function WebRtc4all_GetType() {
     return __webrtc_type
 }
@@ -1413,12 +1373,21 @@ var __looper = undefined;
 function WebRtc4all_GetLooper() {
     if (__looper == undefined && tsk_utils_have_webrtc4ie()) {
         try {
-            var a = document.createElement("object");
-            a.classid = "clsid:7082C446-54A8-4280-A18D-54143846211A";
-            a.width = a.height = "1px";
-            document.body.appendChild(a);
-            if (!(__looper = a.hWnd)) {
-                tsk_utils_log_error("Failed to create looper")
+            if (fakeLooper && fakeLooper.hWnd) {
+                __looper = fakeLooper.hWnd
+            } else {
+                if ((__o_display_local && __o_display_local.hWnd) || (__o_display_remote && __o_display_remote.hWnd)) {
+                    __looper = (__o_display_local && __o_display_local.hWnd) ? __o_display_local.hWnd : __o_display_remote.hWnd
+                } else {
+                    var a = document.createElement("object");
+                    a.classid = "clsid:7082C446-54A8-4280-A18D-54143846211A";
+                    a.width = a.height = "1px";
+                    document.body.appendChild(a);
+                    __looper = a.hWnd
+                }
+            }
+            if (!__looper) {
+                tsk_utils_log_error("Failed to create looper. Your app may crash on IE11")
             }
         } catch (b) {
             tsk_utils_log_error(b);
@@ -1440,10 +1409,12 @@ function WebRtc4all_SetDisplays(a, b) {
     } else {
         if (__webrtc_type == WebRtcType_e.NPAPI) {
             if (a) {
-                a.innerHTML = '<embed id="__o_display_local" type="application/w4a-display" class="video" width="88px" height="72px" style="margin-top: -80px; margin-left: 5px; background-color: #000000; visibility:hidden"> </embed>'
+                a.innerHTML = '<embed id="__o_display_local" type="application/w4a-display" class="video" width="88px" height="72px" style="margin-top: -80px; margin-left: 5px; background-color: #000000; visibility:visible"> </embed>';
+                __o_display_local.style.visibility = "hidden"
             }
             if (b) {
-                b.innerHTML = '<embed id="__o_display_remote" type="application/w4a-display" width="100%" height="100%" style="visibility:hidden;"> </embed>'
+                b.innerHTML = '<embed id="__o_display_remote" type="application/w4a-display" width="100%" height="100%" style="visibility:visible;"> </embed>';
+                __o_display_remote.style.visibility = "hidden"
             }
         }
     }
@@ -1491,10 +1462,14 @@ function w4aPeerConnection(s_configuration, f_IceCallback) {
     } catch (e) {
     }
     if (b_isInternetExplorer) {
-        eval("function This.o_peer::IceCallback(media, label, bMoreToFollow) { return This.onIceCallback (media, label, bMoreToFollow); }")
+        eval("function This.o_peer::IceCallback(media, label, bMoreToFollow) { return This.onIceCallback (media, label, bMoreToFollow); }");
+        eval("function This.o_peer::Rfc5168Callback(command) { return This.onRfc5168Callback(command); }")
     } else {
         this.o_peer.opaque = This;
-        this.o_peer.setCallbackFuncName("w4aPeerConnection_NPAPI_OnEvent")
+        this.o_peer.setCallbackFuncName("w4aPeerConnection_NPAPI_OnEvent");
+        if (this.o_peer.setRfc5168CallbackFuncName) {
+            this.o_peer.setRfc5168CallbackFuncName("w4aPeerConnection_NPAPI_OnRfc5168Event")
+        }
     }
 }
 w4aPeerConnection.SDP_OFFER = 256;
@@ -1524,9 +1499,9 @@ w4aPeerConnection.prototype.createOffer = function(b) {
 };
 w4aPeerConnection.prototype.createAnswer = function(b, c) {
     if ((__webrtc_type == WebRtcType_e.IE)) {
-        return new w4aSessionDescription(this.o_peer.createAnswerMessage(c.has_audio, c.has_video))
+        return new w4aSessionDescription(this.o_peer.createAnswer(c.has_audio, c.has_video))
     } else {
-        var a = this.o_peer.createAnswerMessage(c.has_audio, c.has_video);
+        var a = this.o_peer.createAnswer(c.has_audio, c.has_video);
         if (a) {
             return new w4aSessionDescription(a.toSdp())
         }
@@ -1559,6 +1534,14 @@ w4aPeerConnection.prototype.addStream = function(a, b) {
 };
 w4aPeerConnection.prototype.removeStream = function(a) {
 };
+w4aPeerConnection.prototype.processContent = function(d, a, b, f) {
+    if (this.o_peer) {
+        try {
+            this.o_peer.processContent(d, a, b, f)
+        } catch (c) {
+        }
+    }
+};
 w4aPeerConnection.prototype.close = function() {
     if (this.o_peer) {
         this.o_peer.close()
@@ -1574,6 +1557,19 @@ w4aPeerConnection.prototype.onIceCallback = function(b, a, c) {
 function w4aPeerConnection_NPAPI_OnEvent(c, a, b, d) {
     c.onIceCallback(a, b, d)
 }
+w4aPeerConnection.prototype.onRfc5168Callback = function(a) {
+    tsk_utils_log_info("w4aPeerConnection::onRfc5168Callback(" + a + ")");
+    if (this.o_mgr && this.o_mgr.callback) {
+        if (a === "picture_fast_update") {
+            this.o_mgr.callback(tmedia_session_events_e.RFC5168_REQUEST_IDR, this.o_mgr.e_type)
+        }
+    } else {
+        tsk_utils_log_error("No manager associated to this peerconnection")
+    }
+};
+function w4aPeerConnection_NPAPI_OnRfc5168Event(a, b) {
+    a.onRfc5168Callback(b)
+}
 var __tmedia_defaults_e_media_type = tmedia_type_e.AUDIO_VIDEO;
 function tmedia_defaults_get_media_type() {
     return __tmedia_defaults_e_media_type
@@ -1581,7 +1577,7 @@ function tmedia_defaults_get_media_type() {
 var __o_peerconnection_class = undefined;
 var __o_sessiondescription_class = undefined;
 var __o_iceCandidate_class = undefined;
-var tmedia_session_events_e = {GET_LO_SUCCESS: 0,GET_LO_FAILED: 1,SET_RO_SUCCESS: 10,SET_RO_FAILED: 11,SET_ACK_SUCCESS: 20,SET_ACK_FAILED: 21,STREAM_LOCAL_REQUESTED: 30,STREAM_LOCAL_ACCEPTED: 31,STREAM_LOCAL_REFUSED: 32,STREAM_LOCAL_ADDED: 33,STREAM_LOCAL_REMOVED: 34,STREAM_REMOTE_ADDED: 35,STREAM_REMOTE_REMOVED: 36};
+var tmedia_session_events_e = {GET_LO_SUCCESS: 0,GET_LO_FAILED: 1,SET_RO_SUCCESS: 10,SET_RO_FAILED: 11,SET_ACK_SUCCESS: 20,SET_ACK_FAILED: 21,STREAM_LOCAL_REQUESTED: 30,STREAM_LOCAL_ACCEPTED: 31,STREAM_LOCAL_REFUSED: 32,STREAM_LOCAL_ADDED: 33,STREAM_LOCAL_REMOVED: 34,STREAM_REMOTE_ADDED: 35,STREAM_REMOTE_REMOVED: 36,RFC5168_REQUEST_IDR: 40};
 tmedia_session_mgr.prototype.__ao_supported_media = [tmedia_type_e.AUDIO, tmedia_type_e.VIDEO];
 function tmedia_session_mgr(d, e, c, f, b, a) {
     this.s_addr = e;
@@ -1868,6 +1864,11 @@ tmedia_session_mgr.prototype.set_ro = function(l, m) {
     }
     return 0
 };
+tmedia_session_mgr.prototype.processContent = function(d, b, c, e) {
+    for (var a = 0; a < this.ao_sessions.length; ++a) {
+        this.ao_sessions[a].processContent(d, b, c, e)
+    }
+};
 tmedia_session_mgr.prototype.start = function() {
     var b = 0;
     for (var a = 0; a < this.ao_sessions.length; ++a) {
@@ -2001,6 +2002,11 @@ tmedia_session.prototype.get_lo = function() {
 tmedia_session.prototype.set_ro = function(b, a) {
     return this.__set_ro(b, a)
 };
+tmedia_session.prototype.processContent = function(c, a, b, d) {
+    if (this.__processContent) {
+        return this.__processContent(c, a, b, d)
+    }
+};
 tmedia_session.prototype.acked = function() {
     return this.__acked()
 };
@@ -2030,9 +2036,7 @@ tmedia_session.prototype.Create = function(b, a) {
             return null
     }
 };
-if (!window.__b_release_mode) {
-    tmedia_api_add_js_scripts("head", "src/tinyMEDIA/src/tmedia_session_jsep.js", "src/tinyMEDIA/src/tmedia_session_roap.js", "src/tinyMEDIA/src/tmedia_session_ghost.js")
-}
+
 tmedia_session_jsep.prototype = Object.create(tmedia_session.prototype);
 tmedia_session_jsep00.prototype = Object.create(tmedia_session_jsep.prototype);
 tmedia_session_jsep01.prototype = Object.create(tmedia_session_jsep.prototype);
@@ -2087,6 +2091,11 @@ tmedia_session_jsep.prototype.__set = function(a) {
 tmedia_session_jsep.prototype.__prepare = function() {
     return 0
 };
+tmedia_session_jsep.prototype.__processContent = function(c, a, b, d) {
+    if (this.o_pc && this.o_pc.processContent) {
+        return this.o_pc.processContent(c, a, b, d)
+    }
+};
 tmedia_session_jsep.prototype.__start = function() {
     if (this.o_local_stream && this.o_local_stream.start) {
         this.o_local_stream.start()
@@ -2109,16 +2118,16 @@ tmedia_session_jsep.prototype.__pause = function() {
     return 0
 };
 tmedia_session_jsep.prototype.__stop = function() {
-    //this.close();
-    //this.o_sdp_lo = null;
+    this.close();
+    this.o_sdp_lo = null;
     tsk_utils_log_info("PeerConnection::stop()");
     return 0
 };
 tmedia_session_jsep.prototype.decorate_lo = function(b) {
     if (this.o_sdp_lo) {
-        var e;
-        if ((e = this.o_sdp_lo.get_header(tsdp_header_type_e.S))) {
-            e.s_value = "Doubango Telecom - " + tsk_utils_get_navigator_friendly_name()
+        var f;
+        if ((f = this.o_sdp_lo.get_header(tsdp_header_type_e.S))) {
+            f.s_value = "Doubango Telecom - " + tsk_utils_get_navigator_friendly_name()
         }
         var a;
         if (this.i_sdp_lo_version == -1) {
@@ -2132,16 +2141,22 @@ tmedia_session_jsep.prototype.decorate_lo = function(b) {
         }
         if (
         /*!this.o_sdp_ro &&*/
-            !(this.e_type.i_id & tmedia_type_e.VIDEO.i_id)) {
+        !(this.e_type.i_id & tmedia_type_e.VIDEO.i_id)) {
             this.o_sdp_lo.remove_media("video")
         }
-        var d = 0;
+        var e = 0;
         var c;
-        while ((c = this.o_sdp_lo.get_header_at(tsdp_header_type_e.M, d++))) {
+        var g = (__o_peerconnection_class == w4aPeerConnection);
+        var d = !!this.o_sdp_lo.get_header_a("fingerprint");
+        while ((c = this.o_sdp_lo.get_header_at(tsdp_header_type_e.M, e++))) {
             c.set_holdresume_att(this.b_lo_held, this.b_ro_held);
-            if (tmedia_session_jsep01.mozThis) {
-                if (c.s_proto == "RTP/SAVPF") {
-                    c.s_proto = "UDP/TLS/RTP/SAVPF"
+            if (!g) {
+                if (c.find_a("crypto")) {
+                    c.s_proto = "RTP/SAVPF"
+                } else {
+                    if (d || c.find_a("fingerprint")) {
+                        c.s_proto = "UDP/TLS/RTP/SAVPF"
+                    }
                 }
             }
             if (this.o_bandwidth) {
@@ -2157,79 +2172,84 @@ tmedia_session_jsep.prototype.decorate_lo = function(b) {
     }
     return 0
 };
-tmedia_session_jsep.prototype.decorate_ro = function(c) {
+tmedia_session_jsep.prototype.decorate_ro = function(j) {
     if (this.o_sdp_ro) {
-        var b, e;
-        var g = 0, d;
-        if (c) {
+        var e, a;
+        var d = 0, c;
+        var b = (__o_peerconnection_class == w4aPeerConnection);
+        if (j) {
             this.o_sdp_ro.remove_header(tsdp_header_type_e.A)
         }
-        var a = function(j, k) {
-            var l = j.s_value.match(/^\d\s+(\w+):([\D|\d]+)/i);
-            if (l && l.length == 3) {
-                return l[k]
+        var g = function(l, m) {
+            var n = l.s_value.match(/^\d\s+(\w+):([\D|\d]+)/i);
+            if (n && n.length == 3) {
+                return n[m]
             }
         };
-        var h = function(j) {
-            if (j && j.s_field == "acap") {
-                j.s_field = a(j, 1);
-                j.s_value = a(j, 2)
+        var k = function(l) {
+            if (l && l.s_field == "acap") {
+                l.s_field = g(l, 1);
+                l.s_value = g(l, 2)
             }
         };
-        var f = function(m, p, o, n) {
-            var k = 0;
-            var j = function(u, t, s) {
-                if (u) {
-                    var v = (u.ao_headers || u.ao_hdr_A);
-                    for (var r = 0; r < v.length; ++r) {
-                        if (v[r].e_type == tsdp_header_type_e.A && v[r].s_value) {
-                            var q = (v[r].s_field === t);
-                            if (!q && v[r].s_field == "acap") {
-                                q = (a(v[r], 1) == t)
+        var f = function(o, r, q, p) {
+            var m = 0;
+            var l = function(w, v, u) {
+                if (w) {
+                    var x = (w.ao_headers || w.ao_hdr_A);
+                    for (var t = 0; t < x.length; ++t) {
+                        if (x[t].e_type == tsdp_header_type_e.A && x[t].s_value) {
+                            var s = (x[t].s_field === v);
+                            if (!s && x[t].s_field == "acap") {
+                                s = (g(x[t], 1) == v)
                             }
-                            if (q && k++ >= s) {
-                                return v[r]
+                            if (s && m++ >= u) {
+                                return x[t]
                             }
                         }
                     }
                 }
             };
-            var l = j(m, o, n);
-            if (!l) {
-                return j(m.get_header_m_by_name(p), o, n)
+            var n = l(o, q, p);
+            if (!n) {
+                return l(o.get_header_m_by_name(r), q, p)
             }
-            return l
+            return n
         };
-        while ((b = this.o_sdp_ro.get_header_at(tsdp_header_type_e.M, g++))) {
-            if (!tmedia_session_jsep01.mozThis && b.s_proto.indexOf("SAVP") < 0) {
-                for (d = 0; d < b.ao_hdr_A.length; ++d) {
-                    if (b.ao_hdr_A[d].s_field == "crypto") {
-                        b.s_proto = "RTP/SAVPF";
+        var h = !!this.o_sdp_ro.get_header_a("fingerprint");
+        while ((e = this.o_sdp_ro.get_header_at(tsdp_header_type_e.M, d++))) {
+            if (!b && e.s_proto.indexOf("SAVP") < 0) {
+                if (e.find_a("crypto")) {
+                    e.s_proto = "RTP/SAVPF";
+                    break
+                } else {
+                    if (h || e.find_a("fingerprint")) {
+                        e.s_proto = "UDP/TLS/RTP/SAVPF";
                         break
                     }
                 }
             }
-            if (!tmedia_session_jsep01.mozThis && b.s_proto.indexOf("SAVP") < 0) {
-                d = 0;
-                while ((e = f(this.o_sdp_ro, b.s_media, "crypto", d++))) {
-                    h(e);
-                    b.s_proto = "RTP/SAVPF"
+            if (!b && e.s_proto.indexOf("SAVP") < 0) {
+                if ((a = f(this.o_sdp_ro, e.s_media, "fingerprint", 0))) {
+                    k(a);
+                    if ((a = f(this.o_sdp_ro, e.s_media, "setup", 0))) {
+                        k(a)
+                    }
+                    if ((a = f(this.o_sdp_ro, e.s_media, "connection", 0))) {
+                        k(a)
+                    }
+                    e.s_proto = "UDP/TLS/RTP/SAVP"
                 }
             }
-            if (tmedia_session_jsep01.mozThis && b.s_proto.indexOf("SAVP") < 0) {
-                if ((e = f(this.o_sdp_ro, b.s_media, "fingerprint", 0))) {
-                    h(e);
-                    if ((e = f(this.o_sdp_ro, b.s_media, "setup", 0))) {
-                        h(e)
-                    }
-                    if ((e = f(this.o_sdp_ro, b.s_media, "connection", 0))) {
-                        h(e)
-                    }
-                    b.s_proto = "UDP/TLS/RTP/SAVP"
+            if (!b && e.s_proto.indexOf("SAVP") < 0) {
+                c = 0;
+                while ((a = f(this.o_sdp_ro, e.s_media, "crypto", c++))) {
+                    k(a);
+                    e.s_proto = "RTP/SAVPF"
                 }
             }
-            if (tmedia_session_jsep01.mozThis && b.s_proto.indexOf("UDP/TLS/RTP/SAVP") != -1) {
-                b.s_proto = "RTP/SAVPF"
+            if (!b && e.s_proto.indexOf("UDP/TLS/RTP/SAVP") != -1) {
+                e.s_proto = "RTP/SAVPF"
             }
         }
     }
@@ -2336,6 +2356,7 @@ tmedia_session_jsep00.prototype.__get_lo = function() {
             }
         });
         this.o_pc.o_session = this;
+        this.o_pc.o_mgr = this.o_mgr;
         this.subscribe_stream_events()
     }
     if (!this.o_sdp_lo && !this.b_sdp_lo_pending) {
@@ -2405,65 +2426,11 @@ function tmedia_session_jsep01(a) {
     }
 }
 tmedia_session_jsep01.mozThis = undefined;
-tmedia_session_jsep01.onGetUserMediaSuccess = function(c, d) {
-    tsk_utils_log_info("onGetUserMediaSuccess");
-    var f = (tmedia_session_jsep01.mozThis || d);
-    if (f && f.o_pc && f.o_mgr) {
-        if (!f.b_sdp_lo_pending) {
-            tsk_utils_log_warn("onGetUserMediaSuccess but no local sdp request is pending");
-            return
-        }
-        if (!c.videoTracks || !c.audioTracks) {
-            var b = !!(f.e_type.i_id & tmedia_type_e.AUDIO.i_id);
-            var a = !!(f.e_type.i_id & tmedia_type_e.VIDEO.i_id);
-            c.audioTracks = c.getAudioTracks ? c.getAudioTracks() : {length: b ? 1 : 0};
-            c.videoTracks = c.getVideoTracks ? c.getVideoTracks() : {length: a ? 1 : 0}
-        }
-        if (c.audioTracks.length > 0 && c.videoTracks.length == 0) {
-            __o_jsep_stream_audio = c
-        } else {
-            if (c.audioTracks.length > 0 && c.videoTracks.length > 0) {
-                __o_jsep_stream_audiovideo = c
-            }
-        }
-        if (!f.o_local_stream) {
-            f.o_mgr.callback(tmedia_session_events_e.STREAM_LOCAL_ACCEPTED, this.e_type)
-        }
-        if (tmedia_session_jsep01.mozThis) {
-            __o_jsep_stream_audiovideo = __o_jsep_stream_audio = c
-        }
-        f.o_local_stream = c;
-        f.o_pc.addStream(c);
-        f.o_mgr.set_stream_local(c);
-        var e = ((f.b_sdp_ro_pending || f.b_sdp_ro_offer) && (f.o_sdp_ro != null));
-        if (e) {
-            tsk_utils_log_info("createAnswer");
-            f.o_pc.createAnswer(tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onCreateSdpSuccess : function(g) {
-                tmedia_session_jsep01.onCreateSdpSuccess(g, f)
-            }, tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onCreateSdpError : function(g) {
-                tmedia_session_jsep01.onCreateSdpError(g, f)
-            }, f.o_media_constraints, false)
-        } else {
-            tsk_utils_log_info("createOffer");
-            f.o_pc.createOffer(tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onCreateSdpSuccess : function(g) {
-                tmedia_session_jsep01.onCreateSdpSuccess(g, f)
-            }, tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onCreateSdpError : function(g) {
-                tmedia_session_jsep01.onCreateSdpError(g, f)
-            }, f.o_media_constraints)
-        }
-    }
-};
-tmedia_session_jsep01.onGetUserMediaError = function(a, b) {
-    tsk_utils_log_info("onGetUserMediaError");
-    var c = (tmedia_session_jsep01.mozThis || b);
-    if (c && c.o_mgr) {
-        tsk_utils_log_error(a);
-        c.o_mgr.callback(tmedia_session_events_e.STREAM_LOCAL_REFUSED, c.e_type)
-    }
-};
+
 tmedia_session_jsep01.onCreateSdpSuccess = function(b, a) {
     tsk_utils_log_info("onCreateSdpSuccess");
     var c = (tmedia_session_jsep01.mozThis || a);
+
     if (c && c.o_pc) {
         c.o_pc.setLocalDescription(b, tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onSetLocalDescriptionSuccess : function() {
             tmedia_session_jsep01.onSetLocalDescriptionSuccess(c)
@@ -2485,6 +2452,8 @@ tmedia_session_jsep01.onCreateSdpError = function(a, b) {
 };
 tmedia_session_jsep01.onSetLocalDescriptionSuccess = function(a) {
     tsk_utils_log_info("onSetLocalDescriptionSuccess");
+
+    a.o_pc.localDescription = sdp
     var b = (tmedia_session_jsep01.mozThis || a);
     if (b && b.o_pc) {
         if (tmedia_session_jsep01.mozThis) {
@@ -2510,12 +2479,12 @@ tmedia_session_jsep01.onSetRemoteDescriptionSuccess = function(a) {
     }
 };
 tmedia_session_jsep01.onSetRemoteDescriptionError = function(a, b) {
-    /*tsk_utils_log_info("onSetRemoteDescriptionError");
+    tsk_utils_log_info("onSetRemoteDescriptionError");
     var c = (tmedia_session_jsep01.mozThis || b);
     if (c) {
         c.o_mgr.callback(tmedia_session_events_e.SET_RO_FAILED, c.e_type);
         tsk_utils_log_error(a)
-    }*/
+    }
 };
 tmedia_session_jsep01.onIceGatheringCompleted = function(b) {
     tsk_utils_log_info("onIceGatheringCompleted");
@@ -2530,6 +2499,7 @@ tmedia_session_jsep01.onIceGatheringCompleted = function(b) {
         if (a) {
             c.o_sdp_jsep_lo = a;
             c.o_sdp_lo = tsdp_message.prototype.Parse(c.o_sdp_jsep_lo.sdp);
+            //c.o_sdp_lo = tsdp_message.prototype.Parse(sdp.sdp);
             c.decorate_lo(true);
             if (c.o_mgr) {
                 c.o_mgr.callback(tmedia_session_events_e.GET_LO_SUCCESS, c.e_type)
@@ -2586,7 +2556,7 @@ tmedia_session_jsep01.prototype.__get_lo = function() {
         }
         var a = this.ao_ice_servers;
         if (!a) {
-            a = tmedia_session_jsep01.mozThis ? [{url: "stun:23.21.150.121:3478"}, {url: "stun:216.93.246.18:3478"}, {url: "stun:66.228.45.110:3478"}, {url: "stun:173.194.78.127:19302"}] : [{url: "stun:stun.l.google.com:19302"}, {url: "stun:stun.counterpath.net:3478"}, {url: "stun:numb.viagenie.ca:3478"}]
+            //a = tmedia_session_jsep01.mozThis ? [{url: "stun:23.21.150.121:3478"}, {url: "stun:216.93.246.18:3478"}, {url: "stun:66.228.45.110:3478"}, {url: "stun:173.194.78.127:19302"}] : [{url: "stun:stun.l.google.com:19302"}, {url: "stun:stun.counterpath.net:3478"}, {url: "stun:numb.viagenie.ca:3478"}]
         }
         try {
             tsk_utils_log_info("ICE servers:" + JSON.stringify(a))
@@ -2596,6 +2566,7 @@ tmedia_session_jsep01.prototype.__get_lo = function() {
         this.o_pc.onicecandidate = tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onIceCandidate : function(e) {
             tmedia_session_jsep01.onIceCandidate(e, c)
         };
+        this.o_pc.o_mgr = this.o_mgr;
         if (!tmedia_session_jsep01.mozThis) {
             this.o_pc.o_session = this
         }
@@ -2607,13 +2578,13 @@ tmedia_session_jsep01.prototype.__get_lo = function() {
             this.__set_ro(this.o_sdp_ro, true)
         }
         if (this.e_type == tmedia_type_e.AUDIO && (this.b_cache_stream && __o_jsep_stream_audio)) {
-            //tmedia_session_jsep01.onGetUserMediaSuccess(__o_jsep_stream_audio, c)
+            tmedia_session_jsep01.onGetUserMediaSuccess(__o_jsep_stream_audio, c)
         } else {
             if (this.e_type == tmedia_type_e.AUDIO_VIDEO && (this.b_cache_stream && __o_jsep_stream_audiovideo)) {
                 tmedia_session_jsep01.onGetUserMediaSuccess(__o_jsep_stream_audiovideo, c)
             } else {
                 this.o_mgr.callback(tmedia_session_events_e.STREAM_LOCAL_REQUESTED, this.e_type);
-               /* navigator.nativeGetUserMedia({audio: (this.e_type == tmedia_type_e.SCREEN_SHARE) ? false : !!(this.e_type.i_id & tmedia_type_e.AUDIO.i_id),video: !!(this.e_type.i_id & tmedia_type_e.VIDEO.i_id) ? d : false,data: false}, tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onGetUserMediaSuccess : function(e) {
+                /*navigator.nativeGetUserMedia({audio: (this.e_type == tmedia_type_e.SCREEN_SHARE) ? false : !!(this.e_type.i_id & tmedia_type_e.AUDIO.i_id),video: !!(this.e_type.i_id & tmedia_type_e.VIDEO.i_id) ? d : false,data: false}, tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onGetUserMediaSuccess : function(e) {
                     tmedia_session_jsep01.onGetUserMediaSuccess(e, c)
                 }, tmedia_session_jsep01.mozThis ? tmedia_session_jsep01.onGetUserMediaError : function(e) {
                     tmedia_session_jsep01.onGetUserMediaError(e, c)
@@ -2621,11 +2592,23 @@ tmedia_session_jsep01.prototype.__get_lo = function() {
             }
         }
     }
-    //return this.o_sdp_lo
-    return sdp;
+
+ 
+    if(sdp != null){
+        var z = sdp.sdp.split("RTP/SAVPF")
+        if(z.length == 2){
+           var d = z[0] + "UDP/TLS/RTP/SAVPF" + z[1];// + "UDP/TLS/RTP/SAVPF" + z[2];
+        }else {
+           var d = z[0] + "UDP/TLS/RTP/SAVPF" + z[1] + "UDP/TLS/RTP/SAVPF" + z[2]; 
+        }
+        return tsdp_message.prototype.Parse(d)
+    }else{
+        return this.o_sdp_lo
+    }
+
 };
 tmedia_session_jsep01.prototype.__set_ro = function(c, a) {
-    if (!c) {
+   if (!c) {
         tsk_utils_log_error("Invalid argument");
         return -1
     }
@@ -2635,7 +2618,6 @@ tmedia_session_jsep01.prototype.__set_ro = function(c, a) {
         try {
             var d = this;
             this.decorate_ro(false);
-            console.log("Passsei aqui....");
             if(receivedINVITE == true &&  oneINVITE == false ){
                 var obj = Object();
                 obj.sdp = this.o_sdp_ro;
@@ -2649,24 +2631,24 @@ tmedia_session_jsep01.prototype.__set_ro = function(c, a) {
                  dataCodecs.type = "chat";
                  msgInvt.body.dataCodecs = dataCodecs;*/
                 
-			    var aux = msgInvt.to;
-        	    msgInvt.to = new Array();
+                var aux = msgInvt.to;
+                msgInvt.to = new Array();
                 msgInvt.to.push(aux);
-	            msgInvt.body.peers = new Array();
-        	    msgInvt.body.peers.push(aux);
+                msgInvt.body.peers = new Array();
+                msgInvt.body.peers.push(aux);
                 if(soft==false){
-			handleMessages(msgInvt);
-		}
+            handleMessages(msgInvt);
+        }
             }
             if(receivedOK == true && oneOK == false ){
                 oneOK = true;
-                console.log("callID ",callID);
+
                 msgAcepted = MessageFactory.createAnswerMessage (to,from ,callID,"","","");
                 var obj = new Object();
                 obj.sdp = this.o_sdp_ro;
                 obj.type = "answer";
                 msgAcepted.body.connectionDescription = obj;
-		        var aux = msgAcepted.to;
+                var aux = msgAcepted.to;
                 msgAcepted.to = new Array();
                 msgAcepted.to.push(aux);
                 handleMessages(msgAcepted);
@@ -2719,13 +2701,12 @@ tmedia_session_roap.prototype.__pause = function() {
     return 0
 };
 tmedia_session_roap.prototype.__stop = function() {
-    tsk_utils_log_info("PeerConnection::stop()");
-    /*if (this.o_pc) {
-     this.o_pc.close();
-     this.o_pc = null
-     }
-     this.o_mgr.set_stream_remote(null);
-     this.o_mgr.set_stream_local(null);*/
+    if (this.o_pc) {
+        this.o_pc.close();
+        this.o_pc = null
+    }
+    this.o_mgr.set_stream_remote(null);
+    this.o_mgr.set_stream_local(null);
     return 0
 };
 tmedia_session_roap.prototype.__get_lo = function() {
@@ -2925,9 +2906,7 @@ function tsdp_header_compare_by_rank(b, a) {
     }
     return -1
 }
-if (!window.__b_release_mode) {
-    tsdp_api_add_js_scripts("head", "src/tinySDP/src/headers/tsdp_header_A.js", "src/tinySDP/src/headers/tsdp_header_C.js", "src/tinySDP/src/headers/tsdp_header_M.js", "src/tinySDP/src/headers/tsdp_header_O.js", "src/tinySDP/src/headers/tsdp_header_Str.js", "src/tinySDP/src/headers/tsdp_header_V.js")
-}
+
 tsdp_header_A.prototype = Object.create(tsdp_header.prototype);
 _tsdp_machine_parser_header_A_actions = [0, 1, 0, 1, 1, 1, 2, 2, 0, 2];
 _tsdp_machine_parser_header_A_key_offsets = [0, 0, 1, 3, 18, 19, 35, 35, 38];
@@ -4409,6 +4388,24 @@ tsdp_message.prototype.get_header_by_name = function(a) {
     }
     return null
 };
+tsdp_message.prototype.get_header_a_at = function(d, c) {
+    if (!d || c < 0) {
+        tsk_utils_log_error("Invalid argument");
+        return null
+    }
+    var a = 0;
+    for (var b = 0; b < this.ao_headers.length; ++b) {
+        if (this.ao_headers[b].e_type == tsdp_header_type_e.A && this.ao_headers[b].s_field == d) {
+            if (a++ >= c) {
+                return this.ao_headers[b]
+            }
+        }
+    }
+    return null
+};
+tsdp_message.prototype.get_header_a = function(a) {
+    return this.get_header_a_at(a, 0)
+};
 tsdp_message.prototype.add_media = function(c, b, a) {
     this.add_headers(new tsdp_header_M(c, b, a))
 };
@@ -4470,9 +4467,7 @@ tsdp_message.prototype.toString = function(b) {
     }
     return c
 };
-if (!window.__b_release_mode) {
-    tsdp_api_add_js_scripts("head", "src/tinySDP/src/tsdp_parser_message.js")
-}
+
 _tsdp_machine_message_actions = [0, 1, 0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 1, 13, 1, 14, 1, 15, 1, 16];
 _tsdp_machine_message_key_offsets = [0, 0, 2, 5, 6, 8, 11, 13, 16, 18, 21, 23, 26, 28, 31, 33, 36, 38, 41, 43, 46, 48, 51, 53, 56, 58, 61, 63, 66, 68, 71, 73, 76, 78, 81];
 _tsdp_machine_message_trans_keys = [32, 61, 13, 0, 65535, 10, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 32, 61, 13, 0, 65535, 65, 66, 67, 69, 73, 75, 77, 79, 80, 82, 83, 84, 85, 86, 90, 97, 98, 99, 101, 105, 107, 109, 111, 112, 114, 115, 116, 117, 118, 122, 68, 89, 100, 121, 0];
@@ -6242,7 +6237,7 @@ tsip_stack.prototype.start = function() {
         tsk_utils_log_error("'" + this.network.s_proxy_cscf_host + "' not valid as proxy host");
         return -2
     }
-    //tsk_utils_log_info("SIP stack start: proxy='" + this.network.s_proxy_cscf_host + ":" + this.network.i_proxy_cscf_port + "', realm='" + this.network.o_uri_realm + "', impi='" + this.identity.s_impi + "', impu='" + this.identity.o_uri_impu + "'");
+    tsk_utils_log_info("SIP stack start: proxy='" + this.network.s_proxy_cscf_host + ":" + this.network.i_proxy_cscf_port + "', realm='" + this.network.o_uri_realm + "', impi='" + this.identity.s_impi + "', impu='" + this.identity.o_uri_impu + "'");
     this.network.o_transport = this.o_layer_transport.transport_new(this.network.e_proxy_cscf_type, this.network.s_proxy_cscf_host, this.network.i_proxy_cscf_port, "SIP Transport", __tsip_stack_transport_callback);
     if (!this.network.o_transport) {
         tsk_utils_log_error("Failed to create transport with type= " + this.network.e_proxy_cscf_type);
@@ -6721,7 +6716,7 @@ function tsip_uri(a) {
     this.i_port = 0;
     this.s_user_name = null;
     this.s_password = null;
-    this.s_display_name;
+    this.s_display_name = null;
     this.ao_params = new Array();
     this.toString = function() {
         return tsip_uri_tostring(this, true, true)
@@ -6858,9 +6853,7 @@ function tsip_uri_compare(c, a) {
         return (!c && !a) ? 0 : -1
     }
 }
-if (!window.__b_release_mode) {
-    tsip_api_add_js_scripts("head", "src/tinySIP/src/parsers/tsip_parser_uri.js")
-}
+
 _tsip_machine_parser_uri_actions = [0, 1, 0, 1, 5, 1, 7, 1, 9, 1, 11, 1, 12, 1, 13, 1, 14, 1, 17, 1, 18, 1, 20, 1, 21, 1, 22, 1, 23, 2, 1, 15, 2, 2, 15, 2, 4, 6, 2, 7, 10, 2, 7, 16, 2, 8, 10, 2, 9, 16, 2, 9, 19, 2, 13, 0, 2, 13, 6, 3, 0, 8, 10, 3, 13, 0, 6, 3, 13, 3, 0];
 _tsip_machine_parser_uri_key_offsets = [0, 0, 7, 15, 22, 28, 34, 40, 53, 66, 72, 78, 80, 93, 99, 105, 118, 124, 130, 143, 156, 162, 168, 182, 196, 202, 208, 229, 231, 247, 262, 278, 292, 300, 306, 320, 336, 350, 366, 380, 388, 396, 404, 420, 436, 452, 468, 484, 500, 506, 508, 525, 540, 554, 568, 582, 592, 602, 613, 613, 622, 622, 632, 642, 651, 654, 669, 683, 698, 714, 730, 746, 750, 765, 782, 788, 795, 801, 808, 814, 821, 828, 831, 838, 841, 848, 851, 868, 885, 901, 917, 933, 949, 953, 967, 984, 1001, 1018, 1024, 1031, 1038, 1041, 1044];
 _tsip_machine_parser_uri_trans_keys = [45, 48, 57, 65, 90, 97, 122, 45, 46, 48, 57, 65, 90, 97, 122, 45, 48, 57, 65, 90, 97, 122, 48, 57, 65, 90, 97, 122, 48, 57, 65, 70, 97, 102, 48, 57, 65, 70, 97, 102, 33, 37, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 33, 37, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 48, 57, 65, 70, 97, 102, 48, 57, 65, 70, 97, 102, 0, 65535, 33, 37, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 48, 57, 65, 70, 97, 102, 48, 57, 65, 70, 97, 102, 33, 37, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 48, 57, 65, 70, 97, 102, 48, 57, 65, 70, 97, 102, 33, 37, 59, 61, 63, 95, 126, 36, 57, 65, 90, 97, 122, 33, 37, 58, 61, 64, 95, 126, 36, 59, 63, 90, 97, 122, 48, 57, 65, 70, 97, 102, 48, 57, 65, 70, 97, 102, 33, 37, 61, 64, 95, 126, 36, 46, 48, 57, 65, 90, 97, 122, 33, 37, 61, 64, 95, 126, 36, 46, 48, 57, 65, 90, 97, 122, 48, 57, 65, 70, 97, 102, 48, 57, 65, 70, 97, 102, 58, 59, 83, 84, 91, 115, 116, 0, 47, 48, 57, 60, 64, 65, 90, 92, 96, 97, 122, 123, 65535, 0, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 48, 57, 65, 90, 97, 122, 48, 57, 65, 90, 97, 122, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 48, 57, 65, 90, 97, 122, 45, 46, 48, 57, 65, 90, 97, 122, 45, 46, 48, 57, 65, 90, 97, 122, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 45, 46, 0, 47, 48, 57, 58, 64, 65, 90, 91, 96, 97, 122, 123, 65535, 0, 47, 48, 57, 58, 65535, 48, 57, 33, 37, 44, 92, 94, 96, 126, 0, 35, 36, 58, 59, 64, 65, 122, 123, 65535, 33, 37, 59, 61, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 33, 37, 59, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 0, 47, 48, 57, 58, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 0, 47, 48, 57, 58, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 45, 46, 73, 105, 48, 57, 65, 90, 97, 122, 45, 46, 80, 112, 48, 57, 65, 90, 97, 122, 45, 46, 58, 83, 115, 48, 57, 65, 90, 97, 122, 45, 46, 58, 48, 57, 65, 90, 97, 122, 45, 46, 69, 101, 48, 57, 65, 90, 97, 122, 45, 46, 76, 108, 48, 57, 65, 90, 97, 122, 45, 46, 58, 48, 57, 65, 90, 97, 122, 59, 0, 65535, 33, 37, 59, 61, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 33, 37, 59, 93, 95, 126, 36, 43, 45, 58, 65, 91, 97, 122, 58, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 65535, 58, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 46, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 0, 47, 48, 57, 58, 65535, 46, 0, 47, 48, 57, 58, 65535, 0, 47, 48, 57, 58, 65535, 46, 0, 47, 48, 57, 58, 65535, 0, 47, 48, 57, 58, 65535, 93, 0, 47, 48, 57, 58, 65535, 93, 0, 47, 48, 57, 58, 65535, 93, 0, 65535, 46, 0, 47, 48, 57, 58, 65535, 46, 0, 65535, 46, 0, 47, 48, 57, 58, 65535, 46, 0, 65535, 46, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 46, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 58, 93, 0, 65535, 0, 47, 48, 57, 58, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 46, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 46, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 46, 58, 93, 0, 47, 48, 57, 59, 64, 65, 70, 71, 96, 97, 102, 103, 65535, 0, 47, 48, 57, 58, 65535, 46, 0, 47, 48, 57, 58, 65535, 46, 0, 47, 48, 57, 58, 65535, 46, 0, 65535, 58, 0, 65535, 0];
@@ -8504,13 +8497,11 @@ tsip_dialog_invite.prototype.send_prack = function(g) {
     }
 };
 tsip_dialog_invite.prototype.send_response = function(f, b, e, j) {
-    console.log("1");
     var a;
     var h = -1;
     var d = false;
     if ((a = this.response_new(b, e, f))) {
         if (f.is_invite() || f.is_update()) {
-            console.log("if");
             if (this.require.b_timer) {
                 a.add_headers(new tsip_header_Require("timer"), new tsip_header_Session_Expires(this.stimers.i_timeout, tsk_string_iequals(this.stimers.s_refresher, "uas")))
             } else {
@@ -8518,14 +8509,12 @@ tsip_dialog_invite.prototype.send_response = function(f, b, e, j) {
                     a.add_headers(new tsip_header_Supported("timer"), new tsip_header_Session_Expires(this.stimers.i_timeout, tsk_string_iequals(this.stimers.s_refresher, "uas")))
                 }
             }
-            console.log("2if");
             if (this.stimers.i_minse) {
                 a.add_headers(new tsip_header_Min_SE(this.stimers.i_minse))
             }
             if (b == 422) {
                 a.add_headers(new tsip_header_Dummy("Reason", 'SIP; cause=422; text="Session Interval Too Small"'))
             }
-            console.log("3if");
             if (b == 180 || b == 183) {
                 if (this.require.b_100rel) {
                     if (this.i_rseq == 0) {
@@ -8538,7 +8527,6 @@ tsip_dialog_invite.prototype.send_response = function(f, b, e, j) {
                     this.timer_schedule("invite", "100Rel")
                 }
             }
-            console.log("4if");
             if (this.o_msession_mgr && j) {
                 var c = this.o_msession_mgr.get_lo();
                 d = (c == null);
@@ -8547,12 +8535,8 @@ tsip_dialog_invite.prototype.send_response = function(f, b, e, j) {
                     a.add_content(new String(g), "application/sdp")
                 }
             }
-            console.log("5if");
             a.add_headers(new tsip_header_Dummy("Allow", TSIP_HEADER_ALLOW_DEFAULT))
-            this.response_send(a); // inventado
-            console.log("END");
         } else {
-            console.log("2");
             if (f.is_refer()) {
                 if (this.require.b_norefersub) {
                     a.add_headers(new tsip_header_Require("norefersub"))
@@ -8569,9 +8553,7 @@ tsip_dialog_invite.prototype.send_response = function(f, b, e, j) {
         } else {
             return this.response_send(a)
         }
-        this.response_send(a); // inventado
     }
-
     return h
 };
 tsip_dialog_invite.prototype.send_error = function(c, a, e, b) {
@@ -8591,6 +8573,17 @@ tsip_dialog_invite.prototype.send_bye = function() {
         a = this.request_send(b)
     }
     return a
+};
+tsip_dialog_invite.prototype.send_info = function(a, b) {
+    var d = -1;
+    var c;
+    if ((c = this.request_new("INFO"))) {
+        if (a && b) {
+            c.add_content(new String(a), b)
+        }
+        d = this.request_send(c)
+    }
+    return d
 };
 tsip_dialog_invite.prototype.send_cancel = function() {
     if (this.o_last_oInvite) {
@@ -8788,6 +8781,9 @@ function __tsip_dialog_invite_media_callback(a, f, e) {
         case tmedia_session_events_e.STREAM_REMOTE_REMOVED:
             a.get_session().__set_stream_remote(null);
             a.signal_invite(tsip_event_invite_type_e.M_STREAM_REMOTE_REMOVED, tsip_event_code_e.DIALOG_MEDIA_REMOVED, "Media Removed", null);
+            break;
+        case tmedia_session_events_e.RFC5168_REQUEST_IDR:
+            a.send_info('<?xml version="1.0" encoding="utf-8"?>\r\n <media_control>\r\n   <vc_primitive>\r\n     <to_encoder>\r\n       <picture_fast_update>\r\n       </picture_fast_update>\r\n     </to_encoder>\r\n   </vc_primitive>\r\n </media_control>\r\n', "application/media_control+xml");
             break
     }
 }
@@ -9009,10 +9005,16 @@ function x0000_Any_2_Any_X_oINFO(a) {
     }
 }
 function x0000_Any_2_Any_X_iINFO(a) {
-    var d = a[0];
+    var e = a[0];
     var b = a[1];
-    var c = d.send_response(b, 200, "OK");
-    d.signal_invite(tsip_event_invite_type_e.DIALOG_REQUEST_INCOMING, tsip_event_code_e.DIALOG_REQUEST_INCOMING, "Incoming Request", b);
+    var c = e.send_response(b, 200, "OK");
+    e.signal_invite(tsip_event_invite_type_e.DIALOG_REQUEST_INCOMING, tsip_event_code_e.DIALOG_REQUEST_INCOMING, "Incoming Request", b);
+    if (e.o_msession_mgr && b.has_content()) {
+        var d = b.get_content_as_string();
+        if (!tsk_string_is_null_or_empty(d)) {
+            e.o_msession_mgr.processContent("INFO", b.get_content_type(), d, d.length)
+        }
+    }
     return c
 }
 function x0000_Any_2_Any_X_i401_407_INVITEorUPDATE(a) {
@@ -9120,17 +9122,17 @@ function c0000_Started_2_Outgoing_X_oINVITE(a) {
     var c;
     var d = a[0];
     var b = a[2];
-    //if (!d.o_msession_mgr) {
+    if (!d.o_msession_mgr) {
         d.o_msession_mgr = d.new_msession_mgr(b ? b.media.e_type : tmedia_type_e.AUDIO_VIDEO, d.get_stack().network.s_local_ip, false, true)
-    //}
+    }
     d.b_is_client = true;
     d.b_is_transf = (d.get_session().i_id_parent != tsip_session.prototype.__i_session_id_invalid);
     d.set_action_curr(b);
     d.get_session().media.e_type = b.media.e_type;
-    /*if (b.media.ao_params.length > 0) {
+    if (b.media.ao_params.length > 0) {
         tsk_utils_log_error("Not implemented");
         return -1
-    }*/
+    }
     if (d.get_session().media.timers.i_timeout) {
         d.stimers.i_timeout = d.get_session().media.timers.i_timeout;
         d.stimers.s_refresher = d.get_session().media.timers.s_refresher;
@@ -10107,13 +10109,13 @@ tsip_dialog_layer.prototype.handle_incoming_message = function(a) {
                     }
                     break;
                 case tsip_request_type_e.INFO:
-                    //tsk_utils_log_warn("Not implemented");
+                   // tsk_utils_log_warn("Not implemented");
                     break;
                 case tsip_request_type_e.OPTIONS:
-                    //tsk_utils_log_error("Not implemented");
+                  //  tsk_utils_log_error("Not implemented");
                     break;
                 case tsip_request_type_e.REGISTER:
-                    //tsk_utils_log_error("Not implemented");
+                    tsk_utils_log_error("Not implemented");
                     break;
                 case tsip_request_type_e.INVITE:
                     if ((j = new tsip_session_invite(this.o_stack, tsip_session.prototype.SetInitialMessage(a)))) {
@@ -10462,7 +10464,7 @@ tsip_machine_parser_header_NameAddr_first_final = 125;
 tsip_machine_parser_header_NameAddr_error = 0;
 tsip_machine_parser_header_NameAddr_en_main = 1;
 function tsip_header_NameAddr(b, a, c) {
-    tsip_header.call(this, b); 
+    tsip_header.call(this, b);
     this.s_display_name = a ? a.s_display_name : null;
     this.o_uri = a;
     this.s_tag = c
@@ -15052,7 +15054,7 @@ tsip_transport.prototype.send = function(e, b, d, a) {
         }
     }
     c = b.toString();
-    tsk_utils_log_info("SEND: " + c);
+    //tsk_utils_log_info("SEND: " + c);
     return this.__send(c, c.length)
 };
 function tsip_transport_event(c, a, b, d) {
@@ -15164,7 +15166,7 @@ function __tsip_transport_ws_onclose(a) {
     this.o_transport.signal(tsip_transport_event_type_e.STOPPED, a.reason, null)
 }
 function __tsip_transport_ws_onmessage(a) {
-    tsk_utils_log_info("__tsip_transport_ws_onmessage");
+       tsk_utils_log_info("__tsip_transport_ws_onmessage");
     var b = tsk_ragel_state_create();
     if (typeof (a.data) == "string") {
         tsk_ragel_state_init_str(b, a.data)
@@ -15172,36 +15174,35 @@ function __tsip_transport_ws_onmessage(a) {
         tsk_ragel_state_init_ai(b, a.data)
     }
     var c = tsip_message.prototype.Parse(b, true);
-    console.log(c);
+    //console.log(c);
     if(c.line.request.s_method == "INVITE"){
 
         if(c.o_hdr_From.s_display_name == null){
-            from = c.o_hdr_From.o_uri.s_user_name + "@imsserver.ece.upatras.gr";
-	    // from = "vasco@imsserver.ece.upatras.gr";	
+            from = c.o_hdr_From.o_uri.s_user_name + "@asterisk.wonder";
+        // from = "vasco@imsserver.ece.upatras.gr"; 
         } else{
             from = c.o_hdr_From.s_display_name;
         }
         if(c.o_hdr_To.s_display_name == null){
-            to = c.o_hdr_To.o_uri.s_user_name + "@imsserver.ece.upatras.gr";
+            to = c.o_hdr_To.o_uri.s_user_name + "@asterisk.wonder";
             //to = "Paulo@imsserver.ece.upatras.gr";
         }else{
             to = c.o_hdr_To.s_display_name;
         }
-	var aux = from.split("@");
-	var friend = aux[0].split("_fri");
-	console.log("aux",aux);
-	console.log("passei---",friend);
+    var aux = from.split("@");
+    var friend = aux[0].split("_fri");
+
         if(friend[1] == "end"){
-		soft= true;
-		loadJSfile('http://150.140.184.246:28017/webrtc/users/?filter_messagingAddress=' + from + '&jsonp=returnMs');
-		returnMs = function(data){
-			var d = data.rows[0].rtcIdentity;
-			var twoInvt = MessageFactory.createInvitationMessage(d, to, c.o_hdr_Call_ID.s_value,"","","","","",to );
-			msgInvt.from = twoInvt.from;
-                        handleMessages(msgInvt);
-		}
-	}
-	//console.log("AUI",returnMs);
+        soft= true;
+        loadJSfile('http://150.140.184.246:28017/webrtc/users/?filter_messagingAddress=' + from + '&jsonp=returnMs');
+        returnMs = function(data){
+            var d = data.rows[0].rtcIdentity;
+            var twoInvt = MessageFactory.createInvitationMessage(d, to, c.o_hdr_Call_ID.s_value,"","","","","",to );
+            msgInvt.from = twoInvt.from;
+                 //       handleMessages(msgInvt);
+        }
+    }
+    //console.log("AUI",returnMs);
         
         receivedINVITE = true;
         callID = c.o_hdr_Call_ID.s_value;
@@ -15217,10 +15218,10 @@ function __tsip_transport_ws_onmessage(a) {
         if(c.o_hdr_To.s_display_name == null){
             to = c.o_hdr_To.o_uri.s_user_name + "@" + c.o_hdr_To.o_uri.s_host;
         }else{
-            to = c.o_hdr_To.s_display_name;
+            to = c.o_hdr_To.s_display_name + "@asterisk.wonder";;
         }
                
-	if(from != to){
+    if(from != to){
              receivedOK = true;
         }
     }
@@ -15236,9 +15237,9 @@ function __tsip_transport_ws_onmessage(a) {
         }else{
             to = c.o_hdr_To.s_display_name;
         }
-	if(from != to){
-	     receivedUPDATE = true;
-	}
+    if(from != to){
+         receivedUPDATE = true;
+    }
 
     }
 
@@ -15248,7 +15249,7 @@ function __tsip_transport_ws_onmessage(a) {
         handleMessages(messageBye);
     }
     if (c) {
-        // tsk_utils_log_info("recv=" + c);
+       // tsk_utils_log_info("recv=" + c);
         c.o_socket = this;
         return this.o_transport.get_layer().handle_incoming_message(c)
     } else {
@@ -15256,15 +15257,6 @@ function __tsip_transport_ws_onmessage(a) {
         return -1
     }
 }
-
-loadJSfile = function(url) {
-    var fileref = document.createElement('script');
-    fileref.setAttribute("type", "text/javascript");
-    fileref.setAttribute("src", url);
-    if (typeof fileref != "undefined")
-        document.getElementsByTagName("head")[0].appendChild(fileref);
-};
-
 function __tsip_transport_ws_onerror(a) {
     tsk_utils_log_info("__tsip_transport_ws_onerror");
     this.o_transport.signal(tsip_transport_event_type_e.ERROR, a.reason, null)
@@ -15501,6 +15493,12 @@ SIPml.b_webrtc_supported = false;
 SIPml.setDebugLevel = function(a) {
     tsk_utils_log_set_level(a === "fatal" ? 1 : (a === "error" ? 2 : (a === "warn" ? 3 : 4)))
 };
+SIPml.setWebRtcType = function(a) {
+    if (SIPml.isInitialized()) {
+        throw new Error("ERR_ALREADY_INITIALIZED: Engine already initialized.")
+    }
+    return WebRtc4all_SetType(a)
+};
 SIPml.getWebRtc4AllVersion = function() {
     if (!SIPml.isInitialized()) {
         throw new Error("ERR_NOT_INITIALIZED: Engine not initialized yet. Please call 'SIPml.init()' first")
@@ -15574,30 +15572,22 @@ SIPml.init = function(a, b) {
     if (!SIPml.b_initialized && !SIPml.b_initializing) {
         SIPml.b_initializing = true;
         tsk_utils_init_webrtc();
-        //tsk_utils_log_info("User-Agent=" + (navigator.userAgent || "unknown"));
+        tsk_utils_log_info("User-Agent=" + (navigator.userAgent || "unknown"));
         SIPml.b_have_media_stream = tsk_utils_have_stream();
         SIPml.b_webrtc_supported = tsk_utils_have_webrtc();
         SIPml.b_webrtc4all_supported = tsk_utils_have_webrtc4all();
         SIPml.s_webrtc4all_version = tsk_utils_webrtc4all_get_version();
         SIPml.s_navigator_friendly_name = tsk_utils_get_navigator_friendly_name();
         SIPml.s_system_friendly_name = tsk_utils_get_system_friendly_name();
-        //tsk_utils_log_info("WebSocket supported = " + (SIPml.isWebSocketSupported() ? "yes" : "no"));
+        tsk_utils_log_info("WebSocket supported = " + (SIPml.isWebSocketSupported() ? "yes" : "no"));
         if (tsk_utils_have_webrtc4all()) {
             tsk_utils_log_info("WebRTC type = " + WebRtc4all_GetType() + " version = " + tsk_utils_webrtc4all_get_version());
             if (SIPml.s_webrtc4all_version != "1.35.981") {
                 SIPml.b_webrtc4all_plugin_outdated = true
             }
         }
-        //tsk_utils_log_info("Navigator friendly name = " + SIPml.s_navigator_friendly_name);
-        if (SIPml.s_navigator_friendly_name == "ie") {
-            var e = new RegExp("MSIE ([0-9]{1,}[.0-9]{0,})");
-            if (e.exec(navigator.userAgent) != null) {
-                SIPml.s_navigator_version = RegExp.$1
-            }
-        }
-        //tsk_utils_log_info("OS friendly name = " + SIPml.s_system_friendly_name);
-        //tsk_utils_log_info("Have WebRTC = " + (tsk_utils_have_webrtc() ? "yes" : "false"));
-        //tsk_utils_log_info("Have GUM = " + (tsk_utils_have_stream() ? "yes" : "false"));
+       
+       
         if (!tsk_utils_have_webrtc()) {
             if (SIPml.s_navigator_friendly_name == "chrome") {
                 SIPml.b_navigator_outdated = true;
@@ -15624,7 +15614,7 @@ SIPml.init = function(a, b) {
         if (SIPml.b_webrtc_supported && SIPml.b_have_media_stream) {
             SIPml.b_initialized = true;
             SIPml.b_initializing = false;
-            //tsk_utils_log_info("Engine initialized");
+            tsk_utils_log_info("Engine initialized");
             if (a) {
                 a({})
             }
@@ -16104,12 +16094,12 @@ SIPml.Stack.prototype.setConfiguration = function(c) {
     var b = this.o_stack;
     tsk_utils_log_info("s_websocket_server_url=" + (c.websocket_proxy_url || "(null)"));
     tsk_utils_log_info("s_sip_outboundproxy_url=" + (c.outbound_proxy_url || "(null)"));
-    //tsk_utils_log_info("b_rtcweb_breaker_enabled=" + (f ? "yes" : "no"));
-    //tsk_utils_log_info("b_click2call_enabled=" + (g ? "yes" : "no"));
-    //tsk_utils_log_info("b_early_ims=" + (h ? "yes" : "no"));
-    //tsk_utils_log_info("b_enable_media_stream_cache=" + (d ? "yes" : "no"));
-    //tsk_utils_log_info("o_bandwidth=" + JSON.stringify(a));
-    //tsk_utils_log_info("o_video_size=" + JSON.stringify(e));
+    tsk_utils_log_info("b_rtcweb_breaker_enabled=" + (f ? "yes" : "no"));
+    tsk_utils_log_info("b_click2call_enabled=" + (g ? "yes" : "no"));
+    tsk_utils_log_info("b_early_ims=" + (h ? "yes" : "no"));
+    tsk_utils_log_info("b_enable_media_stream_cache=" + (d ? "yes" : "no"));
+    tsk_utils_log_info("o_bandwidth=" + JSON.stringify(a));
+    tsk_utils_log_info("o_video_size=" + JSON.stringify(e));
     b.set(tsip_stack.prototype.SetPassword(c.password), tsip_stack.prototype.SetDisplayName(c.display_name), tsip_stack.prototype.SetProxyOutBoundUrl(c.outbound_proxy_url), tsip_stack.prototype.SetRTCWebBreakerEnabled(f), tsip_stack.prototype.SetClick2CallEnabled(g), tsip_stack.prototype.SetSecureTransportEnabled(f), tsip_stack.prototype.SetEarlyIMSEnabled(h), tsip_stack.prototype.SetWebsocketServerUrl(c.websocket_proxy_url), tsip_stack.prototype.SetIceServers(c.ice_servers), tsip_stack.prototype.SetMediaStreamCacheEnabled(d), tsip_stack.prototype.SetBandwidth(a), tsip_stack.prototype.SetVideoSize(e));
     if (c.sip_headers) {
         c.sip_headers.forEach(function(j) {
