@@ -281,9 +281,9 @@ function onMessage(message) {
         case MessageType.ACCEPTED:
             $('#modalInviting').modal('hide');
             document.getElementById('call').style.visibility = 'hidden';
-            if(conversation.owner.identity.rtcIdentity == myRtcIdentity){
+            //if(conversation.owner.identity.rtcIdentity == myRtcIdentity){
                 document.getElementById('updateConversation').style.visibility = 'visible';
-            }      
+            //}      
             document.getElementById('hangup').style.visibility = 'visible';
             for(var i=0; i< constraints.length; i++){
                 if(constraints[i].type == 'audioVideo')
