@@ -1,10 +1,10 @@
-// wonder_core.js
-//----------------
+// wonder_core.js 
+//---------------- 
 
 
-// -------------------------------
-// Idp_options.js
-// -------------------------------
+// ------------------------------- 
+// Idp_options.js 
+// ------------------------------- 
 
 // Default IDP options, if nothing is given on application layer
 // points to simple domain-based idp 
@@ -38,9 +38,9 @@ var idp_options  = {
 		path: "/webrtc/users/?jsonp=returnIdentity&filter_rtcIdentity="
 	};
 */
-// -------------------------------
-// Enums.js
-// -------------------------------
+// ------------------------------- 
+// Enums.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -175,9 +175,9 @@ var ResourceStatus = {
         RECORDING               : "recording",
         LIVE                    : "live"
 };
-// -------------------------------
-// adapter.js
-// -------------------------------
+// ------------------------------- 
+// adapter.js 
+// ------------------------------- 
 
 var RTCPeerConnection = null;
 var getUserMedia = null;
@@ -334,9 +334,9 @@ if (navigator.mozGetUserMedia) {
   console.log("Browser does not appear to be WebRTC-capable");
 }
 
-// -------------------------------
-// helpfunctions.js
-// -------------------------------
+// ------------------------------- 
+// helpfunctions.js 
+// ------------------------------- 
 
 /**
 * @ignore
@@ -350,9 +350,9 @@ function guid() {
     return uuid4() + uuid4() + '-' + uuid4() + '-' + uuid4() + '-' + uuid4()
             + '-' + uuid4() + uuid4() + uuid4();
 }
-// -------------------------------
-// Identity.js
-// -------------------------------
+// ------------------------------- 
+// Identity.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -537,9 +537,9 @@ Identity.prototype.loadJSfile = function(url) {
 };
 
 
-// -------------------------------
-// Idp.js
-// -------------------------------
+// ------------------------------- 
+// Idp.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -884,9 +884,9 @@ loadJSfile = function(url) {
  
  The getIdentity is not working yet <- fix it soon */
 
-// -------------------------------
-// Message.js
-// -------------------------------
+// ------------------------------- 
+// Message.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -955,9 +955,9 @@ Message.prototype.newReplyMessage = function(body, previousMessage, type, me) {
     rm.reply_to_uri = me;
     return (rm);
 };
-// -------------------------------
-// MessageFactory.js
-// -------------------------------
+// ------------------------------- 
+// MessageFactory.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1121,9 +1121,9 @@ MessageFactory.createNotAccepted =  function(message) {
 }
 
 
-// -------------------------------
-// MessagingStub.js
-// -------------------------------
+// ------------------------------- 
+// MessagingStub.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1310,7 +1310,7 @@ MessagingStub.prototype.deliverMessage = function(message) {
 	// Filter the listeners to redirect the message
 	var that = this;
 	
-	if (message.type == MessageType.INVITATION || !message.contextId)
+	if (message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.REMOVE_PARTICIPANT)
 	{
 		if(this.listeners[0].length == 1){
 			console.log("Registered an Handler: ", message);
@@ -1336,9 +1336,9 @@ MessagingStub.prototype.deliverMessage = function(message) {
 					
 };
 
-// -------------------------------
-// Codec.js
-// -------------------------------
+// ------------------------------- 
+// Codec.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1514,9 +1514,9 @@ Codec.prototype.saveToDisk= function(fileUrl, fileName) {
 
     (window.URL || window.webkitURL).revokeObjectURL(save.href);
 }
-// -------------------------------
-// DataCodec.js
-// -------------------------------
+// ------------------------------- 
+// DataCodec.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1541,9 +1541,9 @@ function DataMessage (codecId, to, body){
 	this.to = to; //in case empty it sends the message to all clients
 	this.body = body;
 }
-// -------------------------------
-// DataMessage.js
-// -------------------------------
+// ------------------------------- 
+// DataMessage.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1569,9 +1569,9 @@ function DataMessage (codecId, to, from, body){
 	this.body = body;
 	this.from = from;
 }
-// -------------------------------
-// DataBroker.js
-// -------------------------------
+// ------------------------------- 
+// DataBroker.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1707,7 +1707,8 @@ DataBroker.prototype.send = function( msg ){
 	if( msgObject.to == "" || typeof msgObject.to === 'undefined' ){
 		for(var i = 0; i < this.channels.length; i++){
 			console.log("channels--->",this.channels[i].channel);
-			this.channels[i].channel.send(msg);
+			if(this.channels[i].channel.readyState == 'open')
+				this.channels[i].channel.send(msg);
 		}
 			
 	}
@@ -1723,13 +1724,13 @@ DataBroker.prototype.send = function( msg ){
 	console.log(this.channels);
 	console.log(this.codecs);
 
-}// wonder_conversation.js
-//-----------------------
+}// wonder_conversation.js 
+//----------------------- 
 
 
-// -------------------------------
-// Resource.js
-// -------------------------------
+// ------------------------------- 
+// Resource.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -2042,9 +2043,9 @@ function overconstrained(self){
 function ended(that){
 
 }*/
-// -------------------------------
-// Participant.js
-// -------------------------------
+// ------------------------------- 
+// Participant.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -2138,12 +2139,12 @@ function Participant() {
                 }
                 break;
             case ParticipantStatus.FAILED:
-                console.log("transition is not allowed");
-                return false;
+                thisParticipant.status = status;
+                return true;
                 break;
             case ParticipantStatus.MISSED:
                 console.log("transition is not allowed");
-                return false;
+                return true;
                 break;
             case ParticipantStatus.PARTICIPATED:
                     thisParticipant.status = status;
@@ -2679,6 +2680,7 @@ Participant.prototype.onMessage = function(message) {
                     answerBody.to = "";
                     this.me.sendMessage(answerBody, MessageType.ACCEPTED, mediaConstraints);
                 }
+                setStatus(ParticipantStatus.PARTICIPATING);
             }else{
                 if(message.body.connected.length != 0){
                     for(var i = 0; i < message.body.connected.length; i++){
@@ -2714,6 +2716,8 @@ Participant.prototype.onMessage = function(message) {
             }
             break;
         case MessageType.NOT_ACCEPTED:
+            //setStatus(ParticipantStatus.FAILED);
+            this.status = ParticipantStatus.FAILED;
             this.leave(false);
             console.log("Participant received NOT_ACCEPTED");
             this.msgHandler(message);
@@ -2774,7 +2778,8 @@ Participant.prototype.onMessage = function(message) {
             this.msgHandler(message);
             break;
         case MessageType.BYE:
-            this.leave(false);
+            setStatus(ParticipantStatus.PARTICIPATED);
+            this.leave(true);
             console.log("Participant received BYE");
             this.msgHandler(message);
             break;
@@ -2791,9 +2796,6 @@ Participant.prototype.onMessage = function(message) {
             //this.msgHandler(message);
             break;
         case MessageType.RESOURCE_REMOVED:
-            this.msgHandler(message);
-            break;
-        case MessageType.REMOVE_PARTICIPANT:
             this.msgHandler(message);
             break;
         case MessageType.SHARE_RESOURCE:
@@ -2962,7 +2964,7 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
             if(messageBody.lastCandidate){
                 if(errorCallback)
                     errorCallback("Missing data for connectivity candidate");
-				// SD: bugfix, we also need context.id etc. in this message
+                // SD: bugfix, we also need context.id etc. in this message
                 message = MessageFactory.createCandidateMessage( this.me.identity,this.identity,this.contextId,"",messageBody.id,messageBody.connectionDescription,true);
                 thisParticipant.identity.messagingStub.sendMessage(message);
                 return;
@@ -2976,8 +2978,6 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     else thisParticipant.identity.messagingStub.sendMessage(message);
             break;
         case MessageType.BYE:
-            
-            
             message = new Message(this.me.identity,this.identity,"",MessageType.BYE,this.contextId); 
              if (!thisParticipant.identity.messagingStub){
                         errorCallback("Messaging Stub not well initialized");
@@ -2986,20 +2986,6 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     else 
                     {
                      thisParticipant.identity.messagingStub.sendMessage(message);
-                     setStatus(ParticipantStatus.NOT_PARTICIPATING); // TODO: CHECK IF ITS THE CORRECT STATE
-                    }
-            console.log("Call terminated");
-            break;
-        case MessageType.REMOVE_PARTICIPANT:
-            
-            
-            message = new Message(this.me.identity,this.identity,"",MessageType.REMOVE_PARTICIPANT,this.contextId); 
-             if (!thisParticipant.identity.messagingStub){
-                        errorCallback("Messaging Stub not well initialized");
-                        return;
-                    }
-                    else 
-                    {thisParticipant.identity.messagingStub.sendMessage(message);
                      setStatus(ParticipantStatus.NOT_PARTICIPATING); // TODO: CHECK IF ITS THE CORRECT STATE
                     }
             console.log("Call terminated");
@@ -3087,17 +3073,22 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
 Participant.prototype.leave = function(sendMessage) {
     setStatus(ParticipantStatus.PARTICIPATED);
     this.identity.messagingStub.removeListener("",this.identity.rtcIdentity,"");
-    if(this == this.me){
+
+    if(this.identity.rtcIdentity == this.me.identity.rtcIdentity){
         this.RTCPeerConnection.getLocalStreams().forEach(function(element, index, array){
             array[index].stop();
         });
+        if(sendMessage==true){
+            this.sendMessage("",MessageType.BYE,"","",function(){},function(){});  
+            //this.identity.onLastMessagingListener();
+        } 
     }
     else{
-        console.log("PARTIR ADEUS")
         if(sendMessage==true) this.sendMessage("",MessageType.BYE,"","",function(){},function(){});
         this.dataBroker.removeDataChannel(this.identity);
         if(this.RTCPeerConnection.signalingState && this.RTCPeerConnection.signalingState != "closed")
             this.RTCPeerConnection.close();
+            
     }
 }
 
@@ -3412,6 +3403,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
 
             var messageBody = new Object();
             messageBody.newConstraints=resourceConstraints;
+            messageBody.from = message.from;
             this.sendMessage(messageBody, MessageType.UPDATED, constraints, callback, errorCallback);
         }
         callback();
@@ -3476,9 +3468,9 @@ Participant.prototype.setDataBroker = function( databroker ) {
     this.dataBroker = databroker;
 }
 
-// -------------------------------
-// Conversation.js
-// -------------------------------
+// ------------------------------- 
+// Conversation.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -3952,11 +3944,11 @@ Conversation.prototype.close = function() {
         this.participants.forEach(function(element,index,array){
             element.status=ParticipantStatus.PARTICIPATED;
             element.identity.messagingStub.removeListener("",element.identity.rtcIdentity,"");
-            element.sendMessage("",MessageType.REMOVE_PARTICIPANT,"","",function(){},function(){});
+            element.sendMessage("",MessageType.BYE,"","",function(){},function(){});
             if(element.RTCPeerConnection.signalingState && element.RTCPeerConnection.signalingState != "closed")
                 element.RTCPeerConnection.close();
         });
-        this.myParticipant.leave(true);
+        this.myParticipant.leave(false);
         this.setStatus(ConversationStatus.CLOSED);
         return true;
     }
@@ -3971,10 +3963,10 @@ Conversation.prototype.close = function() {
  */
 Conversation.prototype.bye = function() {
     this.participants.forEach(function(element,index,array){
-                                element.leave(true);   
+                                element.leave(true);
                                 delete array[index];
     });
-    this.myParticipant.leave(false);
+    this.myParticipant.leave(true);
     this.setStatus(ConversationStatus.CLOSED);
 };
 
@@ -4034,12 +4026,23 @@ Conversation.prototype.onMessage = function(message) {
         case MessageType.REDIRECT:
             break;
         case MessageType.BYE:
-            this.participants.forEach(function(element, index, array){
-                if(element.status==ParticipantStatus.PARTICIPATED){
-                    array.splice(index, 1);
-                }
-            });
-            if(this.participants.length==0) this.bye();
+            if(this.owner.identity.rtcIdentity == message.from.rtcIdentity){
+                this.participants.forEach(function (element, index, array) {
+                    element.leave(false);
+                    delete array[index];
+                });
+                this.myParticipant.leave(false);
+                this.setStatus(ConversationStatus.CLOSED);
+            }
+            else {
+                this.participants.forEach(function(element, index, array){
+                    if(element.status==ParticipantStatus.PARTICIPATED){
+                        array.splice(index, 1);
+                    }
+                });
+                if(this.participants.length==0) this.bye();
+            }
+            
             break;
         case MessageType.OFFER_ROLE: // set new moderator of the conversatoin
             break;
@@ -4051,15 +4054,7 @@ Conversation.prototype.onMessage = function(message) {
             break;
         case MessageType.RESOURCE_REMOVED:
             break;
-        case MessageType.REMOVE_PARTICIPANT:
-            // Remove everyone without sending BYE ("silently")
-            this.participants.forEach(function (element, index, array) {
-                element.leave(false);
-                delete array[index];
-            });
-            this.myParticipant.leave(false);
-            this.setStatus(ConversationStatus.CLOSED);
-            break;
+
         case MessageType.SHARE_RESOURCE:
             break;
         default:
@@ -4183,6 +4178,8 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
  
 Conversation.reject = function(message){
     console.log("reject....-----",message)
-    message.from.resolve(function(stub){stub.sendMessage(MessageFactory.createNotAccepted(message))});
-
-}
+    if(message.to instanceof Array)
+        message.to[0].resolve(function(stub){stub.sendMessage(MessageFactory.createNotAccepted(message))});
+    else
+        message.to.resolve(function(stub){stub.sendMessage(MessageFactory.createNotAccepted(message))});
+}

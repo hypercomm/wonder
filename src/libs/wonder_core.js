@@ -1,10 +1,10 @@
-// wonder_core.js
-//----------------
+// wonder_core.js 
+//---------------- 
 
 
-// -------------------------------
-// Idp_options.js
-// -------------------------------
+// ------------------------------- 
+// Idp_options.js 
+// ------------------------------- 
 
 // Default IDP options, if nothing is given on application layer
 // points to simple domain-based idp 
@@ -38,9 +38,9 @@ var idp_options  = {
 		path: "/webrtc/users/?jsonp=returnIdentity&filter_rtcIdentity="
 	};
 */
-// -------------------------------
-// Enums.js
-// -------------------------------
+// ------------------------------- 
+// Enums.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -175,9 +175,9 @@ var ResourceStatus = {
         RECORDING               : "recording",
         LIVE                    : "live"
 };
-// -------------------------------
-// adapter.js
-// -------------------------------
+// ------------------------------- 
+// adapter.js 
+// ------------------------------- 
 
 var RTCPeerConnection = null;
 var getUserMedia = null;
@@ -334,9 +334,9 @@ if (navigator.mozGetUserMedia) {
   console.log("Browser does not appear to be WebRTC-capable");
 }
 
-// -------------------------------
-// helpfunctions.js
-// -------------------------------
+// ------------------------------- 
+// helpfunctions.js 
+// ------------------------------- 
 
 /**
 * @ignore
@@ -350,9 +350,9 @@ function guid() {
     return uuid4() + uuid4() + '-' + uuid4() + '-' + uuid4() + '-' + uuid4()
             + '-' + uuid4() + uuid4() + uuid4();
 }
-// -------------------------------
-// Identity.js
-// -------------------------------
+// ------------------------------- 
+// Identity.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -537,9 +537,9 @@ Identity.prototype.loadJSfile = function(url) {
 };
 
 
-// -------------------------------
-// Idp.js
-// -------------------------------
+// ------------------------------- 
+// Idp.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -884,9 +884,9 @@ loadJSfile = function(url) {
  
  The getIdentity is not working yet <- fix it soon */
 
-// -------------------------------
-// Message.js
-// -------------------------------
+// ------------------------------- 
+// Message.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -955,9 +955,9 @@ Message.prototype.newReplyMessage = function(body, previousMessage, type, me) {
     rm.reply_to_uri = me;
     return (rm);
 };
-// -------------------------------
-// MessageFactory.js
-// -------------------------------
+// ------------------------------- 
+// MessageFactory.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1121,9 +1121,9 @@ MessageFactory.createNotAccepted =  function(message) {
 }
 
 
-// -------------------------------
-// MessagingStub.js
-// -------------------------------
+// ------------------------------- 
+// MessagingStub.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1310,7 +1310,7 @@ MessagingStub.prototype.deliverMessage = function(message) {
 	// Filter the listeners to redirect the message
 	var that = this;
 	
-	if (message.type == MessageType.INVITATION || !message.contextId)
+	if (message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.REMOVE_PARTICIPANT)
 	{
 		if(this.listeners[0].length == 1){
 			console.log("Registered an Handler: ", message);
@@ -1336,9 +1336,9 @@ MessagingStub.prototype.deliverMessage = function(message) {
 					
 };
 
-// -------------------------------
-// Codec.js
-// -------------------------------
+// ------------------------------- 
+// Codec.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1514,9 +1514,9 @@ Codec.prototype.saveToDisk= function(fileUrl, fileName) {
 
     (window.URL || window.webkitURL).revokeObjectURL(save.href);
 }
-// -------------------------------
-// DataCodec.js
-// -------------------------------
+// ------------------------------- 
+// DataCodec.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1541,9 +1541,9 @@ function DataMessage (codecId, to, body){
 	this.to = to; //in case empty it sends the message to all clients
 	this.body = body;
 }
-// -------------------------------
-// DataMessage.js
-// -------------------------------
+// ------------------------------- 
+// DataMessage.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1569,9 +1569,9 @@ function DataMessage (codecId, to, from, body){
 	this.body = body;
 	this.from = from;
 }
-// -------------------------------
-// DataBroker.js
-// -------------------------------
+// ------------------------------- 
+// DataBroker.js 
+// ------------------------------- 
 
 /**
  * @fileOverview WebRTC Framework to facilitate the development of Applications that seamless interoperate between each other
@@ -1707,7 +1707,8 @@ DataBroker.prototype.send = function( msg ){
 	if( msgObject.to == "" || typeof msgObject.to === 'undefined' ){
 		for(var i = 0; i < this.channels.length; i++){
 			console.log("channels--->",this.channels[i].channel);
-			this.channels[i].channel.send(msg);
+			if(this.channels[i].channel.readyState == 'open')
+				this.channels[i].channel.send(msg);
 		}
 			
 	}
@@ -1723,4 +1724,4 @@ DataBroker.prototype.send = function( msg ){
 	console.log(this.channels);
 	console.log(this.codecs);
 
-}
+}
