@@ -81,6 +81,26 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
     this.myParticipant = new Participant();
     this.myParticipant.identity = myIdentity;
     thisConversation = this;
+
+    addParticipantAnonymous = function (that, identity, constraints, invitationBody){
+
+            var localParticipant = that.myParticipant;
+            var participant = new Participant();
+            toIdentity = identity;
+               
+            participant.hosting = that.myParticipant.hosting;
+            console.log("Created remote participant: ", participant);
+
+            participant.setDataBroker(that.dataBroker);
+            participant.createRemotePeer(toIdentity, localParticipant, that.id, constraints, that.onRTCEvt.bind(that), that.onMessage.bind(that), that.iceServers);
+            
+            if(that.hosting && that.hosting == that.myParticipant.identity.rtcIdentity){
+                participant.identity.messagingStub = that.myParticipant.identity.messagingStub;
+            }
+            
+
+            that.addParticipant(participant, invitationBody, constraints);
+    }
 }
 
 
@@ -117,36 +137,13 @@ Conversation.prototype.open = function (rtcIdentity, resourceConstraints, invita
         var toIdentity;
         //add a verification if rtcIdentity is already an identity or if is a rtcIdentity only
         //
-        
+        console.log("SEND INVITATION TO: ", rtcIdentity);
+
         localIDP.createIdentities(rtcIdentity, function (identity) {
-            console.log("rtcIdentity: ", identity);
             if (identity instanceof Array) {
                 identity.forEach(function (element, index, array) {
-                    var participant = new Participant();
-                    console.log("owner: ", this.owner);
-                    toIdentity = element
-                       
-                    participant.hosting = that.myParticipant.hosting;
-
-                    console.log("Calling to Identity: ", toIdentity);
-
-                    console.log("Created remote participant: ", participant);
-                    /*var constraints = new Array();
-                    that.resources.every(function (element, index, array) {
-                        constraints.push(element.constraint);
-                    });
-                    that.myParticipant.resources.every(function (element, index, array) {
-                        constraints.push(element.constraint);
-                    });*/
-
-                    participant.setDataBroker(that.dataBroker);
-                    participant.createRemotePeer(toIdentity, localParticipant, that.id, resourceConstraints, that.onRTCEvt.bind(that), that.onMessage.bind(that), that.iceServers);
-                    
-                    if(that.hosting && that.hosting == that.myParticipant.identity.rtcIdentity){
-                        participant.identity.messagingStub = that.myParticipant.identity.messagingStub;
-                    }
-                    
-                    that.addParticipant(participant, invitationBody, resourceConstraints);
+                   
+                    addParticipantAnonymous(that, element, resourceConstraints, invitationBody);
                     
                 });
             }
@@ -172,11 +169,7 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
 
     // Swap direction because we are receiving
     var direction = "in_out";
-   /* if(recvInvitation.body.constraints[0].direction=="in") direction="out";
-    if(recvInvitation.body.constraints[0].direction=="out") direction="in";
-    recvInvitation.body.constraints[0].direction=direction;
-     onsole.log("CONVERSATION..> acceptInvitation: ", recvInvitation);*/
-    console.log("cenas\n\n\n",recvInvitation)
+
     if (!this.setStatus(ConversationStatus.OPENED)) {
         // TODO: ERROR, Status cant be changed
         return;
@@ -189,9 +182,8 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
     var id2;
     var fileID = new Object();
     var id3;
-    var iteration;
-    var i;
-    for(i=0;i<recvInvitation.body.constraints.length;i++){
+    
+    for(var i=0;i<recvInvitation.body.constraints.length;i++){
         if(recvInvitation.body.constraints[i].type == "file"){
             id3 = recvInvitation.body.constraints[i].id;
             fileID.index = i;
@@ -208,49 +200,44 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
         }
     }
     this.myParticipant.createMyself(this.myParticipant.identity, recvInvitation.body.constraints, this.onRTCEvt.bind(this), this.onMessage.bind(this), function () {
-        //TODO: THINK OF MULTIPARTY CASE, YOU RECEIVE A CALL BUT THE INVITE IS FOR MANY PEOPLE
+        
         that.id = recvInvitation.contextId;
-        //this.owner.contextId=this.id;
+
         that.myParticipant.contextId=that.id;
 
-        //var participant = new Participant();
-        //var localParticipant = this.owner;
-        console.log("CONVERSATION > SS1: ", that.myParticipant.hosting);
         if(that.myParticipant.hosting == null){
             that.myParticipant.hosting = recvInvitation.from;
-            console.log("CONVERSATION > SS: ", that.myParticipant.hosting);
-            console.log("CONVERSATION > SS: ", recvInvitation.from);
         }
 
 
         var localParticipant = that.myParticipant;
-        //console.log("CONSTRAINTS AFTER!!!!:" + recvInvitation.body.constraints[0].constraints.id);
-
 
         var localIDP = localParticipant.identity.idp;
         var toIdentity;
 
         var constraints = recvInvitation.body.constraints; // <dirtyFix>
 
-        console.log("recvInvitation.body.constraints: ", recvInvitation.body.constraints);
-        for(iteration=0;iteration<constraints.length;iteration++){
+        console.log("ACCEPTED INVITATION FROM: ", recvInvitation.body);
+        console.log("CONSTRAINTS RECEIVED: ", recvInvitation.body.constraints);
+
+        for(var iteration=0;iteration<constraints.length;iteration++){
             if(constraints[iteration].type==ResourceType.CHAT || constraints[iteration].type==ResourceType.FILE){
                 //beginof: create a codec with the data received
+                
                 var codec=new Codec(constraints[iteration].constraints.type,constraints[iteration].constraints.CodecLibUrl);
-                console.log("constraints.type==ResourceType.CHAT: ", that.myParticipant.resources);
+
                 that.myParticipant.resources[iteration].codec.id=constraints[iteration].constraints.id;
                 var resource = new Resource(constraints[iteration], codec);
                 resource.codec.setDataBroker(that.dataBroker);
+                
                 //endof: create a codec with the data received
             }
         }
-        //constraints = new Array(constraints); // </dirtyFix>
 
         //Create an array to all peers that I want to connect
         //recvInvitation.body.peers[i] is defined when the clients are selected in the application
         var peers = new Array();
         peers.push(recvInvitation.from.rtcIdentity);
-        console.log("recv: ", recvInvitation);
         for(var i = 0; i < recvInvitation.body.peers.length; i++){
             if(recvInvitation.body.peers[i] !== that.myParticipant.identity.rtcIdentity)
                 peers.push(recvInvitation.body.peers[i]);
@@ -260,21 +247,18 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
         localIDP.createIdentities(peers, function(identity){
 
             if(identity instanceof Array){
-                console.log("Identity: ", identity);
 
                 identity.forEach(function(element, index, array){
                         var participant = new Participant();
 
                         toIdentity = element;
                         that.hosting = recvInvitation.body.hosting;
-                        console.log("THIS.HOSTING", recvInvitation.body.hosting);
+                        
                         if(typeof that.owner === 'undefined'){
                             that.owner = participant;
                         }
                         participant.hosting = that.owner;
                         if(that.hosting == recvInvitation.from.rtcIdentity){
-                            console.log("THIS.HOSTING", that.hosting);
-                            console.log("THIS.OWNER", that.owner);
                             toIdentity.messagingStub = recvInvitation.from.messagingStub;
                         }
                         else{
@@ -298,7 +282,6 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
                         if(recvInvitation.from.rtcIdentity === toIdentity.rtcIdentity){
                             //Only do the RTCPeerConnection to the identity that is inviting
                             //for the other identities only creates the participants
-                            console.log("ENTREI > acceptInvitation: ", recvInvitation);
                             var description = new RTCSessionDescription(recvInvitation.body.connectionDescription);
                             participant.RTCPeerConnection.setRemoteDescription(description, onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                         }
@@ -372,8 +355,7 @@ Conversation.prototype.setStatus = function(status) {
     // DONE: implement the state machine checks here !!!
     // TODO: PAUSED AND STOPPED are not in the Enums !!!
     // TODO: Change the UML so returns true or false if the state change is not allowed.
-    // (@Vasco) the previous state machine verifications it was not working in a correct way 
-    // Changed verify below
+
     console.log("In setStatus");
     switch (this.status) {
         case ConversationStatus.CREATED:
@@ -503,10 +485,32 @@ Conversation.prototype.bye = function() {
  * @param {String} [invitation] the invitation to be attached to the {@link Message} body
  */
 Conversation.prototype.addParticipant = function(participant, invitationBody, constraints, callback, callbackError) {
-    this.participants.push(participant);    
-    participant.connectStub(function() { // @pchainho: why do we need this?
-        participant.sendMessage(invitationBody, MessageType.INVITATION, constraints, callback, callbackError)
-    });
+    
+    console.log("ADD PARTICIPANT: ", participant);
+    
+    var that = this;
+    
+    if(participant instanceof Participant){
+        this.participants.push(participant);    
+        participant.connectStub(function() { // @pchainho: why do we need this?
+            participant.sendMessage(invitationBody, MessageType.INVITATION, constraints, callback, callbackError)
+        });
+    }
+    else{
+         if(invitationBody.hosting)
+            that.hosting = invitationBody.hosting;
+
+        var localParticipant = that.myParticipant;
+        var localIDP = localParticipant.identity.idp;
+        
+        localIDP.createIdentity(participant, function (identity) {
+            addParticipantAnonymous(that, identity, constraints, invitationBody);
+        });
+
+
+    }
+
+   
 };
 
 /*** Returns the participants of the conversation as an Array.
@@ -526,12 +530,9 @@ Conversation.prototype.onMessage = function(message) {
     switch (message.type) {
 
         case MessageType.ACCEPTED:
-            console.log("MESSAGEACCEPTEDCONVERSATION: ", message);
             // TODO: change state of the conversation and forward to app-layer
             break;
         case MessageType.CONNECTIVITY_CANDIDATE:
-
-            // put candidate to PC
             break;
         case MessageType.NOT_ACCEPTED:
             this.participants.forEach(function(element, index, array){
@@ -573,14 +574,9 @@ Conversation.prototype.onMessage = function(message) {
         case MessageType.OFFER_ROLE: // set new moderator of the conversatoin
             break;
         case MessageType.INVITATION:
-            // IF RECEIVED, SOMETHING IS WRONG
-           /*INVITATION
-                Participant should only receive invitations in multiparty conversation. In this case it will be automatically accepted, the peerconnection is set and the Accepted message sent.*/
-
             break;
         case MessageType.RESOURCE_REMOVED:
             break;
-
         case MessageType.SHARE_RESOURCE:
             break;
         default:
@@ -678,7 +674,6 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
     var internalSuccessCallback = function(){
             if(count<thisConversation.participants.length){ 
                 count++;
-                console.log("Adding the resource for the participant number: " + count);
                 thisConversation.participants[count-1].addResource(resourceConstraints,"",internalSuccessCallback, onErrorCallback);
             }
             else{
@@ -692,7 +687,6 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
     else{
         // Swap direction because we are receiving
         var direction = "in_out";
-   
         thisConversation.myParticipant.addResource(resourceConstraints,"",function() {
             thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback);
         }, onErrorCallback);
@@ -703,7 +697,7 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
  };
  
 Conversation.reject = function(message){
-    console.log("reject....-----",message)
+    console.log("REJECT CALL: ",message)
     if(message.to instanceof Array)
         message.to[0].resolve(function(stub){stub.sendMessage(MessageFactory.createNotAccepted(message))});
     else
