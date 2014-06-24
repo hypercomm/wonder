@@ -49,9 +49,9 @@ function Idp(rtcIdentity, options) {
     this.returnIdentity;
 	// initialize with a new MessagingStub delegator/container
 	this.myOwnMessagingStub = new MessagingStub();
-	console.log("created idp with domain:port: " + this.domain + ":" + this.port);
+	/*console.log("created idp with domain:port: " + this.domain + ":" + this.port);
     console.log("Idp rtcIdentity: ", rtcIdentity);
-    console.log("options: ", rtcIdentity);
+    console.log("options: ", rtcIdentity);*/
     
 	// SD: 02.06.2014, fix: only do this, if the given rtcIdentity is instance of Identity to make apps work again
 	// Who needs this piece of code here?
@@ -67,7 +67,7 @@ function Idp(rtcIdentity, options) {
             "messagingAddress": rtcIdentity.messagingAddress,
             "identity": rtcIdentity
         });
-        console.log("Idp.this: ", this);
+        //console.log("Idp.this: ", this);
         rtcIdentity.idp = this;
     }
 }
@@ -78,7 +78,7 @@ function Idp(rtcIdentity, options) {
  * the params can also be given here and will then be used for initial creation of the object.
  */
 Idp.getInstance = function(rtcIdentity, options) {
-    console.log("Idp.getInstance --> instance: ", this.instance);
+    //console.log("Idp.getInstance --> instance: ", this.instance);
     if(!this.instance){
         this.instance = new Idp(rtcIdentity, options);
     }
@@ -116,7 +116,7 @@ Idp.prototype.getResolvedStub = function(downloadUri) {
  * than the given array.
  */
 Idp.prototype.createIdentities = function(rtcIdentities, onSuccessCallback, onErrorCallback) {
-	console.log("Idp > createIdentities.");
+	console.log("Idp > createIdentities: ", rtcIdentities);
 	var results = [];
 	var ids = [];
 	var count = 0;
@@ -161,7 +161,7 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 		//see if the identity exists
 		if (data.rows.length > 0) {
             
-            console.log("data.rows[0]: ", data.rows[0]);
+            //console.log("data.rows[0]: ", data.rows[0]);
             
 			var localStubURL = data.rows[0].localMsgStubURL;
 			var generalStubURL = data.rows[0].messagingStubURL;
@@ -290,7 +290,6 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 
     if(this.protocol == "ws"){
         this.wsQuery(rtcIdentity, this.returnIdentity);
-        console.log("PROTOCOL RTCIDENTITY: ", rtcIdentity);
     }else{
         // do a lookup in the IDP-DB
 //        loadJSfile('http://' + this.domain + ':' + this.port + '/webrtc/users/?filter_rtcIdentity=' + rtcIdentity +'&jsonp=returnIdentity');
