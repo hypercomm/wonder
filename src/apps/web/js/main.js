@@ -257,10 +257,11 @@ function hangup(){
         console.log("div.firstChild: ", div.firstChild);
         div.removeChild(div.firstChild);
     }
-    if(conversation.owner.identity.rtcIdentity == myRtcIdentity)
+    if(conversation != null && conversation.owner.identity.rtcIdentity == myRtcIdentity)
         conversation.close();
-    else
+    else if(conversation != null){
         conversation.bye();
+    }
     conversation=null;
     var_init();
 }
@@ -364,9 +365,9 @@ function onMessage(message) {
                 localVideo.src = '';
                 conversation = null;
                 var_init();
-                removeVideoTag(message.from.rtcIdentity);
-                
             }
+            
+            removeVideoTag(message.from.rtcIdentity);
         
             $('#modalInvite').modal({backdrop: 'static'}).modal('hide');
             
@@ -625,7 +626,7 @@ function addVideoTag(stream,participant){
 function removeVideoTag(participant){
 
     var div = document.getElementById(participant);
-    if(div.parentNode!=null)
+    if(div!=null && div.parentNode!=null)
         div.parentNode.removeChild(div)
     var divRemote = document.getElementById('remote');
     console.log("divdivRemote.firstChild: ", divRemote.childElementCount);
