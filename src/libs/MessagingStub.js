@@ -93,6 +93,7 @@ MessagingStub.prototype.sendMessage = function(message) {
  * @param {string} [contextId] - The ID of the context. (required only if the listener to remove included it)
  */
 MessagingStub.prototype.removeListener = function (listener, rtcIdentity, contextId) {
+	//verify if is the last listener if it is remove it
     var index = 0;
     if (!listener && !contextId) {
         while (this.listeners[1].indexOf(rtcIdentity, index) != -1) {
@@ -160,51 +161,23 @@ MessagingStub.prototype.getListeners = function() {
 */
 MessagingStub.prototype.sendOtherMessages = function(message){
 
-	var filtered_listeners = [];
-	var idx = this.listeners[1].indexOf(message.from.rtcIdentity);
-	while (idx != -1) {
-		if (this.listeners[2][idx] == message.contextId)
-			filtered_listeners.push(this.listeners[0][idx]);
-		idx = this.listeners.indexOf(message.from.rtcIdentity, idx + 1);
-	}
-	filtered_listeners.every(function(element, index, array) {
-		element(message);
-	});
-	if (filtered_listeners.length == 0) {
-		this.buffer.push(message);
-	}
-}
+	var idxParticipant = this.listeners[1].indexOf(message.from.rtcIdentity);
+	var idxConversation = this.listeners[2].indexOf(message.contextId);
 
-/**
-* @ignore
-*/
-MessagingStub.prototype.deliverMessage = function(message) {
-	console.log("S->C: ", message);
-	// Filter the listeners to redirect the message
-	var that = this;
-	
-	if (message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.BYE)
-	{
-		if(this.listeners[0].length == 1){
-			console.log("Registered an Handler: ", message);
-			var filtered_listeners = [];
-			var idx = this.listeners[2].indexOf(undefined);
-			while (idx != -1) {
-				filtered_listeners.push(this.listeners[0][idx]);
-				idx = this.listeners.indexOf("", idx + 1);
+	console.log("idxParticipant ", idxParticipant);
+
+	if(idxParticipant == -1){
+		if(idxConversation == -1){
+			if(message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.BYE){
+				this.listeners[0][0](message);
+			} else {
+				this.buffer.push(message);
 			}
-			filtered_listeners.every(function(element, index, array) {
-				element(message);
-			});
-
-		}else{
-			this.sendOtherMessages(message);
+		} else {
+			this.listeners[0][idxConversation](message);
 		}
-		//regist an handler with contextId
+	} else {
+		this.listeners[0][idxParticipant](message);
 	}
-	else
-	{
-		this.sendOtherMessages(message);
-	}
-					
-};
+	
+}

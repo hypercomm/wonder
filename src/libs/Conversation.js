@@ -27,7 +27,6 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
      * @type Participant[]
      */
     this.participants = [];
-    
      /**
      * Unique Conversation identification.
      * @private
@@ -124,6 +123,8 @@ Conversation.prototype.open = function (rtcIdentity, resourceConstraints, invita
         that.owner = that.myParticipant;
         that.owner.contextId = that.id;
 
+        that.myParticipant.identity.messagingStub.addListener(that.onMessage.bind(that), undefined, that.id);
+
         that.myParticipant.contextId = that.id;
         if (that.myParticipant.hosting == null)
             that.myParticipant.hosting = that.myParticipant.identity;
@@ -170,10 +171,10 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
     // Swap direction because we are receiving
     var direction = "in_out";
 
-    if (!this.setStatus(ConversationStatus.OPENED)) {
+    /*if (!this.setStatus(ConversationStatus.OPENED)) {
         // TODO: ERROR, Status cant be changed
         return;
-    }
+    }*/
 
     var that = this;
     var chatID = new Object();
@@ -202,8 +203,9 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
     this.myParticipant.createMyself(this.myParticipant.identity, recvInvitation.body.constraints, this.onRTCEvt.bind(this), this.onMessage.bind(this), function () {
         
         that.id = recvInvitation.contextId;
-
         that.myParticipant.contextId=that.id;
+
+        that.myParticipant.identity.messagingStub.addListener(that.onMessage.bind(that), undefined, that.id);
 
         if(that.myParticipant.hosting == null){
             that.myParticipant.hosting = recvInvitation.from;
@@ -507,7 +509,6 @@ Conversation.prototype.addParticipant = function(participant, invitationBody, co
             addParticipantAnonymous(that, identity, constraints, invitationBody);
         });
 
-
     }
 
    
@@ -531,8 +532,10 @@ Conversation.prototype.onMessage = function(message) {
 
         case MessageType.ACCEPTED:
             // TODO: change state of the conversation and forward to app-layer
+            this.msgHandler(message);
             break;
         case MessageType.CONNECTIVITY_CANDIDATE:
+            console.log("MessageType.CONNECTIVITY_CANDIDATE: ", message);
             break;
         case MessageType.NOT_ACCEPTED:
             this.participants.forEach(function(element, index, array){
@@ -541,6 +544,7 @@ Conversation.prototype.onMessage = function(message) {
                 }
             });
             if(this.participants.length==0) this.bye();
+            this.msgHandler(message);
             break;
         case MessageType.CANCEL:
             break;
@@ -569,21 +573,53 @@ Conversation.prototype.onMessage = function(message) {
                 });
                 if(this.participants.length==0) this.bye();
             }
-            
+            this.msgHandler(message);
             break;
         case MessageType.OFFER_ROLE: // set new moderator of the conversatoin
             break;
         case MessageType.INVITATION:
+            var that = this;
+            console.log("Conversation MessageType.INVITATION -> ", message);
+            //function(participant, invitationBody, constraints, callback, callbackError) {
+            var localParticipant = this.myParticipant;
+            var localIDP = localParticipant.identity.idp
+            localIDP.createIdentity(message.from.rtcIdentity, function(identity){
+                var participant = new Participant();
+                toIdentity = identity;
+                        
+                if(typeof that.owner === 'undefined'){
+                    that.owner = participant;
+                }
+                participant.hosting = that.owner;
+                /*if(that.hosting == recvInvitation.from.rtcIdentity){
+                    toIdentity.messagingStub = recvInvitation.from.messagingStub;
+                }
+                else{
+                    toIdentity.messagingStub = that.myParticipant.identity.messagingStub;
+                }*/
+
+                participant.setDataBroker(that.dataBroker);
+                participant.createRemotePeer(toIdentity, localParticipant, that.id, constraints,that.onRTCEvt.bind(that), that.onMessage.bind(that), that.iceServers);
+                that.participants.push(participant);
+                participant.connectStub(function(){
+                    participant.onMessage(message);    
+                });
+                
+            },
+            function(error){
+                console.log(error);
+            });
             break;
         case MessageType.RESOURCE_REMOVED:
             break;
         case MessageType.SHARE_RESOURCE:
+            this.msgHandler(message);
             break;
         default:
             // forward to application level
             break;
     }
-    this.msgHandler(message);
+    
 };
 
 /** @ignore */
@@ -674,7 +710,7 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
     var internalSuccessCallback = function(){
             if(count<thisConversation.participants.length){ 
                 count++;
-                thisConversation.participants[count-1].addResource(resourceConstraints,"",internalSuccessCallback, onErrorCallback);
+                thisConversation.participants[count-1].addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
             }
             else{
                 onSuccessCallback();
@@ -682,12 +718,12 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
 
     }
     
-            thisConversation.myParticipant.addResource(resourceConstraints,"",internalSuccessCallback, onErrorCallback);
+            thisConversation.myParticipant.addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
     }
     else{
         // Swap direction because we are receiving
         var direction = "in_out";
-        thisConversation.myParticipant.addResource(resourceConstraints,"",function() {
+        thisConversation.myParticipant.addResource(resourceConstraints,message,function() {
             thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback);
         }, onErrorCallback);
 

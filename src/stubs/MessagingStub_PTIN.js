@@ -173,7 +173,15 @@ MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, cal
 	};
 	
 	this.handleMessages = function(full_message) {
-		console.log("full_message: ", full_message);
+		if(full_message.status == "ok"){
+			full_message.message.forEach(function(element, array, index){
+				if(element.to[0] == null){ 
+            		console.log("ELEMENT: ", element);
+                	that.handleMessages(element);
+            	}
+            });
+		}else{
+			console.log("full_message: ", full_message);
         if(full_message.type == 'message')
             var message = full_message.body;
         else 
@@ -198,11 +206,13 @@ MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, cal
 				Idp.getInstance().createIdentity(message.to[0], function(identityArr) {
 					message.to = identityArr;
 					// Filter the listeners to redirect the message
-					that.baseStub.deliverMessage(message);
+					that.baseStub.sendOtherMessages(message);
 				});
 			}
 
 		});
+		}
+		
 	}
 }
 
@@ -237,16 +247,21 @@ MessagingStub_PTIN.prototype.connected = function(ownRtcIdentity, contextId){
     message.contextId = contextId;
     var that = this;
     //message.to = ;
+    console.log("-->MessagingStub_PTIN.prototype.connected<--");
     this.eventbus.send("ptin.conversationmanager", message , function(reply){
-        console.log("REPLY: ", reply);
+        
         reply.message.forEach(function(element, array, index){
             console.log("element.to.rtcIdentity: ", element.to[0]);
             console.log("ownRtcIdentity: ", ownRtcIdentity);
-            if(element.to[0] == ownRtcIdentity)
+            if(element.to[0] == ownRtcIdentity && type == "connected"){
+            	that.handleMessages(element);
+            }
+            if(element.to[0] == null){
+            	console.log("ELEMENT: ", element);
                 that.handleMessages(element);
-            if(element.to[0] == null)
-                that.handleMessages(element);
+            }
         });
+        console.log("-->MessagingStub_PTIN.prototype.connected<--");
     });
     
 }
