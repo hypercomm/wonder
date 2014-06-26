@@ -721,8 +721,6 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
             thisConversation.myParticipant.addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
     }
     else{
-        // Swap direction because we are receiving
-        var direction = "in_out";
         thisConversation.myParticipant.addResource(resourceConstraints,message,function() {
             thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback);
         }, onErrorCallback);

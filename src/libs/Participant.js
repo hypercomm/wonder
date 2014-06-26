@@ -161,7 +161,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
     try {
         // Create an RTCPeerConnection via the polyfill (adapter.js).
         var pc = new RTCPeerConnection({'iceServers': new Array()});
-        this.RTCPeerConnnection = pc;
+        this.RTCPeerConnection = pc;
     }
     catch (e) {
         console.log('Failed to create PeerConnection, exception: ' + e.message);
@@ -187,7 +187,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
     var getMedia = function(numbResource,recursiveCallback){
         if(resourceConstraints.length > numbResource){
 
-            if (doGetUserMedia === true && resourceConstraints[numbResource].direction!="in" && (resourceConstraints[numbResource].type == "audioVideo" || resourceConstraints[numbResource].type == "audioMic" || resourceConstraints[numbResource].type == "screen")) {
+            if (doGetUserMedia === true && resourceConstraints[numbResource].direction!="in" && (resourceConstraints[numbResource].type != "chat" && resourceConstraints[numbResource].type != "file")) {
                 var thisParticipant = that;
                 flag = true;
                 // TODO: Merge the media constraints so there is only 1 getUserMedia call (or maybe 2 if screensharing)
@@ -213,7 +213,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
                 }, errorCallback);
                // return;
             }
-            if (doDataChannel === true && resourceConstraints[numbResource].direction!="in" &&  (resourceConstraints[numbResource].type != "audioVideo" || resourceConstraints[numbResource].type == "audioMic"  || resourceConstraints[numbResource].type == "screen") ) {
+             if (doDataChannel === true && resourceConstraints[numbResource].direction!="in" &&  (resourceConstraints[numbResource].type == "chat" || resourceConstraints[numbResource].type == "file" )) {
                 // Loop so all the codecs are created and initialized.
                 var numb = numbResource;
                 var sucess = callback;
@@ -361,7 +361,7 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
                 resourceData.connections.push(pc);
             }
 
-            if(media && constraints[ite].direction!="in" && (constraints[ite].type =="audioVideo" || constraints[ite].type =="audioMic" || constraints[ite].type =="screen")){
+            if(media && constraints[ite].direction!="in" && (constraints[ite].type !="chat" && constraints[ite].type !="file")){
                 var resourceMedia = that.me.getResources(constraints[ite])[0];
                 var stream = that.me.RTCPeerConnection.getStreamById(resourceMedia.constraint.constraints.id);
                 pc.addStream(stream);
@@ -369,14 +369,15 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
             }
 
             if (constraints[ite].direction != "out") {
-                if (media === true) {
-                    var resource = new Resource(resourceConstraints);
+                if (constraints[ite].type !="chat" && constraints[ite].type !="file") {
+                    var resource = new Resource(constraints[ite]);
                     resource.owner = that.identity;
                     resource.connections.push(pc);
                     thisParticipant.resources.push(resource);
                 }
-                if (data === true) {
-                    var resource = new Resource(resourceConstraints);
+
+                if(constraints[ite].type =="chat" || constraints[ite].type =="file") {
+                    var resource = new Resource(constraints[ite]);
                     
                     resource.owner = that.identity;
                     resource.connections.push(pc);
@@ -429,7 +430,7 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
                 
                 var pc = new RTCPeerConnection(iceServers, mediaConstraints);
                 //thisParticipant.RTCPeerConnection = pc;
-                console.log('Created RTCPeerConnnection with: ' + JSON.stringify(iceServers) + '\';\n' + '  constraints: \'' + JSON.stringify(mediaConstraints) + '\'.');
+                console.log('Created RTCPeerConnection with: ' + JSON.stringify(iceServers) + '\';\n' + '  constraints: \'' + JSON.stringify(mediaConstraints) + '\'.');
 
             }
             catch (e) {
@@ -608,7 +609,7 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
 
-                this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                //this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
 
                 if(this.me.identity.rtcIdentity == this.hosting.rtcIdentity){
                     //see if the hosting is equal to this.me
@@ -682,7 +683,7 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 
-                this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                //this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
                 if(this.me.identity.rtcIdentity == this.hosting.rtcIdentity){
                     //see if the hosting is equal to this.me
                     //send a accepted message with no SDP
@@ -807,6 +808,14 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     }else{
                         aux.id = constraints[iteration].id;
                     }
+                    // swap direction invitation        
+                    if(constraints[iteration].direction == 'out'){      
+                        constraints[iteration].direction = 'in';        
+                    }else{      
+                        if(constraints[iteration].direction == 'in'){       
+                            constraints[iteration].direction = 'out';       
+                        }       
+                    } 
                     aux.type = constraints[iteration].type;
                     aux.direction =  constraints[iteration].direction;
                     constraintsAux.push(aux);
@@ -934,6 +943,16 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
             break;
         case MessageType.UPDATE:
             console.log("Sending UPDATE Message: ", message);
+            
+            // swap direction       
+            if(constraints.direction == 'out'){         
+                constraints.direction = 'in';       
+            }else{      
+                if(constraints.direction == 'in'){      
+                    constraints.direction = 'out';      
+                }       
+            } 
+
             if (!messageBody)
             {
                 message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraints);
@@ -1211,15 +1230,19 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
         }
         callback();
         } else {
+            if(message.body){       
+                   resourceConstraints = message.body.newConstraints[0];       
+            } 
+            
             if (resourceConstraints.direction != "out") {
-                if (doGetUserMedia === true) {
+                if (resourceConstraints.type == 'audioVideo' || resourceConstraints.type == 'screen') { 
                     var resource = new Resource(resourceConstraints);
                     resource.id = resource.constraint.constraints.id;
                     resource.owner = this.identity;
-                    resource.connections.push(pc);
+                    resource.connections.push(thisParticipant.RTCPeerConnection);
                     thisParticipant.resources.push(resource);
                 }
-                if (doDataChannel === true) {
+                if (resourceConstraints.type =='file' || resourceConstraints.type =='chat') {
                     var resource = new Resource(resourceConstraints);
                 
                     resource.owner = this.identity;
@@ -1278,7 +1301,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                         thisParticipant.dataBroker.onDataChannelEvt();
                     }
 
-                    thisParticipant.me.RTCPeerConnnection.ondatachannel = function (evt) {
+                    thisParticipant.me.RTCPeerConnection.ondatachannel = function (evt) {
                         channel = evt.channel;
                     };
                 
