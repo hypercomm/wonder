@@ -364,8 +364,10 @@ function onMessage(message) {
                 localVideo.src = '';
                 conversation = null;
                 var_init();
+                removeVideoTag(message.from.rtcIdentity);
             }
-            removeVideoTag(message.from.rtcIdentity);
+        
+            $('#modalInvite').modal({backdrop: 'static'}).modal('hide');
             
             break;
         case MessageType.OFFER_ROLE: // set new moderator of the conversatoin

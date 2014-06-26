@@ -183,7 +183,7 @@ MessagingStub.prototype.deliverMessage = function(message) {
 	// Filter the listeners to redirect the message
 	var that = this;
 	
-	if (message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.REMOVE_PARTICIPANT)
+	if (message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.BYE)
 	{
 		if(this.listeners[0].length == 1){
 			console.log("Registered an Handler: ", message);
