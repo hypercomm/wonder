@@ -10,7 +10,7 @@ Check the [Project Site] (http://hypercomm.github.io/wonder/) for more informati
 
 #### Aknowledgments
 
-The research leading to these results has received funding from the European Union's Seventh Framework Programme (FP7/2007-2013) under grant agreement n° 287581 - OpenLab. http://www.ict-openlab.eu/home.html
+The research leading to WONDER results was done in a partnership between [Portugal Telecom Inovação e Sistemas](http://www.ptinovacao.pt/en/) and [Telekom Innovation Laboratories (T-Labs)](http://www.laboratories.telekom.com/public/english/pages/default.aspx) and has received funding from the European Union's Seventh Framework Programme (FP7/2007-2013) under grant agreement n° 287581 - OpenLab. http://www.ict-openlab.eu/home.html
 
 
 #### Disclaimer
