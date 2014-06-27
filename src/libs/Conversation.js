@@ -169,7 +169,14 @@ Conversation.prototype.open = function (rtcIdentity, resourceConstraints, invita
 Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, callback, errorCallback) {
 
     // Swap direction because we are receiving
-    var direction = "in_out";
+    for(iteration=0;iteration<recvInvitation.body.constraints.length;iteration++){
+        if(recvInvitation.body.constraints[iteration].direction == "in"){
+            recvInvitation.body.constraints[iteration].direction = "out";
+        }
+        if(recvInvitation.body.constraints[iteration].direction == "out"){
+            recvInvitation.body.constraints[iteration].direction = "in";
+        }
+    }
 
     /*if (!this.setStatus(ConversationStatus.OPENED)) {
         // TODO: ERROR, Status cant be changed

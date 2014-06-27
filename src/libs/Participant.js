@@ -609,7 +609,9 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
 
-                //this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                if(this.resources.length != 0 && mediaConstraints.length != 0){
+                    //this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                }
 
                 if(this.me.identity.rtcIdentity == this.hosting.rtcIdentity){
                     //see if the hosting is equal to this.me
@@ -683,7 +685,9 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 
-                //this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                if(this.resources.length != 0 && mediaConstraints.length != 0){
+                    //this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                }
                 if(this.me.identity.rtcIdentity == this.hosting.rtcIdentity){
                     //see if the hosting is equal to this.me
                     //send a accepted message with no SDP
@@ -802,23 +806,25 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
             var iteration;
 
             for(iteration=0;iteration<constraints.length;iteration++){
-                    var aux = new Object()
-                    if(constraints[iteration].constraints){
-                        aux.id = constraints[iteration].constraints.id;
-                    }else{
-                        aux.id = constraints[iteration].id;
+                var aux = new Object()
+                if(constraints[iteration].constraints){
+                    aux.id = constraints[iteration].constraints.id;
+                }else{
+                    aux.id = constraints[iteration].id;
+                }
+
+                // swap direction invitation        
+                if(this.me.identity.rtcIdentity != this.hosting.rtcIdentity) {
+                    if(constraints[iteration].direction == 'in_out'){
+                        aux.type = constraints[iteration].type;
+                        aux.direction =  constraints[iteration].direction;
+                        constraintsAux.push(aux);
                     }
-                    // swap direction invitation        
-                    if(constraints[iteration].direction == 'out'){      
-                        constraints[iteration].direction = 'in';        
-                    }else{      
-                        if(constraints[iteration].direction == 'in'){       
-                            constraints[iteration].direction = 'out';       
-                        }       
-                    } 
+                }else{
                     aux.type = constraints[iteration].type;
                     aux.direction =  constraints[iteration].direction;
                     constraintsAux.push(aux);
+                } 
             }
             if (!messageBody){
                 message = MessageFactory.createInvitationMessage(this.me.identity, this.identity, this.contextId, constraintsAux);
