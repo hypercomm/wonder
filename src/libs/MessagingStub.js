@@ -177,6 +177,7 @@ MessagingStub.prototype.sendOtherMessages = function(message){
 			this.listeners[0][idxConversation](message);
 		}
 	} else {
+		console.log("BOIIII",message)
 		this.listeners[0][idxParticipant](message);
 	}
 	

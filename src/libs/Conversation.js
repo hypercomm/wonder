@@ -511,7 +511,7 @@ Conversation.prototype.addParticipant = function(participant, invitationBody, co
 
         var localParticipant = that.myParticipant;
         var localIDP = localParticipant.identity.idp;
-        
+        invitationBody.peers = that.owner.connectedIdentities;
         localIDP.createIdentity(participant, function (identity) {
             addParticipantAnonymous(that, identity, constraints, invitationBody);
         });
@@ -558,8 +558,10 @@ Conversation.prototype.onMessage = function(message) {
         case MessageType.ADD_RESOURCE:
             break;
         case MessageType.UPDATE:
+            this.msgHandler(message);
             break;
         case MessageType.UPDATED:
+            this.msgHandler(message);
             break;
         case MessageType.REDIRECT:
             break;
@@ -728,6 +730,8 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
             thisConversation.myParticipant.addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
     }
     else{
+        // Swap direction because we are receiving
+ 
         thisConversation.myParticipant.addResource(resourceConstraints,message,function() {
             thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback);
         }, onErrorCallback);
