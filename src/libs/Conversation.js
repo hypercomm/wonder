@@ -83,7 +83,8 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
 
     addParticipantAnonymous = function (that, identity, constraints, invitationBody){
 
-            var localParticipant = that.myParticipant;
+            console.log("addParticipantAnonymous: ". identity);
+
             var participant = new Participant();
             toIdentity = identity;
                
@@ -91,7 +92,7 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
             console.log("Created remote participant: ", participant);
 
             participant.setDataBroker(that.dataBroker);
-            participant.createRemotePeer(toIdentity, localParticipant, that.id, constraints, that.onRTCEvt.bind(that), that.onMessage.bind(that), that.iceServers);
+            participant.createRemotePeer(toIdentity, that.myParticipant, that.id, constraints, that.onRTCEvt.bind(that), that.onMessage.bind(that), that.iceServers);
             
             if(that.hosting && that.hosting == that.myParticipant.identity.rtcIdentity){
                 participant.identity.messagingStub = that.myParticipant.identity.messagingStub;
@@ -99,8 +100,72 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
             
 
             that.addParticipant(participant, invitationBody, constraints);
-    }
+    };
+
+
+
+    //function to open a conversation, used in the conversation.open and in the conversation.acceptRequest
+    
+    openaConversation = function(that, rtcIdentity, hosting, resourceConstraints, invitationBody, callback, errorCallback){
+
+        that.myParticipant.createMyself(that.myParticipant.identity, resourceConstraints, that.onRTCEvt.bind(that), that.onMessage.bind(that), function () {
+
+            if(that.id == null)
+                that.id = "context-" + guid();
+            that.owner = that.myParticipant;
+            that.owner.contextId = that.id;
+
+            that.myParticipant.identity.messagingStub.addListener(that.onMessage.bind(that), undefined, that.id);
+
+            that.myParticipant.contextId = that.id;
+            if (that.myParticipant.hosting == null)
+                that.myParticipant.hosting = that.myParticipant.identity;
+            
+            //define hosting
+            if(hosting){
+                that.hosting = hosting;
+                invitationBody.hosting = hosting;
+            }
+                
+            var localIDP = that.myParticipant.identity.idp;
+            //add a verification if rtcIdentity is already an identity or if is a rtcIdentity only
+            //
+            console.log("SEND INVITATION TO: ", rtcIdentity);
+
+            localIDP.createIdentities(rtcIdentity, function (identity) {
+                if (identity instanceof Array) {
+                    identity.forEach(function (element, index, array) {
+                        console.log("ELEMENTTT: ", element);
+                        console.log("ELEMENTTT: ", that.myParticipant.identity.rtcIdentity);
+                        addParticipantAnonymous(that, element, resourceConstraints, invitationBody);
+                            
+                        
+                    });
+                }
+            });
+
+
+        }, errorCallback);
+
+    };
+
+
+
 }
+
+
+/**
+ * A Conversation is opened for invited participants. 
+ * Creates the remote participant, resolves and gets the stub, 
+ * creates the peer connection, connects to the stub and sends invitation
+ * 
+ * @param {string[]} rtcIdentity list of users to be invited
+ * @param {string} [invitation] body to be attached to INVITATION {@link MESSAGE}
+ * @@callback callback to handle responses triggered by this operation
+ */
+Conversation.prototype.open = function (rtcIdentity, hosting, resourceConstraints, invitationBody, callback, errorCallback) {
+    openaConversation(this, rtcIdentity, hosting, resourceConstraints, invitationBody, callback, errorCallback);
+};
 
 
 
@@ -113,49 +178,12 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
  * @param {string} [invitation] body to be attached to INVITATION {@link MESSAGE}
  * @@callback callback to handle responses triggered by this operation
  */
-Conversation.prototype.open = function (rtcIdentity, resourceConstraints, invitationBody, callback, errorCallback) {
-
-    var that = this;
-
-    this.myParticipant.createMyself(this.myParticipant.identity, resourceConstraints, this.onRTCEvt.bind(this), this.onMessage.bind(this), function () {
-
-        that.id = "context-" + guid();
-        that.owner = that.myParticipant;
-        that.owner.contextId = that.id;
-
-        that.myParticipant.identity.messagingStub.addListener(that.onMessage.bind(that), undefined, that.id);
-
-        that.myParticipant.contextId = that.id;
-        if (that.myParticipant.hosting == null)
-            that.myParticipant.hosting = that.myParticipant.identity;
-        
-        //define hosting
-        if(invitationBody.hosting)
-            that.hosting = invitationBody.hosting;
-
-        var localParticipant = that.myParticipant;
-        var localIDP = localParticipant.identity.idp;
-        var toIdentity;
-        //add a verification if rtcIdentity is already an identity or if is a rtcIdentity only
-        //
-        console.log("SEND INVITATION TO: ", rtcIdentity);
-
-        localIDP.createIdentities(rtcIdentity, function (identity) {
-            if (identity instanceof Array) {
-                identity.forEach(function (element, index, array) {
-                   
-                    addParticipantAnonymous(that, element, resourceConstraints, invitationBody);
-                    
-                });
-            }
-        });
-
-
-
-
-
-    }, errorCallback);
+Conversation.prototype.acceptRequest = function (request, callback, errorCallback) {
+    //this.id = request.contextId;
+    openaConversation(this, request.body.peers, request.body.hosting, request.body.resourceConstraints, request.body, callback, errorCallback);
 };
+
+
 
 /**
  * Opens a conversation by accepting an incoming invitation.
@@ -246,7 +274,7 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
         //Create an array to all peers that I want to connect
         //recvInvitation.body.peers[i] is defined when the clients are selected in the application
         var peers = new Array();
-        peers.push(recvInvitation.from.rtcIdentity);
+        peers.unshift(recvInvitation.from.rtcIdentity);
         for(var i = 0; i < recvInvitation.body.peers.length; i++){
             if(recvInvitation.body.peers[i] !== that.myParticipant.identity.rtcIdentity)
                 peers.push(recvInvitation.body.peers[i]);
@@ -264,7 +292,9 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
                         that.hosting = recvInvitation.body.hosting;
                         
                         if(typeof that.owner === 'undefined'){
+                            console.log("define owner: ", that.owner)
                             that.owner = participant;
+                            console.log("define owner: ", that.owner)
                         }
                         participant.hosting = that.owner;
                         if(that.hosting == recvInvitation.from.rtcIdentity){
@@ -288,6 +318,10 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
 
                         participant.createRemotePeer(toIdentity, localParticipant, that.id, constraints,that.onRTCEvt.bind(that), that.onMessage.bind(that), that.iceServers);
                         that.participants.push(participant);
+
+                        console.log("recvInvitation.from.rtcIdentity ", recvInvitation.from.rtcIdentity);
+                        console.log("toIdentity.rtcIdentity ", toIdentity.rtcIdentity);//debugger
+
                         if(recvInvitation.from.rtcIdentity === toIdentity.rtcIdentity){
                             //Only do the RTCPeerConnection to the identity that is inviting
                             //for the other identities only creates the participants
@@ -568,7 +602,7 @@ Conversation.prototype.onMessage = function(message) {
         case MessageType.BYE:
             if(this.owner.identity.rtcIdentity == message.from.rtcIdentity){
                 this.participants.forEach(function (element, index, array) {
-                    element.leave(false);
+                    element.leave(true);
                     delete array[index];
                 });
                 this.myParticipant.leave(false);
@@ -747,4 +781,19 @@ Conversation.reject = function(message){
         message.to[0].resolve(function(stub){stub.sendMessage(MessageFactory.createNotAccepted(message))});
     else
         message.to.resolve(function(stub){stub.sendMessage(MessageFactory.createNotAccepted(message))});
+}
+
+Conversation.prototype.removeParticipant = function(rtcIdentity){
+    var that = this;
+    console.log("IDENTITY: ", rtcIdentity);
+     Idp.getInstance().createIdentity(rtcIdentity, function(identity) {
+        console.log("getParticipant: ", that.getParticipant(identity));
+        var id = identity;
+        that.getParticipant(identity).sendMessage("", MessageType.BYE, "", function(){ 
+                            
+        }, function(error){
+            console.log("Error: ", error);
+        });    
+     });
+    
 }

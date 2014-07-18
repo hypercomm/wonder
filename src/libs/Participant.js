@@ -865,8 +865,8 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                         if (callback)
                             callback();
 
-                    }, function(error){errorCallback(error)});
-                }, function(error){errorCallback(error)}, sdpConstraints);
+                    }, function(error){console.log("errorCallback(error)", error); errorCallback(error)});
+                }, function(error){errorCallback(error)/*console.log("errorCallback(error)", error);*/}, sdpConstraints);
 
             break;
         case MessageType.ACCEPTED:
@@ -1054,8 +1054,6 @@ Participant.prototype.leave = function(sendMessage) {
         this.dataBroker.removeDataChannel(this.identity);
         if(this.RTCPeerConnection.signalingState && this.RTCPeerConnection.signalingState != "closed")
             this.RTCPeerConnection.close();
-        
-        this.identity.messagingStub.removeImpl();
     }
 }
 
@@ -1092,6 +1090,8 @@ Participant.prototype.setConversation = function(conversation) {
  * @param {errorCallback} errorCallback -  Callback function fired when an error happens.
  *
  */
+
+ 
 Participant.prototype.addResource = function (resourceConstraints, message, callback, errorCallback) {
     
     var i;
