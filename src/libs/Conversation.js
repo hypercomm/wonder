@@ -745,6 +745,14 @@ Conversation.prototype.getParticipant = function(identity) {
  */
 Conversation.prototype.addResource = function(resourceConstraints, message, onSuccessCallback, onErrorCallback) {
 
+    //swap direction
+    if(resourceConstraints[0].direction == 'out'){         
+        resourceConstraints[0].direction = 'in';       
+    }else{      
+        if(resourceConstraints[0].direction == 'in'){      
+            resourceConstraints[0].direction = 'out';      
+        }       
+    } 
     //see what's in the resource (resourceConstraints)
     var thisConversation = this;
     // If it comes with a message, means we add a resource from an incoming petition to the corresponding participant.

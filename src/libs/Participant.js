@@ -717,8 +717,10 @@ Participant.prototype.onMessage = function(message) {
                         }
                     }
                     if(!exist){
+                        if(mediaConstraints.direction == "in_out"){
                         //if not send a message to the all of candidates
-                        that.sendMessage("", MessageType.UPDATE, mediaConstraints);
+                            that.sendMessage("", MessageType.UPDATE, mediaConstraints);
+                        }
                     }
                 }
             } 
@@ -801,7 +803,7 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
     console.log(this.resources)
     console.log(constraints)
     var i;
-   /* for(i = 0;i<constraints.length;i++){
+    /*for(i = 0;i<constraints.length;i++){
         if(constraints[i].type==ResourceType.CHAT || constraints[i].type==ResourceType.FILE)
         {
             var codec = new Codec(constraints[i].type, constraints[i].CodecLibUrl);
@@ -950,21 +952,22 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
             console.log("Call terminated");
             break;
         case MessageType.UPDATE:
-            console.log("UPDATE");
-            // swap direction       
-            if(constraints.direction == 'out'){         
-                constraints.direction = 'in';       
-            }else{      
-                if(constraints.direction == 'in'){      
-                    constraints.direction = 'out';      
-                }       
-            } 
+            console.log("UPDATE----",constraints);
             console.log("MESSAGE: ", message);
+            var constraintsAux =new Array();
+            
+            var aux = new Object();
+            aux.id = constraints.constraints.id;
+            aux.type = constraints.type;
+            aux.direction =  constraints.direction;
+            constraintsAux.push(aux);
+        
+            console.log("MESSAGE----: ", constraintsAux);
             if (!messageBody)
             {
-                message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraints);
+                message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
             }else{
-                message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, messageBody.newConstraints);
+                message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
             }   
             console.log(message);
 
@@ -992,12 +995,19 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     thisParticipant.identity.messagingStub.sendMessage(message);
 
             }else{
+                var constraintsAux =new Array();
+            
+                var aux = new Object();
+                aux.id = constraints.constraints.id;
+                aux.type = constraints.type;
+                aux.direction =  constraints.direction;
+                constraintsAux.push(aux);
                 if (!messageBody)
                 {
                     
-                    message = MessageFactory.createUpdatedMessage(this.me.identity, this.identity, this.contextId, messageBody.newConstraints);
+                    message = MessageFactory.createUpdatedMessage(this.me.identity, this.identity, this.contextId, constraintsAux);
                 }else{ 
-                    message = MessageFactory.createUpdatedMessage(this.me.identity,this.identity,this.contextId, messageBody.newConstraints,messageBody.hosting);
+                    message = MessageFactory.createUpdatedMessage(this.me.identity,this.identity,this.contextId, constraintsAux,messageBody.hosting);
                 }
                     console.log(message);
 
@@ -1099,16 +1109,16 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
     var idMedia;
     var dataChannel = false;
     var idChannel;
-
     var thisParticipant = this;
     for(i=0;i<this.resources.length;i++){
         if(this.resources[i].constraint.type =="audioVideo" || this.resources[i].constraint.type =="screen"){
             getMedia = true;
             idMedia = i;
         }
-        if(this.resources[i].constraint.type =="chat" || this.resources[i].constraint.type =="file"){
-            
-            dataChannel = true;
+        if(this.resources[i].constraint[0] != null && this.resources[i].constraint[0] != undefined) {
+            if(this.resources[i].constraint[0].type =="chat" || this.resources[i].constraint[0].type =="file" ){    
+                dataChannel = true;
+            }
         }
     }
 
@@ -1310,7 +1320,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             //wiuth the resources types see what do we want to have
             //if chat -> codec for chat | if filesharing -> codec for filesharing
             // create data channel and setup chat        
-            if (data && constraints.direction != "in") {
+            if ((data && constraints.direction != "in") && dataChannel == false) {
                 //if(thisParticipant.dataBroker.channels.length <= 1){
                     hasDataChannel = true;
                     channel = thisParticipant.RTCPeerConnection.createDataChannel("dataChannel"); // TODO: CREATE DATACHANNEL ONLY IF THERE IS NOT DATARESOURCE YET.
@@ -1332,6 +1342,12 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                     channel = evt.channel;
                 };
                 
+            }
+            if(dataChannel){
+                var resourceData = this.me.getResources(constraints)[0];
+
+                resourceData.connections.push(thisParticipant.RTCPeerConnection);
+                thisParticipant.dataBroker.onDataChannelEvt();
             }
             if (media && constraints.direction != "in") {
                 var resourceMedia = this.me.getResources(constraints);
