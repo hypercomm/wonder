@@ -29,9 +29,8 @@ function Participant() {
     this.hosting;                               // Hosting participant of the conversation this participant belongs to.
     this.connectedIdentities = new Array();     // For multiparty, array of Identities of the connected peers.
     this.dataBroker;                            // DataBroker for WebRTC DataChannel.
-    this.streamGetMedia = null;
-    this.hasDataChannel = false;
-    this.updatesIdentities = new Array();       // For update, multy peers.
+    this.updatedIdentities = new Array();       // For update, multy peers.
+    this.updater;
     /*********************************
      *        PRIVATE METHODS        *
      * TODO: try to have them accessible from other Wonder classes eg Conversation and MessagingSub but not visible from the App */
@@ -340,7 +339,6 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
 
                     //thisParticipant.setDataBroker(constraints.constraints.dataBroker);
                     thisParticipant.dataBroker.addDataChannel(channel, thisParticipant.identity);
-                    hasDataChannel = true;
                     channel.onopen = function () {
                         thisParticipant.dataBroker.onDataChannelEvt();
                         //thisParticipant.onRTCEvt("onResourceParticipantAddedEvt", resourceData);
@@ -686,30 +684,30 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 console.log("Remote Description set: ", description);
-                this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
-                if(this.me.identity.rtcIdentity == this.hosting.rtcIdentity){
+                this.getResources(mediaConstraints[0]).constraint=mediaConstraints;
+                if(this.me.identity.rtcIdentity == this.me.updater){
                     //see if the hosting is equal to this.me
                     //send a accepted message with no SDP
-                    var updatesIdentit = new Array(); 
-                    updatesIdentit.push(message.from.rtcIdentity);
-                    that.me.updatedIdentities = updatesIdentit;
+                    this.me.updatedIdentities.push(this.me.identity.rtcIdentity);
+                    this.me.updatedIdentities.push(message.from.rtcIdentity);
                     var answerBody = new Object();
-                    answerBody.connected = that.me.updatedIdentities;
+                    answerBody.updatedIdentities = this.me.updatedIdentities;
                     answerBody.from = message.from;
                     answerBody.to = "";
                     this.me.sendMessage(answerBody, MessageType.UPDATED, mediaConstraints);
                 }
             }else{
-                if(message.body.updated.length != 0){
-                    for(var i = 0; i < message.body.updated.length; i++){
+                
+                if(message.body.updatedIdentities.length != 0){
+                    for(var i = 0; i < message.body.updatedIdentities.length; i++){
                         //ignore the message if my rtcIdentity is in the this.connectedIdentities
-                        if(message.body.updated[i] == that.me.identity.rtcIdentity){
+                        if(message.body.updatedIdentities[i] == that.me.identity.rtcIdentity){
                             exist = true;
                             break;
                         }
                     }
                     if(!exist){
-                        if(mediaConstraints.direction == "in_out"){
+                        if(mediaConstraints[0].direction == "in_out"){
                         //if not send a message to the all of candidates
                             that.sendMessage("", MessageType.UPDATE, mediaConstraints);
                         }
@@ -873,10 +871,6 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     aux.direction =  constraints[i].direction;
                     constraintsAux.push(aux);
                 }
-                console.log(messageBody);
-                console.log("this.me.identity.rtcIdentity: ", this.me.identity.rtcIdentity);
-                console.log("this.hosting.rtcIdentity: ", this.hosting.rtcIdentity);
-                //if(this.me.identity.rtcIdentity === thisParticipant.identity.rtcIdentity){
                 if(this.me.identity.rtcIdentity === this.hosting.rtcIdentity){
                     //send a accepted message with no SDP inside
                     var message = new Object();
@@ -944,21 +938,25 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
             console.log("Call terminated");
             break;
         case MessageType.UPDATE:
-            console.log("UPDATE----",constraints);
             console.log("MESSAGE: ", message);
-            var constraintsAux =new Array();
-            
-            var aux = new Object();
-            aux.id = constraints.constraints.id;
-            aux.type = constraints.type;
-            aux.direction =  constraints.direction;
-            constraintsAux.push(aux);
-        
-            console.log("MESSAGE----: ", constraintsAux);
             if (!messageBody)
-            {
+            {   
+                var constraintsAux =new Array();
+            
+                var aux = new Object();
+                aux.id = constraints[0].id;
+                aux.type = constraints[0].type;
+                aux.direction =  constraints[0].direction;
+                constraintsAux.push(aux);
                 message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
             }else{
+                var constraintsAux =new Array();
+            
+                var aux = new Object();
+                aux.id = constraints.constraints.id;
+                aux.type = constraints.type;
+                aux.direction =  constraints.direction;
+                constraintsAux.push(aux);
                 message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
             }   
             console.log(message);
@@ -979,7 +977,7 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
         break;
 
         case MessageType.UPDATED:
-            if(this.me.identity.rtcIdentity === this.hosting.rtcIdentity){
+            if(this.me.identity.rtcIdentity === this.me.updater){ 
                     //send a accepted message with no SDP inside
                     var message = new Object();
                     message = MessageFactory.createUpdatedMessage(messageBody.from,"",this.contextId,constraints, this.updatedIdentities,this.hosting.rtcIdentity);
@@ -987,27 +985,28 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     thisParticipant.identity.messagingStub.sendMessage(message);
 
             }else{
-                var constraintsAux =new Array();
-            
-                var aux = new Object();
-                aux.id = constraints.constraints.id;
-                aux.type = constraints.type;
-                aux.direction =  constraints.direction;
-                constraintsAux.push(aux);
                 if (!messageBody)
                 {
-                    
+                    var constraintsAux =new Array();
+            
+                    var aux = new Object();
+                    aux.id = constraints[0].id;
+                    aux.type = constraints[0].type;
+                    aux.direction =  constraints[0].direction;
+                    constraintsAux.push(aux);
                     message = MessageFactory.createUpdatedMessage(this.me.identity, this.identity, this.contextId, constraintsAux);
                 }else{ 
+                    var constraintsAux =new Array();
+            
+                    var aux = new Object();
+                    aux.id = constraints.id;
+                    aux.type = constraints.type;
+                    aux.direction =  constraints.direction;
+                    constraintsAux.push(aux);
                     message = MessageFactory.createUpdatedMessage(this.me.identity,this.identity,this.contextId, constraintsAux,messageBody.hosting);
                 }
-                    console.log(message);
 
-                //    console.log("VIDEO REMOTO: ", this.RTCPeerConnection.getRemoteStreams()[0].getVideoTracks());
-                  //  console.log("AUDIO REMOTO: ", this.RTCPeerConnection.getRemoteStreams()[0].getAudioTracks());
-
-
-                    this.RTCPeerConnection.createAnswer(function (sessionDescription) {
+                this.RTCPeerConnection.createAnswer(function (sessionDescription) {
                         thisParticipant.RTCPeerConnection.setLocalDescription(sessionDescription, function () {
                             console.log("Local description set: ", sessionDescription);
                             message.body.newConnectionDescription = thisParticipant.RTCPeerConnection.localDescription;
@@ -1107,8 +1106,9 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             getMedia = true;
             idMedia = i;
         }
-        if(this.resources[i].constraint[0] != null && this.resources[i].constraint[0] != undefined) {
-            if(this.resources[i].constraint[0].type =="chat" || this.resources[i].constraint[0].type =="file" ){    
+        console.log("-->",this.resources[i])
+        if(this.resources[i].constraint != null && this.resources[i].constraint != undefined) {
+            if(this.resources[i].constraint.type =="chat" || this.resources[i].constraint.type =="file" ){    
                 dataChannel = true;
             }
         }
@@ -1314,7 +1314,6 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             // create data channel and setup chat        
             if ((data && constraints.direction != "in") && dataChannel == false) {
                 //if(thisParticipant.dataBroker.channels.length <= 1){
-                    hasDataChannel = true;
                     channel = thisParticipant.RTCPeerConnection.createDataChannel("dataChannel"); // TODO: CREATE DATACHANNEL ONLY IF THERE IS NOT DATARESOURCE YET.
                     thisParticipant.setDataBroker(constraints.constraints.dataBroker);
                     thisParticipant.dataBroker.addDataChannel(channel,thisParticipant.identity);

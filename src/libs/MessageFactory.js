@@ -140,11 +140,11 @@ MessageFactory.createUpdateMessage = function(from, to, contextId, newConstraint
  * @return The created Message
  *
  */
-MessageFactory.createUpdatedMessage = function(from, to, contextId, newConstraints,updated,hosting) {
+MessageFactory.createUpdatedMessage = function(from, to, contextId, newConstraints,updatedIdentities,hosting) {
     var updatebody = new Object();
     updatebody.newConnectionDescription = "";
     updatebody.newConstraints = newConstraints;
-    updatebody.updated = updated;
+    updatebody.updatedIdentities = updatedIdentities;
     updatebody.hosting = hosting;
     //updatebody.agenda = agenda;
     //updatebody.dataCodecs = dataCodecs;

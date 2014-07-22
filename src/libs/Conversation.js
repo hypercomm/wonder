@@ -758,25 +758,24 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
     var thisConversation = this;
     // If it comes with a message, means we add a resource from an incoming petition to the corresponding participant.
     if(!message){
-    var count=0;
-    var internalSuccessCallback = function(){
-            if(count<thisConversation.participants.length){ 
-                count++;
-                thisConversation.participants[count-1].addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
-            }
-            else{
-                onSuccessCallback();
-            }
+        thisConversation.myParticipant.updater =  thisConversation.myParticipant.identity.rtcIdentity;
+        var count=0;
+        var internalSuccessCallback = function(){
+                if(count<thisConversation.participants.length){ 
+                    count++;
+                    thisConversation.participants[count-1].addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
+                }
+                else{
+                    onSuccessCallback();
+                }
 
-    }
-    
-            thisConversation.myParticipant.addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
+        }
+        
+                thisConversation.myParticipant.addResource(resourceConstraints,message,internalSuccessCallback, onErrorCallback);
     }
     else{
-        // Swap direction because we are receiving
- 
         thisConversation.myParticipant.addResource(resourceConstraints,message,function() {
-            thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback);
+            thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback); debugger;
         }, onErrorCallback);
 
 
