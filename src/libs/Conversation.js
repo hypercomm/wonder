@@ -257,19 +257,20 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
         console.log("ACCEPTED INVITATION FROM: ", recvInvitation.body);
         console.log("CONSTRAINTS RECEIVED: ", recvInvitation.body.constraints);
 
-        for(var iteration=0;iteration<constraints.length;iteration++){
+       /* for(var iteration=0;iteration<constraints.length;iteration++){
             if(constraints[iteration].type==ResourceType.CHAT || constraints[iteration].type==ResourceType.FILE){
                 //beginof: create a codec with the data received
-                
+                console.log("---",that.myParticipant.resources[iteration].codec.id)
+                console.log("---",constraints[iteration].id);
                 var codec=new Codec(constraints[iteration].constraints.type,constraints[iteration].constraints.CodecLibUrl);
 
-                that.myParticipant.resources[iteration].codec.id=constraints[iteration].constraints.id;
+                that.myParticipant.resources[iteration].codec.id=constraints[iteration].id;
                 var resource = new Resource(constraints[iteration], codec);
                 resource.codec.setDataBroker(that.dataBroker);
                 
                 //endof: create a codec with the data received
             }
-        }
+        }*/
 
         //Create an array to all peers that I want to connect
         //recvInvitation.body.peers[i] is defined when the clients are selected in the application
@@ -804,4 +805,13 @@ Conversation.prototype.removeParticipant = function(rtcIdentity){
         });    
      });
     
+}
+
+// remove resource for participant
+Conversation.prototype.removeResource = function(resourceConstraints,message){
+    if(!message){
+         thisConversation.myParticipant.removeResource(resourceConstraints, message)
+    }else{
+        thisConversation.getParticipant(message.from).removeResource(resourceConstraints, message);
+    }
 }

@@ -191,7 +191,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
     var getMedia = function(numbResource,recursiveCallback){
         if(resourceConstraints.length > numbResource){
 
-            if (doGetUserMedia === true && resourceConstraints[numbResource].direction!="in" && (resourceConstraints[numbResource].type == "audioVideo" || resourceConstraints[numbResource].type == "audioMic" || resourceConstraints[numbResource].type == "screen")) {
+            if (resourceConstraints[numbResource].direction!="in" && (resourceConstraints[numbResource].type == "audioVideo" || resourceConstraints[numbResource].type == "audioMic" || resourceConstraints[numbResource].type == "screen")) {
                 var thisParticipant = that;
                 flag = true;
                 // TODO: Merge the media constraints so there is only 1 getUserMedia call (or maybe 2 if screensharing)
@@ -211,40 +211,30 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
                     resource.constraint.constraints = {id: stream.id};
                     resource.owner = that.identity;
                     resource.connections.push(pc);
+                    console.log("ADD--_>createMyselfA/V")
                     thisParticipant.resources.push(resource);
 
                     callback();
                 }, errorCallback);
                // return;
             }
-            if (doDataChannel === true && resourceConstraints[numbResource].direction!="in" &&  (resourceConstraints[numbResource].type != "audioVideo" || resourceConstraints[numbResource].type == "audioMic"  || resourceConstraints[numbResource].type == "screen") ) {
-                // Loop so all the codecs are created and initialized.
-                var numb = numbResource;
-                var sucess = callback;
-                var creatResources = function(recursive,numb,sucess){
-                    if(resourceConstraints.length>numb){
-                        var codec = new Codec(resourceConstraints[numb].type);
-                        //codec.id=resourceConstraints[numb].id;
-                        console.log(codec);
-                        if(resourceConstraints[numb].id) codec.id = resourceConstraints[numb].id;
-                        var resource = new Resource(resourceConstraints[numb], codec);
-                        console.log(resource);
-                        resource.connections.push(pc);
-                        resource.owner = thatIdentity;
-                        thatResources.push(resource);
-                        console.log(thatResources)
-                        var evt = new Object();
-                        evt.codec = codec;
-                        that.onRTCEvt('onResourceParticipantAddedEvt', evt);
-
-                        numb++;
-                        recursive(recursive,numb,sucess);
-                    }else{
-                       // sucess()
-                    }
+            if (resourceConstraints[numbResource].direction!="in" &&  (resourceConstraints[numbResource].type != "audioVideo" || resourceConstraints[numbResource].type != "audioMic"  || resourceConstraints[numbResource].type != "screen") ) {
+                
+                if (resourceConstraints[numbResource].type == "chat" || resourceConstraints[numbResource].type == "file" ) {
+                    var codec = new Codec(resourceConstraints[numbResource].type);
+                    //codec.id=resourceConstraints[numb].id;
+                    console.log(codec);
+                    if(resourceConstraints[numbResource].id) codec.id = resourceConstraints[numbResource].id;
+                    var resource = new Resource(resourceConstraints[numbResource], codec);
+                    console.log(resource);
+                    resource.connections.push(pc);
+                    resource.owner = thatIdentity;
+                    thatResources.push(resource);
+                    console.log(thatResources)
+                    var evt = new Object();
+                    evt.codec = codec;
+                    that.onRTCEvt('onResourceParticipantAddedEvt', evt);
                 }
-                creatResources(creatResources,numb,sucess);
-
             }
             numbResource++;
             recursiveCallback(numbResource,recursiveCallback);
@@ -286,7 +276,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
                     break;
                 case ResourceType.FILE:
                     doDataChannel = true;
-                    break;
+                    break;  
                 case ResourceType.CHAT:
                     doDataChannel = true;
                     break;
@@ -375,18 +365,20 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
             }
 
             if (constraints[ite].direction != "out") {
-                if (media === true) {
-                    var resource = new Resource(resourceConstraints);
+                if (constraints[ite].type =="audioVideo" || constraints[ite].type =="audioMic" || constraints[ite].type =="screen") {
+                    var resource = new Resource(resourceConstraints[ite]);
                     resource.owner = that.identity;
                     resource.connections.push(pc);
+                    console.log("ADD--_>createRemotePeer")
                     thisParticipant.resources.push(resource);
                 }
-                if (data === true) {
-                    var resource = new Resource(resourceConstraints);
+                if (constraints[ite].type =="chat" || constraints[ite].type =="file") {
+                    var resource = new Resource(resourceConstraints[ite]);
                     //var codec = new Codec(resourceConstraints.type);
                     //resource.codec = codec;
                     resource.owner = that.identity;
                     resource.connections.push(pc);
+                    console.log("ADD--_>createRemotePeer")
                     thisParticipant.resources.push(resource);
                 }
             }
@@ -616,7 +608,7 @@ Participant.prototype.onMessage = function(message) {
             this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 console.log("Remote Description set: ", this);  
-                this.getResources(mediaConstraints)[0].constraint=mediaConstraints;
+                this.getResources(mediaConstraints)[0]=mediaConstraints;
 
                 console.log("this.me.indentity: " + this.me.identity.rtcIdentity);
                 console.log("this.hosting.rtcIdentity " + this.hosting);
@@ -1449,4 +1441,11 @@ Participant.prototype.getStreams = function() {
  */
 Participant.prototype.setDataBroker = function( databroker ) {
     this.dataBroker = databroker;
+}
+
+Participant.prototype.removeResource = function( resourceConstraints, message ) {
+    console.log("RemoveResource-->", resourceConstraints);
+    var resources = this.me.getResources(constraints[0]);
+    console.log("RemoveResource-->", resources);
+
 }

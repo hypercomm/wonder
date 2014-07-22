@@ -153,6 +153,24 @@ MessageFactory.createUpdatedMessage = function(from, to, contextId, newConstrain
     return updateMessage;
 }
 
+/**
+ * createRemoveResourceMessage - Creates an RemoveResource message.
+ *
+ *
+ * @param {Identity} from - The {@link Identity} that figures as sender of the message.
+ * @param {Identity[]} to - The Array of {@link Identity} that figures as receiver of the message. 
+ * @param {string} contextId - The contextId of the conversation related to the invitation.
+ * @param {ResourceConstraints} resoureceConstraints - The resource constraints for the resources to remove.
+ * @return The created Message
+ *
+ */
+MessageFactory.createRemoveResourceMessage = function(from, to, contextId, resoureceConstraints) {
+    var removebody = new Object();
+    removebody.constraints = resoureceConstraints;
+    
+    var removeMessage = new Message(from, to, removebody, MessageType.RESOURCE_REMOVED, contextId);
+    return removeMessage;
+}
 
 MessageFactory.createNotAccepted =  function(message) {
     var notAcceptedMessage = new Message(message.to, message.from,"",MessageType.NOT_ACCEPTED, message.contextId);
