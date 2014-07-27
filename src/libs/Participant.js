@@ -684,7 +684,8 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 console.log("Remote Description set: ", description);
-                this.getResources(mediaConstraints[0]).constraint=mediaConstraints;
+                this.getResources(mediaConstraints[0])[0].constraint=mediaConstraints[0];
+                this.getResources(mediaConstraints[0])[0].id=mediaConstraints[0].id;
                 if(this.me.identity.rtcIdentity == this.me.updater){
                     //see if the hosting is equal to this.me
                     //send a accepted message with no SDP
@@ -697,7 +698,6 @@ Participant.prototype.onMessage = function(message) {
                     this.me.sendMessage(answerBody, MessageType.UPDATED, mediaConstraints);
                 }
             }else{
-                
                 if(message.body.updatedIdentities.length != 0){
                     for(var i = 0; i < message.body.updatedIdentities.length; i++){
                         //ignore the message if my rtcIdentity is in the this.connectedIdentities
@@ -706,7 +706,9 @@ Participant.prototype.onMessage = function(message) {
                             break;
                         }
                     }
+
                     if(!exist){
+                        console.log("mediaConstraints[0]",mediaConstraints[0])
                         if(mediaConstraints[0].direction == "in_out"){
                         //if not send a message to the all of candidates
                             that.sendMessage("", MessageType.UPDATE, mediaConstraints);
@@ -791,8 +793,6 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
     var message = new Message();
     var thisParticipant = this;
     console.log(this.resources)
-    console.log(constraints)
-    var i;
     /*for(i = 0;i<constraints.length;i++){
         if(constraints[i].type==ResourceType.CHAT || constraints[i].type==ResourceType.FILE)
         {
@@ -951,11 +951,10 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                 message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
             }else{
                 var constraintsAux =new Array();
-            
                 var aux = new Object();
-                aux.id = constraints.constraints.id;
-                aux.type = constraints.type;
-                aux.direction =  constraints.direction;
+                aux.id = messageBody.newConstraints.id;
+                aux.type = messageBody.newConstraints.type;
+                aux.direction =  messageBody.newConstraints.direction;
                 constraintsAux.push(aux);
                 message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
             }   
@@ -999,9 +998,9 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     var constraintsAux =new Array();
             
                     var aux = new Object();
-                    aux.id = constraints.id;
-                    aux.type = constraints.type;
-                    aux.direction =  constraints.direction;
+                    aux.id = messageBody.newConstraints.id;
+                    aux.type = messageBody.newConstraints.type;
+                    aux.direction =  messageBody.newConstraints.direction;
                     constraintsAux.push(aux);
                     message = MessageFactory.createUpdatedMessage(this.me.identity,this.identity,this.contextId, constraintsAux,messageBody.hosting);
                 }
@@ -1094,7 +1093,6 @@ Participant.prototype.setConversation = function(conversation) {
 
  
 Participant.prototype.addResource = function (resourceConstraints, message, callback, errorCallback) {
-    
     var i;
     var getMedia = false;
     var idMedia;
@@ -1106,7 +1104,6 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             getMedia = true;
             idMedia = i;
         }
-        console.log("-->",this.resources[i])
         if(this.resources[i].constraint != null && this.resources[i].constraint != undefined) {
             if(this.resources[i].constraint.type =="chat" || this.resources[i].constraint.type =="file" ){    
                 dataChannel = true;
@@ -1198,12 +1195,12 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                         if(micAlready){
                             var resource = thisParticipant.me.getResources("",ResourceType.AUDIO_MIC)[0];
                             var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getVideoTracks()[0]);
+                            stream2.addTrack(stream.getAudioTracks()[0]);
                         }
                         if(camAlready){
                             var resource = thisParticipant.me.getResources("",ResourceType.VIDEO_CAM)[0];
                             var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getAudioTracks()[0]); 
+                            stream2.addTrack(stream.getVideoTracks()[0]); 
                         }
                         resource.type=ResourceType.AUDIO_VIDEO;   
                         resource.constraint.type=ResourceType.AUDIO_VIDEO;
@@ -1227,12 +1224,12 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                         if(micAlready){
                             var resource = thisParticipant.me.getResources("",ResourceType.AUDIO_MIC)[0];
                             var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getVideoTracks()[0]);
+                            stream2.addTrack(stream.getAudioTracks()[0]);
                         }
                         if(camAlready){
                             var resource = thisParticipant.me.getResources("",ResourceType.VIDEO_CAM)[0];
                             var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getAudioTracks()[0]); 
+                            stream2.addTrack(stream.getVideoTracks()[0]); 
                         }
                         resource.type=ResourceType.AUDIO_VIDEO;   
                         resource.constraint.type=ResourceType.AUDIO_VIDEO;
@@ -1257,12 +1254,25 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
         }
         callback();
     } else {
+        if(resourceConstraints instanceof Array){
+            resourceConstraints = resourceConstraints[0]
+        }
         if (resourceConstraints.direction != "out") {
-            if (doGetUserMedia === true) {
+            if (resourceConstraints.type == "audioVideo" || resourceConstraints.type == "screen" || resourceConstraints.type == "audioMic") {
+               
                 var resource = new Resource(resourceConstraints);
-                resource.id = resource.constraint.constraints.id;
+                console.log("resource",resource)
+                if(!resourceConstraints.id){
+                    resource.id = resource.constraint.constraints.id;
+
+                    resourceConstraints.id = resource.constraint.constraints.id;
+                }else{
+                    resource.id = resourceConstraints.id;
+
+                    resourceConstraints.id = resource.id;
+                }
                 resource.owner = this.identity;
-                resource.connections.push(pc);
+                resource.connections.push(thisParticipant.RTCPeerConnection);
                 thisParticipant.resources.push(resource);
             }
             if (doDataChannel === true) {
@@ -1334,23 +1344,28 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                 };
                 
             }
-            if(dataChannel){
+            if(dataChannel && (resourceConstraints.type == "chat" || resourceConstraints.type == "file")){
                 var resourceData = this.me.getResources(constraints)[0];
 
                 resourceData.connections.push(thisParticipant.RTCPeerConnection);
                 thisParticipant.dataBroker.onDataChannelEvt();
             }
-            if (media && constraints.direction != "in") {
-                var resourceMedia = this.me.getResources(constraints);
+            if ( (resourceConstraints.type == "audioVideo" || resourceConstraints.type == "audioMic" || resourceConstraints.type == "screen") && resourceConstraints.direction != "in") {
+                var resourceMedia = this.me.getResources(resourceConstraints);
                                 
                 //If it doesnt find the constraints means that the audio and video were merged into AudioVideo
                 if(resourceMedia.length==0){
                     constraints.type=ResourceType.AUDIO_VIDEO;
-                    resourceMedia = this.me.getResources(constraints)[0];
+                    resourceMedia = this.me.getResources(resourceConstraints)[0];
                 }
-                
+
                 var stream = this.me.RTCPeerConnection.getStreamById(resourceMedia[0].id);
                 thisParticipant.RTCPeerConnection.addStream(stream);
+                var evt = new Object();
+                evt.stream = stream;
+                evt.participant = thisParticipant;
+                    
+                thisParticipant.rtcEvtHandler('onaddstream', evt);
                 resourceMedia[0].connections.push(thisParticipant.RTCPeerConnection);
             }
         }

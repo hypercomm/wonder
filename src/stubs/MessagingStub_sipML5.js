@@ -69,7 +69,13 @@ function MessagingStub_sipML5(){
                 direction: "in_out"
                 }];
             }
-        }
+    }
+    full_message.body.constraints = [{
+                constraints: "",
+                type: ResourceType.AUDIO_VIDEO,
+                direction: "in_out"
+                }];
+        
         console.log("S->C",full_message);
         //console.log("full_message: ", full_message);
         var message = full_message;
@@ -265,22 +271,22 @@ MessagingStub_sipML5.prototype.connect = function(ownRtcIdentity, credentials, c
 
     var name = ownRtcIdentity.split("@")[0]; 
     if(ownRtcIdentity.split("@")[1] != "asterisk.wonder"){
-    name = name + "_friend";    
+    //name = name + "_friend";    
     }
     var pass = "qwerty";
     //console.log(document.getElementById('txtWebsocketServerUrl').value);
     o_stack = new SIPml.Stack({
-            realm: 'asterisk.wonder',
-            impi: name,
-            impu: 'sip:' + name + '@asterisk.wonder',
+            realm: 'imsserver.ece.upatras.gr',
+            impi: name + '@imsserver.ece.upatras.gr', 
+            impu: 'sip:' + name + '@imsserver.ece.upatras.gr',
             password: pass,
             display_name: ownRtcIdentity,
-            websocket_proxy_url: 'ws://10.112.67.66:10060',
-            outbound_proxy_url: 'udp://10.112.67.66:5060',
-            enable_rtcweb_breaker: true,
+            websocket_proxy_url: 'ws://150.140.184.248:10060',
+            outbound_proxy_url: 'udp://150.140.184.242:4060',
+    //        enable_rtcweb_breaker: true,
             ice_servers: "[{ url: 'stun:150.140.184.242:3478'}, { url:'turn:root@150.140.184.242:3478', credential:'w0nd3r'}]",
             events_listener: { events: '*', listener: onSipEventStack },
-            enable_early_ims:  true, // Must be true unless you're using a real IMS network
+    //        enable_early_ims:  true, // Must be true unless you're using a real IMS network
             sip_headers: [
                 { name: 'User-Agent', value: 'IM-client/OMA1.0 wonder-v0.2013.12.10B' },
                 { name: 'Organization', value: 'Wonder PTIN' }
@@ -2598,10 +2604,11 @@ tmedia_session_jsep01.prototype.__get_lo = function() {
         var z = sdp.sdp.split("RTP/SAVPF")
         if(z.length == 2){
            var d = z[0] + "UDP/TLS/RTP/SAVPF" + z[1];// + "UDP/TLS/RTP/SAVPF" + z[2];
-        }else {
+        }elseÂ {
            var d = z[0] + "UDP/TLS/RTP/SAVPF" + z[1] + "UDP/TLS/RTP/SAVPF" + z[2]; 
         }
         return tsdp_message.prototype.Parse(d)
+    //return tsdp_message.prototype.Parse(sdp.sdp)
     }else{
         return this.o_sdp_lo
     }
@@ -15054,7 +15061,7 @@ tsip_transport.prototype.send = function(e, b, d, a) {
         }
     }
     c = b.toString();
-    //tsk_utils_log_info("SEND: " + c);
+    tsk_utils_log_info("SEND: " + c);
     return this.__send(c, c.length)
 };
 function tsip_transport_event(c, a, b, d) {
@@ -15178,14 +15185,14 @@ function __tsip_transport_ws_onmessage(a) {
     if(c.line.request.s_method == "INVITE"){
 
         if(c.o_hdr_From.s_display_name == null){
-            from = c.o_hdr_From.o_uri.s_user_name + "@asterisk.wonder";
-        // from = "vasco@imsserver.ece.upatras.gr"; 
+            from = c.o_hdr_From.o_uri.s_user_name + "@imsserver.ece.upatras.gr";
+            //from = "vasco@imsserver.ece.upatras.gr"; 
         } else{
             from = c.o_hdr_From.s_display_name;
         }
         if(c.o_hdr_To.s_display_name == null){
-            to = c.o_hdr_To.o_uri.s_user_name + "@asterisk.wonder";
-            //to = "Paulo@imsserver.ece.upatras.gr";
+            to = c.o_hdr_To.o_uri.s_user_name + "@imsserver.ece.upatras.gr";
+           // to = "Paulo@imsserver.ece.upatras.gr";
         }else{
             to = c.o_hdr_To.s_display_name;
         }
@@ -15218,7 +15225,7 @@ function __tsip_transport_ws_onmessage(a) {
         if(c.o_hdr_To.s_display_name == null){
             to = c.o_hdr_To.o_uri.s_user_name + "@" + c.o_hdr_To.o_uri.s_host;
         }else{
-            to = c.o_hdr_To.s_display_name + "@asterisk.wonder";;
+            to = c.o_hdr_To.s_display_name + "@imsserver.ece.upatras.gr";;
         }
                
     if(from != to){
@@ -15249,7 +15256,7 @@ function __tsip_transport_ws_onmessage(a) {
         handleMessages(messageBye);
     }
     if (c) {
-       // tsk_utils_log_info("recv=" + c);
+        tsk_utils_log_info("recv=" + c);
         c.o_socket = this;
         return this.o_transport.get_layer().handle_incoming_message(c)
     } else {

@@ -127,8 +127,8 @@ MessagingStub_PTIN.prototype.sendMessage = function(message){
                "action": "message",
                "body": full_message.body
         };
-        this.eventbus.send("ptin.conversationmanager", msg, function(){});
-       //this.eventbus.publish(full_message.body.contextId, full_message, function(){});	
+        //this.eventbus.send("ptin.conversationmanager", msg, function(){});
+       this.eventbus.publish(full_message.body.contextId, full_message, function(){});	
     }
 	
 }
