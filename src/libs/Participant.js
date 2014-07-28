@@ -684,8 +684,10 @@ Participant.prototype.onMessage = function(message) {
                 this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 console.log("Remote Description set: ", description);
-                this.getResources(mediaConstraints[0])[0].constraint=mediaConstraints[0];
-                this.getResources(mediaConstraints[0])[0].id=mediaConstraints[0].id;
+                if(this.getResources(mediaConstraints[0])[0]){
+                    this.getResources(mediaConstraints[0])[0].constraint=mediaConstraints[0];
+                    this.getResources(mediaConstraints[0])[0].id=mediaConstraints[0].id;
+                }
                 if(this.me.identity.rtcIdentity == this.me.updater){
                     //see if the hosting is equal to this.me
                     //send a accepted message with no SDP
@@ -1275,12 +1277,21 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                 resource.connections.push(thisParticipant.RTCPeerConnection);
                 thisParticipant.resources.push(resource);
             }
-            if (doDataChannel === true) {
+            if (resourceConstraints.type == "chat" || resourceConstraints.type == "file") {
                 var resource = new Resource(resourceConstraints);
+                if(!resourceConstraints.id){
+                    resource.id = resource.constraint.constraints.id;
+
+                    resourceConstraints.id = resource.constraint.constraints.id;
+                }else{
+                    resource.id = resourceConstraints.id;
+
+                    resourceConstraints.id = resource.id;
+                }
                 //var codec = new Codec(resourceConstraints.type);
                 //resource.codec = codec;
                 resource.owner = this.identity;
-                resource.connections.push(pc);
+                resource.connections.push(thisParticipant.RTCPeerConnection);
                 thisParticipant.resources.push(resource);
             }
         }
