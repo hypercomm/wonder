@@ -1,25 +1,25 @@
 /* SockJS client, version 0.3.4, http://sockjs.org, MIT License
 
-Copyright (c) 2011-2012 VMware, Inc.
+ Copyright (c) 2011-2012 VMware, Inc.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
 
 // JSON2 by Douglas Crockford (minified).
 var JSON;JSON||(JSON={}),function(){function str(a,b){var c,d,e,f,g=gap,h,i=b[a];i&&typeof i=="object"&&typeof i.toJSON=="function"&&(i=i.toJSON(a)),typeof rep=="function"&&(i=rep.call(b,a,i));switch(typeof i){case"string":return quote(i);case"number":return isFinite(i)?String(i):"null";case"boolean":case"null":return String(i);case"object":if(!i)return"null";gap+=indent,h=[];if(Object.prototype.toString.apply(i)==="[object Array]"){f=i.length;for(c=0;c<f;c+=1)h[c]=str(c,i)||"null";e=h.length===0?"[]":gap?"[\n"+gap+h.join(",\n"+gap)+"\n"+g+"]":"["+h.join(",")+"]",gap=g;return e}if(rep&&typeof rep=="object"){f=rep.length;for(c=0;c<f;c+=1)typeof rep[c]=="string"&&(d=rep[c],e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e))}else for(d in i)Object.prototype.hasOwnProperty.call(i,d)&&(e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));e=h.length===0?"{}":gap?"{\n"+gap+h.join(",\n"+gap)+"\n"+g+"}":"{"+h.join(",")+"}",gap=g;return e}}function quote(a){escapable.lastIndex=0;return escapable.test(a)?'"'+a.replace(escapable,function(a){var b=meta[a];return typeof b=="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+a+'"'}function f(a){return a<10?"0"+a:a}"use strict",typeof Date.prototype.toJSON!="function"&&(Date.prototype.toJSON=function(a){return isFinite(this.valueOf())?this.getUTCFullYear()+"-"+f(this.getUTCMonth()+1)+"-"+f(this.getUTCDate())+"T"+f(this.getUTCHours())+":"+f(this.getUTCMinutes())+":"+f(this.getUTCSeconds())+"Z":null},String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(a){return this.valueOf()});var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},rep;typeof JSON.stringify!="function"&&(JSON.stringify=function(a,b,c){var d;gap="",indent="";if(typeof c=="number")for(d=0;d<c;d+=1)indent+=" ";else typeof c=="string"&&(indent=c);rep=b;if(!b||typeof b=="function"||typeof b=="object"&&typeof b.length=="number")return str("",{"":a});throw new Error("JSON.stringify")}),typeof JSON.parse!="function"&&(JSON.parse=function(text,reviver){function walk(a,b){var c,d,e=a[b];if(e&&typeof e=="object")for(c in e)Object.prototype.hasOwnProperty.call(e,c)&&(d=walk(e,c),d!==undefined?e[c]=d:delete e[c]);return reviver.call(a,b,e)}var j;text=String(text),cx.lastIndex=0,cx.test(text)&&(text=text.replace(cx,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,""))){j=eval("("+text+")");return typeof reviver=="function"?walk({"":j},""):j}throw new SyntaxError("JSON.parse")})}()
@@ -46,10 +46,10 @@ SockJS=function(){var a=document,b=window,c={},d=function(){};d.prototype.addEve
 
 var vertx=vertx||{};
 !function(j){"function"===typeof define&&define.amd?define("vertxbus",["sockjs"],j):j(SockJS)}(function(j){vertx.EventBus=function(p,q){function o(){e.send(JSON.stringify({type:"ping"}))}function l(b,a,c,f){g("address","string",a);g("replyHandler","function",f,!0);k();b={type:b,address:a,body:c};d.sessionID&&(b.sessionID=d.sessionID);f&&(a=r(),b.replyAddress=a,m[a]=f);f=JSON.stringify(b);e.send(f)}function k(){if(h!=vertx.EventBus.OPEN)throw Error("INVALID_STATE_ERR");}function g(b,a,c,f){if(!f&&
-!c)throw Error("Parameter "+b+" must be specified");if(c&&typeof c!=a)throw Error("Parameter "+b+" must be of type "+a);}function r(){return"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(b,a){return a=16*Math.random(),("y"==b?a&3|8:a|0).toString(16)})}var d=this,e=new j(p,void 0,q),i={},m={},h=vertx.EventBus.CONNECTING,n=null;d.onopen=null;d.onclose=null;d.login=function(b,a,c){l("send","vertx.basicauthmanager.login",{username:b,password:a},function(a){"ok"===a.status&&(d.sessionID=
-a.sessionID);c&&(delete a.sessionID,c(a))})};d.send=function(b,a,c){l("send",b,a,c)};d.publish=function(b,a,c){l("publish",b,a,c)};d.registerHandler=function(b,a){g("address","string",b);g("handler","function",a);k();var c=i[b];c?c[c.length]=a:(c=[a],i[b]=c,e.send(JSON.stringify({type:"register",address:b})))};d.unregisterHandler=function(b,a){g("address","string",b);g("handler","function",a);k();var c=i[b];if(c){var d=c.indexOf(a);-1!=d&&c.splice(d,1);0==c.length&&(e.send(JSON.stringify({type:"unregister",
-address:b})),delete i[b])}};d.close=function(){k();n&&clearInterval(n);h=vertx.EventBus.CLOSING;e.close()};d.readyState=function(){return h};e.onopen=function(){o();n=setInterval(o,5E3);h=vertx.EventBus.OPEN;if(d.onopen)d.onopen()};e.onclose=function(){h=vertx.EventBus.CLOSED;if(d.onclose)d.onclose()};e.onmessage=function(b){var a=JSON.parse(b.data),b=a.body,c=a.replyAddress,a=a.address,f;c&&(f=function(a,b){d.send(c,a,b)});var e=i[a];if(e){a=e.slice(0);for(e=0;e<a.length;e++)a[e](b,f)}else if(e=
-m[a])delete m[a],e(b,f)}};vertx.EventBus.CONNECTING=0;vertx.EventBus.OPEN=1;vertx.EventBus.CLOSING=2;vertx.EventBus.CLOSED=3;return vertx.EventBus});
+    !c)throw Error("Parameter "+b+" must be specified");if(c&&typeof c!=a)throw Error("Parameter "+b+" must be of type "+a);}function r(){return"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(b,a){return a=16*Math.random(),("y"==b?a&3|8:a|0).toString(16)})}var d=this,e=new j(p,void 0,q),i={},m={},h=vertx.EventBus.CONNECTING,n=null;d.onopen=null;d.onclose=null;d.login=function(b,a,c){l("send","vertx.basicauthmanager.login",{username:b,password:a},function(a){"ok"===a.status&&(d.sessionID=
+    a.sessionID);c&&(delete a.sessionID,c(a))})};d.send=function(b,a,c){l("send",b,a,c)};d.publish=function(b,a,c){l("publish",b,a,c)};d.registerHandler=function(b,a){g("address","string",b);g("handler","function",a);k();var c=i[b];c?c[c.length]=a:(c=[a],i[b]=c,e.send(JSON.stringify({type:"register",address:b})))};d.unregisterHandler=function(b,a){g("address","string",b);g("handler","function",a);k();var c=i[b];if(c){var d=c.indexOf(a);-1!=d&&c.splice(d,1);0==c.length&&(e.send(JSON.stringify({type:"unregister",
+    address:b})),delete i[b])}};d.close=function(){k();n&&clearInterval(n);h=vertx.EventBus.CLOSING;e.close()};d.readyState=function(){return h};e.onopen=function(){o();n=setInterval(o,5E3);h=vertx.EventBus.OPEN;if(d.onopen)d.onopen()};e.onclose=function(){h=vertx.EventBus.CLOSED;if(d.onclose)d.onclose()};e.onmessage=function(b){var a=JSON.parse(b.data),b=a.body,c=a.replyAddress,a=a.address,f;c&&(f=function(a,b){d.send(c,a,b)});var e=i[a];if(e){a=e.slice(0);for(e=0;e<a.length;e++)a[e](b,f)}else if(e=
+    m[a])delete m[a],e(b,f)}};vertx.EventBus.CONNECTING=0;vertx.EventBus.OPEN=1;vertx.EventBus.CLOSING=2;vertx.EventBus.CLOSED=3;return vertx.EventBus});
 
 
 /**
@@ -60,7 +60,7 @@ m[a])delete m[a],e(b,f)}};vertx.EventBus.CONNECTING=0;vertx.EventBus.OPEN=1;vert
 
 
 function MessagingStub_PTIN(){
-	this.ownRtcIdentity;
+    this.ownRtcIdentity;
     this.credentials;
     this.eventbus;
 }
@@ -69,151 +69,231 @@ function MessagingStub_PTIN(){
 /**
  * SendMessage
  *
- * @param message... Message 
+ * @param message... Message
  */
 
 MessagingStub_PTIN.prototype.sendMessage = function(message){
-	console.log("C->S: ", message);
+
+    console.log("C->S: ", message);
+    var that = this;
     var full_message = new Object();
     full_message.type = "message";
     full_message.body = message;
-
-    message.from=message.from.rtcIdentity;
+    if(message.type != MessageType.CONTEXT || message.type != "crud_operation" )
+        message.from=message.from.rtcIdentity;
 
     if(message.to instanceof Array){
-        message.to.every(function(element, index, array) { 
-        	array[index]=element.rtcIdentity; $
-        });     
-	full_message.to = message.to[0];
+        message.to.every(function(element, index, array) {
+            array[index]=element.rtcIdentity;
+        });
+        full_message.to = message.to[0];
     }
     else{
-        message.to= new Array(message.to.rtcIdentity);
-    	full_message.to = message.to[0];
+        console.log("context", message.type)
+        if(message.type != "context" && message.type != "crud_operation"){
+            message.to= new Array(message.to.rtcIdentity);
+            full_message.to = message.to[0];
+        }
     }
-    if(typeof full_message.to !== 'undefined'){
+    if(typeof full_message.to !== 'undefined' && (message.type != MessageType.CONTEXT  || message.type != "crud_operation")){
         //console.log("MESSAGE: ", full_message);
         //if(full_message.body.body.hosting && full_message.body.from == full_message.body.body.hosting){
         console.log("MESSAGE: ", full_message);
         var msg = {
-               "action": "message",
-               "body": full_message.body
+            "action": "message",
+            "body": full_message.body
         };
         if(message.type == MessageType.NOT_ACCEPTED){
-        	this.eventbus.publish(full_message.body.contextId, full_message, function(){});	
-        	this.eventbus.send("ptin.conversationmanager", msg, function(){});
+            this.eventbus.publish(full_message.body.contextId, full_message, function(){});
+            this.eventbus.send("ptin.conversationmanager", msg, function(){});
         }else{
-        	this.eventbus.send("ptin.conversationmanager", msg, function(){});
+            //console.log("full_message",full_message)
+            if(full_message.body.type != "subscribe" && full_message.body.type != "context" )
+                this.eventbus.send("ptin.conversationmanager", msg, function(){});
         }
         //this.eventbus.send(full_message.to, full_message, function(){});
         //}
-        
+
         //this.eventbus.send(full_message.to, full_message, function(){});
     }
-		
-	
-	if(message.type == MessageType.ACCEPTED && full_message.to == null){
+    if(message.type == "crud_operation"){
+        console.log("ENTREI",message)
+        var that = this;
+        if(message.body.operation == "find"){
+            var query = {"action" : "find", "collection" : "groupprofile",  "matcher" : {}}
+            this.eventbus.send("test.my_persistor" , query, function(reply){
+                that.handleMessages(reply);
+            });
+        }
+
+        if(message.body.operation == "save"){
+            console.log("CREATEGROUP",message)
+            var query = {"action" : "save", "collection" : "groupprofile",  "document" : {"admin": message.from.split("@")[0], "authorised_presence" : "[]", "group_elements": "[]", "groups_presence": { "authorised_presence" : [], "presence_authorisation_pending" : [], "denied_presence" : [], "session_communication_group" : [] }, "links": "[]", "name": message.body.doc, "photo": "", "rtcIdentity": message.from, "sessionId": "", "type":"private", "url_pub": message.from  }}
+            this.eventbus.send("test.my_persistor" , query, function(reply){
+                //that.handleMessages(reply);
+            });
+        }
+        if(message.body.operation == "delete"){
+            console.log("CREATEGROUP",message)
+            var query = {"action" : "delete", "collection" : "groupprofile",  "matcher" : {"name": message.body.doc}}
+            this.eventbus.send("test.my_persistor" , query, function(reply){
+                //that.handleMessages(reply);
+            });
+        }
+    }
+
+    if(message.type == MessageType.SUBSCRIBE){
+        console.log("-->: ", this);
+        //this.eventbus.registerHandler(message.from.rtcIdentity + ".presence", that.handleMessages);
+        //this.eventbus.send(message.from.rtcIdentity + ".presence", message, function(){});
+        this.eventbus.registerHandler("ptin.presence" , that.handleMessages);
+        //this.eventbus.send("ptin.presence" , message, function(){});
+        var msg = {"action" : MessageType.SUBSCRIBE, "from" : message.from,  "to" : message.to[0], "body" :message.body,  "message" :"add" , "state": "online"}
+        console.log("MESSAGE: ", msg);
+        this.eventbus.send("ptin.presence" , msg, function(reply){console.log("reply", reply);});
+        // ire buscar os amigos deste utlizador
+        //var query = {"action" : "find", "collection" : "groupprofile",  "matcher" : {"admin" : "luis"}}
+        //this.eventbus.send("test.my_persistor" , query, function(reply){console.log("reply", reply);});
+        // ire buscar todos os utilizadores
+        //var query = {"action" : "find", "collection" : "groupprofile",  "matcher" : {}}
+        //this.eventbus.send("test.my_persistor" , query, function(reply){console.log("reply", reply);});
+
+
+        //var msg = {type : ACCEPTED, to : msg.from,  from : msg.to, body : "outro object"}
+        //this.eventbus.send(message.from.rtcIdentity + ".presence", message, function(){});
+        /* CHECK THIS
+         var msg = {type : ACCEPTED, to : msg.from,  from : msg.to, body : "outro object"}
+         this.eventbus.send(message.from.rtcIdentity + ".presence", msg, function(){});
+
+         */
+    }
+
+    if(message.type == MessageType.CONTEXT){
+        console.log("MESSAGE: ", message);
+        var msg = {
+            "action": "message",
+            "body": full_message.body
+        };
+        //this.eventbus.send("ptin.conversationmanager", msg, function(){});
+        //this.eventbus.publish(message.from.rtcIdentity + ".presence", message, function(){});
+        this.eventbus.publish("ptin.presence" , message, function(){});
+    }
+
+    if(message.type == MessageType.ACCEPTED && full_message.to == null){
         console.log("MESSAGE: ", full_message);
         var msg = {
-               "action": "message",
-               "body": full_message.body
+            "action": "message",
+            "body": full_message.body
         };
         this.eventbus.send("ptin.conversationmanager", msg, function(){});
         //this.eventbus.publish(full_message.body.contextId, full_message, function(){});	
     }
-		
-	if(message.type == MessageType.UPDATED && full_message.to == null){
+
+    if(message.type == MessageType.UPDATED && full_message.to == null){
         console.log("MESSAGE: ", full_message);
         var msg = {
-               "action": "message",
-               "body": full_message.body
+            "action": "message",
+            "body": full_message.body
         };
         //this.eventbus.send("ptin.conversationmanager", msg, function(){});
-       this.eventbus.publish(full_message.body.contextId, full_message, function(){});	
+        this.eventbus.publish(full_message.body.contextId, full_message, function(){});
     }
-	
+
 }
 
 
 /**
  * Connect
  *
- * 
- * 
+ *
+ *
  */
 
 MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, callbackFunction){
- 	this.ownRtcIdentity = ownRtcIdentity;
+    this.ownRtcIdentity = ownRtcIdentity;
     this.credentials = credentials;
     var that = this;
     var exist = false;
-    
+
     console.log("this.credentials: ", this.credentials);
-    
-	if(this.eventbus){
-		console.log("Vert.x connection already opened, executing callback function: ");
-		callbackFunction();
-		return;
-	}
 
-	this.eventbus = new vertx.EventBus('http://150.140.184.246:4443/eventbus');
+    if(this.eventbus){
+        console.log("Vert.x connection already opened, executing callback function: ");
+        callbackFunction();
+        return;
+    }
 
-	this.eventbus.onopen = function() {
-		that.eventbus.registerHandler(ownRtcIdentity, that.handleMessages);
+	// vertx_address is defined at http://mydomain/settings/domain_settings.js
+	console.log("vertx address: ", vertx_settings.address);
+	this.eventbus = new vertx.EventBus(vertx_settings.address);
+
+    this.eventbus.onopen = function() {
+        that.eventbus.registerHandler(ownRtcIdentity, that.handleMessages);
         //retrieve messages
-		console.log("Eventbus connection opened and logging in as: " + ownRtcIdentity);
-		callbackFunction();
-	};
+        console.log("Eventbus connection opened and logging in as: " + ownRtcIdentity);
+        callbackFunction();
+    };
 
-	this.eventbus.onerror = function() {
-		console.log("Websocket connection error");
-	};
+    this.eventbus.onerror = function() {
+        console.log("Websocket connection error");
+    };
 
-	this.eventbus.onclose = function() {
-		console.log("Websocket connection closed");
-	};
-	
-	this.handleMessages = function(full_message) {
-		if(full_message.status == "ok"){
-			full_message.message.forEach(function(element, array, index){
-				if(element.to[0] == null){ 
-            		console.log("ELEMENT: ", element);
-                	that.handleMessages(element);
-            	}
-            });
-		}else{
-			console.log("full_message: ", full_message);
-        if(full_message.type == 'message')
-            var message = full_message.body;
-        else 
-            var message = full_message;
-        
-		if (message.type == MessageType.INVITATION || !message.contextId)
-		{
-			if(that.baseStub.listeners[0].length == 1){
-                that.eventbus.registerHandler(message.contextId, that.handleMessages);
+    this.eventbus.onclose = function() {
+        console.log("Websocket connection closed");
+    };
+
+    this.handleMessages = function(full_message) {
+        console.log("this.handleMessages",full_message)
+        if(full_message.results || full_message.number ){
+            full_message.type = "crud_operation";
+            that.baseStub.sendOtherMessages(full_message);
+        }else{
+            if(full_message.status == "ok"){
+                full_message.message.forEach(function(element, array, index){
+                    if(element.to[0] == null){
+                        that.handleMessages(element);
+                    }
+                });
+            }else{
+                console.log("full_message: ", full_message);
+                if(full_message.type == 'message')
+                    var message = full_message.body;
+                else
+                    var message = full_message;
+
+                if (message.type == MessageType.INVITATION || !message.contextId && (message.type != MessageType.CONTEXT &&  message.action != "subscribe"))
+                {
+                    if(that.baseStub.listeners[0].length == 1){
+                        that.eventbus.registerHandler(message.contextId, that.handleMessages);
+                    }
+
+                }
+
+                if(message.type == MessageType.SUBSCRIBE){
+                    //that.eventbus.registerHandler(message.from + ".presence", that.handleMessages);
+                    that.eventbus.registerHandler("ptin.presence" , that.handleMessages);
+                }
+                if(message.action != "subscribe"){
+                    Idp.getInstance().createIdentity(message.from, function(identity) {
+                        message.from = identity;
+
+                        if(message.to instanceof Array && message.to[0] === null){
+                            that.baseStub.sendOtherMessages(message);
+                        }
+                        else{
+                            // createIdentities can take array or single rtcIdentity and always returns an Array in the callback result
+                            Idp.getInstance().createIdentity(message.to[0], function(identityArr) {
+                                message.to = identityArr;
+                                // Filter the listeners to redirect the message
+                                that.baseStub.sendOtherMessages(message);
+                            });
+                        }
+
+                    });
+                }
             }
-				
-		}
-
-		Idp.getInstance().createIdentity(message.from, function(identity) {
-			message.from = identity;
-			
-			if(message.to instanceof Array && message.to[0] === null){
-				that.baseStub.sendOtherMessages(message);
-			}
-			else{
-				// createIdentities can take array or single rtcIdentity and always returns an Array in the callback result
-				Idp.getInstance().createIdentity(message.to[0], function(identityArr) {
-					message.to = identityArr;
-					// Filter the listeners to redirect the message
-					that.baseStub.sendOtherMessages(message);
-				});
-			}
-
-		});
-		}
-		
-	}
+        }
+    }
 }
 
 
@@ -225,10 +305,10 @@ MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, cal
 
 MessagingStub_PTIN.prototype.disconnect = function(){
 
-	//TODO: Implement this method with vert.x implementation
-	this.eventbus.unregisterHandler(this.ownRtcIdentity, this.handleMessages);
-	this.eventbus = null;
-	console.log("Eventbus connection disconnected");
+    //TODO: Implement this method with vert.x implementation
+    this.eventbus.unregisterHandler(this.ownRtcIdentity, this.handleMessages);
+    this.eventbus = null;
+    console.log("Eventbus connection disconnected");
 
 }
 
@@ -249,19 +329,19 @@ MessagingStub_PTIN.prototype.connected = function(ownRtcIdentity, contextId){
     //message.to = ;
     console.log("-->MessagingStub_PTIN.prototype.connected<--");
     this.eventbus.send("ptin.conversationmanager", message , function(reply){
-        
+
         reply.message.forEach(function(element, array, index){
             console.log("element.to.rtcIdentity: ", element.to[0]);
             console.log("ownRtcIdentity: ", ownRtcIdentity);
             if(element.to[0] == ownRtcIdentity && type == "connected"){
-            	that.handleMessages(element);
+                that.handleMessages(element);
             }
             if(element.to[0] == null){
-            	console.log("ELEMENT: ", element);
+                console.log("ELEMENT: ", element);
                 that.handleMessages(element);
             }
         });
         console.log("-->MessagingStub_PTIN.prototype.connected<--");
     });
-    
+
 }
