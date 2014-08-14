@@ -10,14 +10,14 @@
 
 /**
  * @class
- * The Participant class handles all operations needed to manage the participation of an 
- * Identity (User) in a conversation including the WebRTC PeerConnection functionalities. 
- * The Local Participant is associated with the Identity that is using the Browser while the 
+ * The Participant class handles all operations needed to manage the participation of an
+ * Identity (User) in a conversation including the WebRTC PeerConnection functionalities.
+ * The Local Participant is associated with the Identity that is using the Browser while the
  * Remote Participant is associated to remote Identities (users) involved in the conversation.
- * 
+ *
  */
 function Participant() {
-    
+
     this.identity = "";                         // Identity of the participant
     this.RTCPeerConnection = "";                // RTCPeerConnection for that participant
     this.status = "";                           // Status
@@ -37,8 +37,8 @@ function Participant() {
     /*********************************/
 
     /**
-    * @ignore
-    */
+     * @ignore
+     */
     var thisParticipant = this;
     setStatus = function(status) {
 
@@ -97,9 +97,9 @@ function Participant() {
                 return true;
                 break;
             case ParticipantStatus.PARTICIPATED:
-                    thisParticipant.status = status;
-                    console.log(thisParticipant);
-                    return true;
+                thisParticipant.status = status;
+                console.log(thisParticipant);
+                return true;
                 break;
             case ParticipantStatus.WAITING:
                 if (status != ParticipantStatus.PARTICIPATING && status != ParticipantStatus.FAILED) {
@@ -112,9 +112,9 @@ function Participant() {
                 }
                 break;
             case ParticipantStatus.NOT_PARTICIPATING:
-                    thisParticipant.status = status;
-                    console.log(thisParticipant);
-                    return true;
+                thisParticipant.status = status;
+                console.log(thisParticipant);
+                return true;
 
                 break;
             default:
@@ -129,7 +129,7 @@ function Participant() {
 
 /**
  * Creates the local participant and initializes its resources.
- * 
+ *
  * @param {Identity} identity - {@link Identity} of the participant
  * @param {ResourceConstraints[]} resourceConstraints - Array of constraints for the initial resources of the local participant. (CURRENT IMPLEMENTATION WILL TAKE THE FIRST ONE)
  * @param {onRTCEvt} rtcEvtHandler - Callback function that handles WebRTC Events.
@@ -140,7 +140,7 @@ function Participant() {
  */
 
 Participant.prototype.createMyself = function(identity, resourceConstraints, rtcEvtHandler, msgHandler, callback, errorCallback) {
-    
+
     this.identity = identity;
     this.me = this;
     this.rtcEvtHandler = rtcEvtHandler;
@@ -148,15 +148,15 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
 
     setStatus(ParticipantStatus.CREATED);   // @pchainho TODO: to catch errors   
 
-    
+
     var doGetUserMedia = false;
     var doDataChannel = false;
     var conversationResource = false;
     var constraints = new Object();
     constraints.audio = false;
     constraints.video = false;
-    
-    
+
+
     // Create RTCPeerConnection 
     try {
         // Create an RTCPeerConnection via the polyfill (adapter.js).
@@ -172,10 +172,10 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
     }
 
     this.setRTCPeerConnection(pc);
-    
-    
-    
-    
+
+
+
+
     // TODO: Solve the problem where for many resourceConstraints, we would have a loop with callbacks inside.
     // Process the constraints, ordering them by media ones and data ones (maybe in 2 arrays). Merge if necessary
     //resourceConstraints=resourceConstraints[0]; // <dirtyFix>
@@ -215,10 +215,10 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
 
                     callback();
                 }, errorCallback);
-               // return;
+                // return;
             }
             if (resourceConstraints[numbResource].direction!="in" &&  (resourceConstraints[numbResource].type != "audioVideo" || resourceConstraints[numbResource].type != "audioMic"  || resourceConstraints[numbResource].type != "screen") ) {
-                
+
                 if (resourceConstraints[numbResource].type == "chat" || resourceConstraints[numbResource].type == "file" ) {
                     var codec = new Codec(resourceConstraints[numbResource].type);
                     //codec.id=resourceConstraints[numb].id;
@@ -239,7 +239,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
             recursiveCallback(numbResource,recursiveCallback);
         }else{
             if(flag != true ){
-               callback();
+                callback();
             }
         }
     }
@@ -275,7 +275,7 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
                     break;
                 case ResourceType.FILE:
                     doDataChannel = true;
-                    break;  
+                    break;
                 case ResourceType.CHAT:
                     doDataChannel = true;
                     break;
@@ -294,10 +294,10 @@ Participant.prototype.createMyself = function(identity, resourceConstraints, rtc
 
 /**
  * Creates a remote participant
- * 
+ *
  * @param {Identity} identity - {@link Identity} of the participant
- * @param {Participant} myParticipant - {@link Participant} representing the local user of the application. 
- * @param {string} contextId - Identifier of the conversation this participant belongs to. 
+ * @param {Participant} myParticipant - {@link Participant} representing the local user of the application.
+ * @param {string} contextId - Identifier of the conversation this participant belongs to.
  * @param {ResourceConstraints[]} resourceConstraints - Array of constraints for the initial resources of the remote participant (CURRENT IMPLEMENTATION WILL TAKE THE FIRST ONE).
  * @param {onRTCEvt} rtcEvtHandler - Callback function that handles WebRTC Events.
  * @param {onMessage} msgHandler - Callback function that handles signaling Events.
@@ -450,7 +450,7 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
 
 /**@ignore
  * setRTCPeerConnection
- * 
+ *
  * @param RTCPeerConnection : PeerConnection ... sets the connection attribute for a participant
  */
 Participant.prototype.setRTCPeerConnection = function(RTCPeerConnection) {
@@ -487,7 +487,7 @@ Participant.prototype.setRTCPeerConnection = function(RTCPeerConnection) {
     };
 
     /**
-     * onicecandidate 
+     * onicecandidate
      *
      */
 
@@ -516,7 +516,7 @@ Participant.prototype.setRTCPeerConnection = function(RTCPeerConnection) {
     /**
      * onremovestream
      *
-     *  It is called any time a MediaStream is removed by the remote peer. 
+     *  It is called any time a MediaStream is removed by the remote peer.
      */
 
     this.RTCPeerConnection.onremovestream = function(evt) {
@@ -529,9 +529,9 @@ Participant.prototype.setRTCPeerConnection = function(RTCPeerConnection) {
 
 /**
  * getConnection
- * 
+ *
  * @returns PeerConnection ... gets the connection attribute for a participant
- * 
+ *
  */
 Participant.prototype.getRTCPeerConnection = function() {
     return this.RTCPeerConnection;
@@ -602,10 +602,10 @@ Participant.prototype.onMessage = function(message) {
             if(typeof message.body.connectionDescription !== 'undefined' && message.body.connectionDescription !== ""){
 
                 console.log("Participant " + this.identity.rtcIdentity + " received accepted.");
-            var description = new RTCSessionDescription(message.body.connectionDescription);
-            this.RTCPeerConnection.setRemoteDescription(description,
+                var description = new RTCSessionDescription(message.body.connectionDescription);
+                this.RTCPeerConnection.setRemoteDescription(description,
                     onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
-                console.log("Remote Description set: ", this);  
+                console.log("Remote Description set: ", this);
                 this.getResources(mediaConstraints)[0]=mediaConstraints;
 
                 console.log("this.me.indentity: " + this.me.identity.rtcIdentity);
@@ -636,9 +636,9 @@ Participant.prototype.onMessage = function(message) {
                         that.sendMessage("", MessageType.INVITATION, mediaConstraints);
                     }
                 }
-            }          
-            
-            
+            }
+
+
             this.msgHandler(message);
             break;
         case MessageType.CONNECTIVITY_CANDIDATE:
@@ -671,7 +671,7 @@ Participant.prototype.onMessage = function(message) {
             break;
         case MessageType.UPDATE:
             this.msgHandler(message);
-            
+
             break;
         case MessageType.UPDATED:
             var mediaConstraints = message.body.newConstraints;
@@ -712,13 +712,13 @@ Participant.prototype.onMessage = function(message) {
                     if(!exist){
                         console.log("mediaConstraints[0]",mediaConstraints[0])
                         if(mediaConstraints[0].direction == "in_out"){
-                        //if not send a message to the all of candidates
+                            //if not send a message to the all of candidates
                             that.sendMessage("", MessageType.UPDATE, mediaConstraints);
                         }
                     }
                 }
-            } 
-             
+            }
+
             this.msgHandler(message);
             break;
         case MessageType.REDIRECT:
@@ -738,7 +738,7 @@ Participant.prototype.onMessage = function(message) {
             var mediaConstraints = message.body.constraints;
             var description = new RTCSessionDescription(message.body.connectionDescription);
             this.RTCPeerConnection.setRemoteDescription(description, onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
-            
+
             this.sendMessage(answerBody, MessageType.ACCEPTED, mediaConstraints);
             //this.msgHandler(message);
             break;
@@ -768,11 +768,11 @@ Participant.prototype.connectStub = function(callback) {
 
 /**
  *
- * The method will create the message and send it to the participant. 
- * 
+ * The method will create the message and send it to the participant.
+ *
  * @param {MessageBody} messageBody - The body of the message (depends on the MessageType)
  * @param {MessageType} messageType - The type of the message.
- * @param {ResourceConstraints} [constraints] - For the messages that imply information about the Resources, contraints about them. 
+ * @param {ResourceConstraints} [constraints] - For the messages that imply information about the Resources, contraints about them.
  * @param {callback} callback - Callback for successful sending.
  * @param {errorCallback} errorCallback - Error Callback
  *
@@ -784,29 +784,29 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
     if( messageBody == undefined){
         sdpConstraints = {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true }};
     }else{
-        if(/^-?[\d.]+(?:e-?\d+)?$/.test(messageBody.peers)){ 
+        if(/^-?[\d.]+(?:e-?\d+)?$/.test(messageBody.peers)){
             sdpConstraints = {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': false }};
         }
-        else{       
+        else{
             sdpConstraints = {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true }};
         }
     }
-    
+
     var message = new Message();
     var thisParticipant = this;
     console.log(this.resources)
     /*for(i = 0;i<constraints.length;i++){
-        if(constraints[i].type==ResourceType.CHAT || constraints[i].type==ResourceType.FILE)
-        {
-            var codec = new Codec(constraints[i].type, constraints[i].CodecLibUrl);
-            codec.id = constraints[i].id;
-            codec.description = constraints[i].description;
-            codec.mime_type = constraints[i].mime_type;
-            constraints[i] = codec;
-        }
-    }*/
+     if(constraints[i].type==ResourceType.CHAT || constraints[i].type==ResourceType.FILE)
+     {
+     var codec = new Codec(constraints[i].type, constraints[i].CodecLibUrl);
+     codec.id = constraints[i].id;
+     codec.description = constraints[i].description;
+     codec.mime_type = constraints[i].mime_type;
+     constraints[i] = codec;
+     }
+     }*/
 
-    
+
     switch(messageType){
         case MessageType.INVITATION:
             console.log("MessageType.INVITATION: ", messageBody);
@@ -835,77 +835,77 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                     aux.type = constraints[iteration].type;
                     aux.direction =  constraints[iteration].direction;
                     constraintsAux.push(aux);
-                } 
+                }
             }
 
-                console.log("invite")
-                if (!messageBody) message = MessageFactory.createInvitationMessage(this.me.identity, this.identity, this.contextId, constraintsAux);
-                else message = MessageFactory.createInvitationMessage(this.me.identity, this.identity, this.contextId, constraintsAux, messageBody.conversationURL, messageBody.subject, messageBody.hosting, messageBody.agenda, messageBody.peers);
-                setStatus(ParticipantStatus.PENDING); // TODO: OR WAITING?? Check for errors.
+            console.log("invite")
+            if (!messageBody) message = MessageFactory.createInvitationMessage(this.me.identity, this.identity, this.contextId, constraintsAux);
+            else message = MessageFactory.createInvitationMessage(this.me.identity, this.identity, this.contextId, constraintsAux, messageBody.conversationURL, messageBody.subject, messageBody.hosting, messageBody.agenda, messageBody.peers);
+            setStatus(ParticipantStatus.PENDING); // TODO: OR WAITING?? Check for errors.
 
-                this.RTCPeerConnection.createOffer(function (sessionDescription) {
+            this.RTCPeerConnection.createOffer(function (sessionDescription) {
+                thisParticipant.RTCPeerConnection.setLocalDescription(sessionDescription, function () {
+                    console.log("Local description set: ", sessionDescription);
+                    message.body.connectionDescription = thisParticipant.RTCPeerConnection.localDescription;
+
+                    console.log("Sending message with constraints: ", constraints);
+
+                    if (!thisParticipant.identity.messagingStub){
+                        errorCallback("Messaging Stub not well initialized");
+                        errorCallback;
+                    }
+                    else thisParticipant.identity.messagingStub.sendMessage(message);
+
+                    if (callback)
+                        callback();
+
+                }, function(error){console.log("errorCallback(error)", error); errorCallback(error)});
+            }, function(error){errorCallback(error)/*console.log("errorCallback(error)", error);*/}, sdpConstraints);
+
+            break;
+        case MessageType.ACCEPTED:
+            var constraintsAux =new Array();
+            var i;
+            for(i =0;i<constraints.length;i++){
+                var aux = new Object();
+                aux.id = constraints[i].id;
+                aux.type = constraints[i].type;
+                aux.direction =  constraints[i].direction;
+                constraintsAux.push(aux);
+            }
+            if(this.me.identity.rtcIdentity === this.hosting.rtcIdentity){
+                //send a accepted message with no SDP inside
+                var message = new Object();
+                message = MessageFactory.createAnswerMessage(messageBody.from, "", thisParticipant.contextId, constraintsAux, "", messageBody.connected,messageBody.hosting);
+                message.body.from = messageBody.from.rtcIdentity;
+                thisParticipant.identity.messagingStub.sendMessage(message);
+
+            }
+            else{
+                if(!messageBody) message = MessageFactory.createAnswerMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
+                else message = MessageFactory.createAnswerMessage(this.me.identity,this.identity,this.contextId, constraintsAux, messageBody.hosting);
+
+                setStatus(ParticipantStatus.ACCEPTED);
+
+                this.RTCPeerConnection.createAnswer(function (sessionDescription) {
                     thisParticipant.RTCPeerConnection.setLocalDescription(sessionDescription, function () {
                         console.log("Local description set: ", sessionDescription);
                         message.body.connectionDescription = thisParticipant.RTCPeerConnection.localDescription;
 
-                        console.log("Sending message with constraints: ", constraints);
-
                         if (!thisParticipant.identity.messagingStub){
                             errorCallback("Messaging Stub not well initialized");
-                            errorCallback;
+                            return;
                         }
                         else thisParticipant.identity.messagingStub.sendMessage(message);
 
                         if (callback)
                             callback();
 
-                    }, function(error){console.log("errorCallback(error)", error); errorCallback(error)});
-                }, function(error){errorCallback(error)/*console.log("errorCallback(error)", error);*/}, sdpConstraints);
-
-            break;
-        case MessageType.ACCEPTED:
-                var constraintsAux =new Array();
-                var i;
-                for(i =0;i<constraints.length;i++){
-                    var aux = new Object();
-                    aux.id = constraints[i].id;
-                    aux.type = constraints[i].type;
-                    aux.direction =  constraints[i].direction;
-                    constraintsAux.push(aux);
-                }
-                if(this.me.identity.rtcIdentity === this.hosting.rtcIdentity){
-                    //send a accepted message with no SDP inside
-                    var message = new Object();
-                    message = MessageFactory.createAnswerMessage(messageBody.from, "", thisParticipant.contextId, constraintsAux, "", messageBody.connected,messageBody.hosting);
-                    message.body.from = messageBody.from.rtcIdentity;
-                    thisParticipant.identity.messagingStub.sendMessage(message);
-
-                }
-                else{
-            if(!messageBody) message = MessageFactory.createAnswerMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
-            else message = MessageFactory.createAnswerMessage(this.me.identity,this.identity,this.contextId, constraintsAux, messageBody.hosting);
-
-            setStatus(ParticipantStatus.ACCEPTED);
-
-            this.RTCPeerConnection.createAnswer(function (sessionDescription) {
-                thisParticipant.RTCPeerConnection.setLocalDescription(sessionDescription, function () {
-                    console.log("Local description set: ", sessionDescription);
-                    message.body.connectionDescription = thisParticipant.RTCPeerConnection.localDescription;
-                    
-                    if (!thisParticipant.identity.messagingStub){
-                        errorCallback("Messaging Stub not well initialized");
-                        return;
-                    }
-                    else thisParticipant.identity.messagingStub.sendMessage(message);
-
-                    if (callback)
-                        callback();
-                    
-                }, function(error){errorCallback(error)});
-                    }, function(error){
-                        console.log("error: ", error);
-                    }, sdpConstraints);
-                }
+                    }, function(error){errorCallback(error)});
+                }, function(error){
+                    console.log("error: ", error);
+                }, sdpConstraints);
+            }
 
             break;
         case MessageType.CONNECTIVITY_CANDIDATE:
@@ -919,32 +919,32 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                 return;
             }
             else message = MessageFactory.createCandidateMessage(this.me.identity,this.identity,this.contextId,messageBody.label,messageBody.id,messageBody.candidateDescription,messageBody.lastCandidate);
-            
-             if (!thisParticipant.identity.messagingStub){
-                        errorCallback("Messaging Stub not well initialized");
-                        return;
-                    }
-                    else thisParticipant.identity.messagingStub.sendMessage(message);
+
+            if (!thisParticipant.identity.messagingStub){
+                errorCallback("Messaging Stub not well initialized");
+                return;
+            }
+            else thisParticipant.identity.messagingStub.sendMessage(message);
             break;
         case MessageType.BYE:
-            message = new Message(this.me.identity,this.identity,"",MessageType.BYE,this.contextId); 
-             if (!thisParticipant.identity.messagingStub){
-                        errorCallback("Messaging Stub not well initialized");
-                        return;
-                    }
-                    else 
-                    {
-                     thisParticipant.identity.messagingStub.sendMessage(message);
-                     setStatus(ParticipantStatus.NOT_PARTICIPATING); // TODO: CHECK IF ITS THE CORRECT STATE
-                    }
+            message = new Message(this.me.identity,this.identity,"",MessageType.BYE,this.contextId);
+            if (!thisParticipant.identity.messagingStub){
+                errorCallback("Messaging Stub not well initialized");
+                return;
+            }
+            else
+            {
+                thisParticipant.identity.messagingStub.sendMessage(message);
+                setStatus(ParticipantStatus.NOT_PARTICIPATING); // TODO: CHECK IF ITS THE CORRECT STATE
+            }
             console.log("Call terminated");
             break;
         case MessageType.UPDATE:
             console.log("MESSAGE: ", message);
             if (!messageBody)
-            {   
+            {
                 var constraintsAux =new Array();
-            
+
                 var aux = new Object();
                 aux.id = constraints[0].id;
                 aux.type = constraints[0].type;
@@ -959,7 +959,7 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                 aux.direction =  messageBody.newConstraints.direction;
                 constraintsAux.push(aux);
                 message = MessageFactory.createUpdateMessage(this.me.identity,this.identity,this.contextId, constraintsAux);
-            }   
+            }
             console.log(message);
 
             this.RTCPeerConnection.createOffer(function (sessionDescription) {
@@ -975,30 +975,30 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                 }, function(error){errorCallback(error)});
             }, function(error){errorCallback(error)}, sdpConstraints);
 
-        break;
+            break;
 
         case MessageType.UPDATED:
-            if(this.me.identity.rtcIdentity === this.me.updater){ 
-                    //send a accepted message with no SDP inside
-                    var message = new Object();
-                    message = MessageFactory.createUpdatedMessage(messageBody.from,"",this.contextId,constraints, this.updatedIdentities,this.hosting.rtcIdentity);
-                    message.body.from = messageBody.from.rtcIdentity;
-                    thisParticipant.identity.messagingStub.sendMessage(message);
+            if(this.me.identity.rtcIdentity === this.me.updater){
+                //send a accepted message with no SDP inside
+                var message = new Object();
+                message = MessageFactory.createUpdatedMessage(messageBody.from,"",this.contextId,constraints, this.updatedIdentities,this.hosting.rtcIdentity);
+                message.body.from = messageBody.from.rtcIdentity;
+                thisParticipant.identity.messagingStub.sendMessage(message);
 
             }else{
                 if (!messageBody)
                 {
                     var constraintsAux =new Array();
-            
+
                     var aux = new Object();
                     aux.id = constraints[0].id;
                     aux.type = constraints[0].type;
                     aux.direction =  constraints[0].direction;
                     constraintsAux.push(aux);
                     message = MessageFactory.createUpdatedMessage(this.me.identity, this.identity, this.contextId, constraintsAux);
-                }else{ 
+                }else{
                     var constraintsAux =new Array();
-            
+
                     var aux = new Object();
                     aux.id = messageBody.newConstraints.id;
                     aux.type = messageBody.newConstraints.type;
@@ -1008,34 +1008,34 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
                 }
 
                 this.RTCPeerConnection.createAnswer(function (sessionDescription) {
-                        thisParticipant.RTCPeerConnection.setLocalDescription(sessionDescription, function () {
-                            console.log("Local description set: ", sessionDescription);
-                            message.body.newConnectionDescription = thisParticipant.RTCPeerConnection.localDescription;
+                    thisParticipant.RTCPeerConnection.setLocalDescription(sessionDescription, function () {
+                        console.log("Local description set: ", sessionDescription);
+                        message.body.newConnectionDescription = thisParticipant.RTCPeerConnection.localDescription;
 
-                            if (!thisParticipant.identity.messagingStub){
-                                errorCallback("Messaging Stub not well initialized");
-                                return;
-                            }
-                            else thisParticipant.identity.messagingStub.sendMessage(message);
+                        if (!thisParticipant.identity.messagingStub){
+                            errorCallback("Messaging Stub not well initialized");
+                            return;
+                        }
+                        else thisParticipant.identity.messagingStub.sendMessage(message);
 
-                            if (callback)
-                                callback();
+                        if (callback)
+                            callback();
 
-                        }, function(error){errorCallback(error)});
-                    }, function(error){errorCallback(error)}, sdpConstraints);
-                }
-                    break;
-        }
+                    }, function(error){errorCallback(error)});
+                }, function(error){errorCallback(error)}, sdpConstraints);
+            }
+            break;
+    }
     console.log('Sending: ', message);
 }
 
 /**
- * 
- * The Participant leaves the Conversation removing all resources shared in the conversation. 
+ *
+ * The Participant leaves the Conversation removing all resources shared in the conversation.
  * Participant status is changed accordingly.
  *
  * @param {boolean} sendMessage - If true a BYE message will be sent to the participant before removing it. If false the participant will be removed locally from the conversation without sending any message.
- * 
+ *
  */
 
 Participant.prototype.leave = function(sendMessage) {
@@ -1047,9 +1047,9 @@ Participant.prototype.leave = function(sendMessage) {
             array[index].stop();
         });
         if(sendMessage==true){
-            this.sendMessage("",MessageType.BYE,"","",function(){},function(){});  
+            this.sendMessage("",MessageType.BYE,"","",function(){},function(){});
             //this.identity.onLastMessagingListener();
-        } 
+        }
     }
     else{
         if(sendMessage==true) this.sendMessage("",MessageType.BYE,"","",function(){},function(){});
@@ -1062,9 +1062,9 @@ Participant.prototype.leave = function(sendMessage) {
 
 /**
  * getStatus
- * 
+ *
  * @returns ParticipantStatus ... gets the status attribute for a participant
- * 
+ *
  */
 Participant.prototype.getStatus = function() {
     return this.status;
@@ -1085,7 +1085,7 @@ Participant.prototype.setConversation = function(conversation) {
 
 /**
  * Adds a Resource to this participant including all the signaling and logical actions required.
- * 
+ *
  * @param {ResourceConstraints} resourceConstraints - Array of constraints for the initial resources of the remote participant (CURRENT IMPLEMENTATION WILL TAKE THE FIRST ONE).
  * @param {Message} [message] - In case an UPDATE message is received, it should be passed to this function as a parameter to process it and send the UPDATED.
  * @param {callback} callback - Callback function fired when the resource was added succesfully.
@@ -1093,7 +1093,7 @@ Participant.prototype.setConversation = function(conversation) {
  *
  */
 
- 
+
 Participant.prototype.addResource = function (resourceConstraints, message, callback, errorCallback) {
     var i;
     var getMedia = false;
@@ -1107,7 +1107,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             idMedia = i;
         }
         if(this.resources[i].constraint != null && this.resources[i].constraint != undefined) {
-            if(this.resources[i].constraint.type =="chat" || this.resources[i].constraint.type =="file" ){    
+            if(this.resources[i].constraint.type =="chat" || this.resources[i].constraint.type =="file" ){
                 dataChannel = true;
             }
         }
@@ -1130,59 +1130,59 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
         // TODO: CHECK FOR DATACHANNEL TYPES AND CONTROL THE CREATION OF A NEW DATACHANNEL, CREATING IT ONLY IF NECCESARY
         // TODO: Solve the problem where for many resourceConstraints, we would have a loop with callbacks inside.
         resourceConstraints = resourceConstraints[0]; // <dirtyFix>
-        
+
 
         switch (resourceConstraints.type) {
 
-        case ResourceType.AUDIO_MIC:
-            if(!micAlready & !micCamAlready){
-                constraints.audio = true;
-                doGetUserMedia = true;
-            }
-            break;
-        case ResourceType.VIDEO_CAM:
-            if(!camAlready & !micCamAlready){
-                constraints.video = true;
-                doGetUserMedia = true;
-            }
-            break;
-        case ResourceType.AUDIO_VIDEO:
-            if(!camAlready) constraints.video = true;
-            if(!micAlready) constraints.audio = true;
-            if(!micCamAlready) doGetUserMedia = true;
-            break;
-        case ResourceType.SCREEN:
-            constraints.audio = false;
-            constraints.video = {
-                mandatory: {
+            case ResourceType.AUDIO_MIC:
+                if(!micAlready & !micCamAlready){
+                    constraints.audio = true;
+                    doGetUserMedia = true;
+                }
+                break;
+            case ResourceType.VIDEO_CAM:
+                if(!camAlready & !micCamAlready){
+                    constraints.video = true;
+                    doGetUserMedia = true;
+                }
+                break;
+            case ResourceType.AUDIO_VIDEO:
+                if(!camAlready) constraints.video = true;
+                if(!micAlready) constraints.audio = true;
+                if(!micCamAlready) doGetUserMedia = true;
+                break;
+            case ResourceType.SCREEN:
+                constraints.audio = false;
+                constraints.video = {
+                    mandatory: {
                         chromeMediaSource: 'screen',
                         maxWidth: 1280,
                         maxHeight: 720
-                },
-                optional: []
+                    },
+                    optional: []
                 };
-            doGetUserMedia = true;
-            break;
-        case ResourceType.FILE:
-            doDataChannel = true;
-            break;
-        case ResourceType.CHAT:
-            doDataChannel = true;
-            break;
+                doGetUserMedia = true;
+                break;
+            case ResourceType.FILE:
+                doDataChannel = true;
+                break;
+            case ResourceType.CHAT:
+                doDataChannel = true;
+                break;
         }
 
 
         console.log(constraints);
 
         if (doGetUserMedia === true && resourceConstraints.direction != "in") {
-           
-           
+
+
             if(!getMedia || resourceConstraints.type == "screen"){
                 getUserMedia(constraints, function (stream) {
                     var evt = new Object();
                     evt.stream = stream;
                     streamGetMedia = stream;
-                    
+
                     thisParticipant.rtcEvtHandler('onaddlocalstream', evt);
 
                     if(!micAlready & !camAlready){
@@ -1202,9 +1202,9 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                         if(camAlready){
                             var resource = thisParticipant.me.getResources("",ResourceType.VIDEO_CAM)[0];
                             var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getVideoTracks()[0]); 
+                            stream2.addTrack(stream.getVideoTracks()[0]);
                         }
-                        resource.type=ResourceType.AUDIO_VIDEO;   
+                        resource.type=ResourceType.AUDIO_VIDEO;
                         resource.constraint.type=ResourceType.AUDIO_VIDEO;
                     }
 
@@ -1215,29 +1215,29 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                 var evt = new Object();
                 evt.stream = streamGetMedia;
                 thisParticipant.rtcEvtHandler('onaddlocalstream', evt);
-                    if(!micAlready & !camAlready){
-                        thisParticipant.RTCPeerConnection.addStream(streamGetMedia);
-                        var resource = this.resources[idMedia];
-                        resource.constraint.constraints= {id: streamGetMedia.id};
-                        resource.connections.push(thisParticipant.RTCPeerConnection);
-                        thisParticipant.resources.push(resource);
+                if(!micAlready & !camAlready){
+                    thisParticipant.RTCPeerConnection.addStream(streamGetMedia);
+                    var resource = this.resources[idMedia];
+                    resource.constraint.constraints= {id: streamGetMedia.id};
+                    resource.connections.push(thisParticipant.RTCPeerConnection);
+                    thisParticipant.resources.push(resource);
+                }
+                else{
+                    if(micAlready){
+                        var resource = thisParticipant.me.getResources("",ResourceType.AUDIO_MIC)[0];
+                        var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
+                        stream2.addTrack(stream.getAudioTracks()[0]);
                     }
-                    else{
-                        if(micAlready){
-                            var resource = thisParticipant.me.getResources("",ResourceType.AUDIO_MIC)[0];
-                            var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getAudioTracks()[0]);
-                        }
-                        if(camAlready){
-                            var resource = thisParticipant.me.getResources("",ResourceType.VIDEO_CAM)[0];
-                            var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
-                            stream2.addTrack(stream.getVideoTracks()[0]); 
-                        }
-                        resource.type=ResourceType.AUDIO_VIDEO;   
-                        resource.constraint.type=ResourceType.AUDIO_VIDEO;
+                    if(camAlready){
+                        var resource = thisParticipant.me.getResources("",ResourceType.VIDEO_CAM)[0];
+                        var stream2 = thisParticipant.RTCPeerConnection.getStreamById(resource.id);
+                        stream2.addTrack(stream.getVideoTracks()[0]);
                     }
+                    resource.type=ResourceType.AUDIO_VIDEO;
+                    resource.constraint.type=ResourceType.AUDIO_VIDEO;
+                }
 
-                    callback();
+                callback();
             }
             return;
         }
@@ -1261,7 +1261,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
         }
         if (resourceConstraints.direction != "out") {
             if (resourceConstraints.type == "audioVideo" || resourceConstraints.type == "screen" || resourceConstraints.type == "audioMic") {
-               
+
                 var resource = new Resource(resourceConstraints);
                 console.log("resource",resource)
                 if(!resourceConstraints.id){
@@ -1297,10 +1297,10 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
         }
         if (resourceConstraints.direction != "in") {
             // Get the resource from the me participant and add it to the peerConnection
-            
+
             //TODO: IMPLEMENT AND CHECK!!!!!!!!!!!!!!
             var channel;
-           // var thisParticipant = this;
+            // var thisParticipant = this;
 
             if (resourceConstraints.length > 0) {
                 // TODO: Solve the problem where for many resourceConstraints, we would have a loop with callbacks inside.
@@ -1308,24 +1308,24 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                 var media = false;
                 var data = false;
                 switch (constraints.type) {
-                case ResourceType.SCREEN:
-                    media = true;
-                    break;     
-                case ResourceType.AUDIO_MIC:
-                    media = true;
-                    break;
-                case ResourceType.VIDEO_CAM:
-                    media = true;
-                    break;
-                case ResourceType.AUDIO_VIDEO:
-                    media = true;
-                    break;
-                case ResourceType.FILE:
-                    data = true;
-                    break;
-                case ResourceType.CHAT:
-                    data = true;
-                    break;
+                    case ResourceType.SCREEN:
+                        media = true;
+                        break;
+                    case ResourceType.AUDIO_MIC:
+                        media = true;
+                        break;
+                    case ResourceType.VIDEO_CAM:
+                        media = true;
+                        break;
+                    case ResourceType.AUDIO_VIDEO:
+                        media = true;
+                        break;
+                    case ResourceType.FILE:
+                        data = true;
+                        break;
+                    case ResourceType.CHAT:
+                        data = true;
+                        break;
                 }
             }
 
@@ -1335,9 +1335,9 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             // create data channel and setup chat        
             if ((data && constraints.direction != "in") && dataChannel == false) {
                 //if(thisParticipant.dataBroker.channels.length <= 1){
-                    channel = thisParticipant.RTCPeerConnection.createDataChannel("dataChannel"); // TODO: CREATE DATACHANNEL ONLY IF THERE IS NOT DATARESOURCE YET.
-                    thisParticipant.setDataBroker(constraints.constraints.dataBroker);
-                    thisParticipant.dataBroker.addDataChannel(channel,thisParticipant.identity);
+                channel = thisParticipant.RTCPeerConnection.createDataChannel("dataChannel"); // TODO: CREATE DATACHANNEL ONLY IF THERE IS NOT DATARESOURCE YET.
+                thisParticipant.setDataBroker(constraints.constraints.dataBroker);
+                thisParticipant.dataBroker.addDataChannel(channel,thisParticipant.identity);
                 //}
                 var resourceData = this.me.getResources(constraints)[0];
 
@@ -1349,11 +1349,11 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                 }
 
                 // setup chat on incoming data channel
-               // pc = thisParticipant.RTCPeerConnection;
+                // pc = thisParticipant.RTCPeerConnection;
                 thisParticipant.me.RTCPeerConnection.ondatachannel = function (evt) {
                     channel = evt.channel;
                 };
-                
+
             }
             if(dataChannel && (resourceConstraints.type == "chat" || resourceConstraints.type == "file")){
                 var resourceData = this.me.getResources(constraints)[0];
@@ -1363,7 +1363,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             }
             if ( (resourceConstraints.type == "audioVideo" || resourceConstraints.type == "audioMic" || resourceConstraints.type == "screen") && resourceConstraints.direction != "in") {
                 var resourceMedia = this.me.getResources(resourceConstraints);
-                                
+
                 //If it doesnt find the constraints means that the audio and video were merged into AudioVideo
                 if(resourceMedia.length==0){
                     constraints.type=ResourceType.AUDIO_VIDEO;
@@ -1375,18 +1375,18 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
                 var evt = new Object();
                 evt.stream = stream;
                 evt.participant = thisParticipant;
-                    
+
                 thisParticipant.rtcEvtHandler('onaddstream', evt);
                 resourceMedia[0].connections.push(thisParticipant.RTCPeerConnection);
             }
         }
-        
+
         if (!message) {
             // setlocal description, send update
             var messageBody = new Object();
             messageBody.newConstraints=resourceConstraints;
             this.sendMessage(messageBody, MessageType.UPDATE, constraints, callback, errorCallback);
-            
+
         } else {
             // set remotedescription, set localdescription send updated 
             console.log("ADD_RESOURCE <- Participant");
@@ -1396,7 +1396,7 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
             }else{
                 var description = new RTCSessionDescription(message.body.newConnectionDescription);
                 this.RTCPeerConnection.setRemoteDescription(description,
-                        onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+                    onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
                 console.log("Remote Description set: ", description);
                 console.log("Participant: ", this);
             }
@@ -1419,9 +1419,9 @@ Participant.prototype.addResource = function (resourceConstraints, message, call
  *
  */
 Participant.prototype.getResources = function (resourceConstraints, resourceType, id) {
-    
+
     var resources = new Array();
-    
+
     if (resourceConstraints) {
         this.resources.forEach(function (element, index, array) {
             if (element.constraint.type == resourceConstraints.type && element.constraint.direction == resourceConstraints.direction) resources.push(array[index]);
@@ -1448,9 +1448,9 @@ Participant.prototype.getResources = function (resourceConstraints, resourceType
 
 /**@ignore
  * getStreams
- * 
+ *
  * @returns Stream [] ... gets the resources array attribute
- * 
+ *
  */
 Participant.prototype.getStreams = function() {
     if (this.me.identity.rtcIdentity == this.identity.rtcIdentity)
@@ -1462,7 +1462,7 @@ Participant.prototype.getStreams = function() {
 /**
  * Sets the DataBroker to a Participant
  * @param {DataBroker} databroker - DataBroker to set.
- * 
+ *
  */
 Participant.prototype.setDataBroker = function( databroker ) {
     this.dataBroker = databroker;
