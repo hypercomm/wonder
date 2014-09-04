@@ -79,8 +79,14 @@ MessagingStub_PTIN.prototype.sendMessage = function(message){
     var full_message = new Object();
     full_message.type = "message";
     full_message.body = message;
-    if(message.type != MessageType.CONTEXT || message.type != "crud_operation" )
+
+   	if(message.type != MessageType.CONTEXT )
         message.from=message.from.rtcIdentity;
+
+    if(message.type == MessageType.MESSAGE){
+    	console.log("SENDMESSAGE: ", full_message.body);
+    	this.eventbus.send(full_message.body.to, full_message.body)
+    }
 
     if(message.to instanceof Array){
         message.to.every(function(element, index, array) {
@@ -90,11 +96,48 @@ MessagingStub_PTIN.prototype.sendMessage = function(message){
     }
     else{
         console.log("context", message.type)
+        
         if(message.type != "context" && message.type != "crud_operation"){
-            message.to= new Array(message.to.rtcIdentity);
+            message.to = new Array(message.to.rtcIdentity);
             full_message.to = message.to[0];
         }
     }
+    if(message.type == MessageType.BYE){
+        var msg = {
+            "action": "destroy",
+            "sessionId" : message.contextId
+        };
+        console.log("CENAS--->")
+        this.eventbus.send("ptin.sessionmanager", msg, function(){});
+    }
+    if(message.type == MessageType.INVITATION){
+	
+	// If this is a new Conversation a new Vertx session is started
+        console.log("CEN-->", that.baseStub.listeners[2].length)
+        //if(that.baseStub.listeners[2].indexOf(message.contextId) == -1){
+      //  if(that.baseStub.listeners[2].length == 1){
+			/*var msg = {
+				"action": "start",
+				"body": {
+						"clientId" : message.contextId ,
+						"type" : "Conversation"
+						}
+			};
+            console.log("CENAS--->")
+            this.eventbus.send("ptin.sessionmanager", msg, function(){});*/
+             console.log("MESSAGE: ", full_message);
+        var msg = {
+            "action": "message",
+            "body": full_message.body.body
+        };
+    
+    
+        this.eventbus.send("ptin.conversationmanager", msg, function(){});
+		
+		//}
+	}
+
+	
     if(typeof full_message.to !== 'undefined' && (message.type != MessageType.CONTEXT  || message.type != "crud_operation")){
         //console.log("MESSAGE: ", full_message);
         //if(full_message.body.body.hosting && full_message.body.from == full_message.body.body.hosting){
@@ -128,7 +171,28 @@ MessagingStub_PTIN.prototype.sendMessage = function(message){
 
         if(message.body.operation == "save"){
             console.log("CREATEGROUP",message)
-            var query = {"action" : "save", "collection" : "groupprofile",  "document" : {"admin": message.from.split("@")[0], "authorised_presence" : "[]", "group_elements": "[]", "groups_presence": { "authorised_presence" : [], "presence_authorisation_pending" : [], "denied_presence" : [], "session_communication_group" : [] }, "links": "[]", "name": message.body.doc, "photo": "", "rtcIdentity": message.from, "sessionId": "", "type":"private", "url_pub": message.from  }}
+            var query = {
+            	"action" : "save", 
+            	"collection" : "groupprofile",  
+            	"document" : {
+            		"admin": message.from.split("@")[0], 
+            		"authorised_presence" : [], 
+            		"group_elements": "[]", 
+            		"groups_presence": { 
+            			"authorised_presence" : [], 
+            			"presence_authorisation_pending" : [], 
+            			"denied_presence" : [], 
+            			"session_communication_group" : [] 
+            		}, 
+	            	"links": "[]", 
+	            	"name": message.body.doc, 
+	            	"photo": "", 
+	            	"rtcIdentity": message.from, 
+	            	"sessionId": "", 
+	            	"type":"private", 
+	            	"url_pub": message.from  
+            	}
+            }
             this.eventbus.send("test.my_persistor" , query, function(reply){
                 //that.handleMessages(reply);
             });
@@ -142,15 +206,35 @@ MessagingStub_PTIN.prototype.sendMessage = function(message){
         }
     }
 
+
+
     if(message.type == MessageType.SUBSCRIBE){
-        console.log("-->: ", this);
         //this.eventbus.registerHandler(message.from.rtcIdentity + ".presence", that.handleMessages);
         //this.eventbus.send(message.from.rtcIdentity + ".presence", message, function(){});
-        this.eventbus.registerHandler("ptin.presence" , that.handleMessages);
+
+        //this.eventbus.registerHandler(message.to[0] + "presence" , that.handleMessages);
         //this.eventbus.send("ptin.presence" , message, function(){});
-        var msg = {"action" : MessageType.SUBSCRIBE, "from" : message.from,  "to" : message.to[0], "body" :message.body,  "message" :"add" , "state": "online"}
+
+        console.log("MESSAGE: ", message);
+
+        var msg = {"action" : MessageType.SUBSCRIBE, "from" : message.from,  "to" : message.to, "body" :message.body, "state": "online"}
         console.log("MESSAGE: ", msg);
-        this.eventbus.send("ptin.presence" , msg, function(reply){console.log("reply", reply);});
+        this.eventbus.send("ptin.presence" , msg, function(reply){
+
+        	//this.eventbus.registerHandler(message.to[0] + "presence" , that.handleMessages);
+        	if(reply.status == 'ok'){
+
+        		//that.baseStub.sendOtherMessages(full_message);
+        		console.log("adicionado com sucesso");
+
+        	}
+        	else{
+
+        		that.baseStub.sendOtherMessages(message);
+
+        	}
+
+        });
         // ire buscar os amigos deste utlizador
         //var query = {"action" : "find", "collection" : "groupprofile",  "matcher" : {"admin" : "luis"}}
         //this.eventbus.send("test.my_persistor" , query, function(reply){console.log("reply", reply);});
@@ -169,14 +253,50 @@ MessagingStub_PTIN.prototype.sendMessage = function(message){
     }
 
     if(message.type == MessageType.CONTEXT){
-        console.log("MESSAGE: ", message);
+
+       if(message.body.login){
+       	console.log("MESSAGE: ", message);
         var msg = {
-            "action": "message",
-            "body": full_message.body
+            "action"    : "context",
+            "username"  : message.from,
+            "sessionId" : message.contextId,
+            "newstate"  : message.body.presence,
+            "address"   : message.to,
+            "login"     : message.body.login
         };
         //this.eventbus.send("ptin.conversationmanager", msg, function(){});
         //this.eventbus.publish(message.from.rtcIdentity + ".presence", message, function(){});
-        this.eventbus.publish("ptin.presence" , message, function(){});
+        this.eventbus.send("ptin.presence" , msg, function(reply){ 
+
+
+        	console.log("REPLY: ", reply);
+        	console.log("REPLY: ", message.from);
+        	var msgFinal = new Object();
+
+        	msgFinal.type = 'context';
+        	msgFinal.from = message.from;
+        	msgFinal.login = true;
+        	msgFinal.to = "";
+        	msgFinal.contextId = message.contextId;
+        	msgFinal.body = reply.friends;
+        	that.baseStub.sendOtherMessages(msgFinal);
+
+
+        	reply.friends.forEach(function(element, index, array){
+
+        		that.eventbus.registerHandler("presence."+element.rtcIdentity, that.handleMessages);
+
+        	});
+
+        });
+
+        this.eventbus.send("presence." + message.from , message);
+         
+       } else{
+       		console.log("MESSAGE STATUS UPDATE: ", message);
+       		this.eventbus.publish("presence." + message.from, message); 
+
+       }
     }
 
     if(message.type == MessageType.ACCEPTED && full_message.to == null){
@@ -228,10 +348,34 @@ MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, cal
 	this.eventbus = new vertx.EventBus(vertx_settings.address);
 
     this.eventbus.onopen = function() {
-        that.eventbus.registerHandler(ownRtcIdentity, that.handleMessages);
-        //retrieve messages
-        console.log("Eventbus connection opened and logging in as: " + ownRtcIdentity);
-        callbackFunction();
+        //here if login is done register in the eventbus
+         var loginMsg = {
+        	"action"   : "login",
+        	"username" : that.credentials.username,
+        	"password" : that.credentials.password,
+        	"rtcIdentity" : ownRtcIdentity,
+        	"body"     : {
+        				"clientId" : "chrome12345",
+        				"type" : "Identity"
+        			}
+        };
+        that.eventbus.send("ptin.sessionmanager", loginMsg, function(reply){
+
+        	if(reply.status == 'ok'){
+
+        		console.log("LOGIN EXECUTADO COM SUCESSO: ", reply);
+        		that.eventbus.registerHandler(ownRtcIdentity, that.handleMessages);
+        		console.log("Eventbus connection opened and logging in as: " + ownRtcIdentity);
+        		callbackFunction("success", reply.sessionId);
+        	
+        	}else{
+        		
+        		console.log("LOGIN COM ERRO: ", reply);
+
+        	}
+
+        });
+       
     };
 
     this.eventbus.onerror = function() {
@@ -241,9 +385,9 @@ MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, cal
     this.eventbus.onclose = function() {
         console.log("Websocket connection closed");
     };
-
+	
     this.handleMessages = function(full_message) {
-        console.log("this.handleMessages",full_message)
+        console.log("this.handleMessages",full_message);
         if(full_message.results || full_message.number ){
             full_message.type = "crud_operation";
             that.baseStub.sendOtherMessages(full_message);
@@ -263,17 +407,25 @@ MessagingStub_PTIN.prototype.connect = function(ownRtcIdentity, credentials, cal
 
                 if (message.type == MessageType.INVITATION || !message.contextId && (message.type != MessageType.CONTEXT &&  message.action != "subscribe"))
                 {
-                    if(that.baseStub.listeners[0].length == 1){
+                    if(that.baseStub.listeners[2].indexOf(message.contextId) == -1){
                         that.eventbus.registerHandler(message.contextId, that.handleMessages);
                     }
 
                 }
-
-                if(message.type == MessageType.SUBSCRIBE){
-                    //that.eventbus.registerHandler(message.from + ".presence", that.handleMessages);
-                    that.eventbus.registerHandler("ptin.presence" , that.handleMessages);
+                else if(message.type == MessageType.MESSAGE){
+                    //that.eventbus.registerHandler("presence."+message.from, that.handleMessages);
+                    console.log("MESSAGE RECEIVED: ", message.type);
+                    that.baseStub.sendOtherMessages(message);
                 }
-                if(message.action != "subscribe"){
+                else if(message.type == MessageType.SUBSCRIBE){
+                    //that.eventbus.registerHandler("presence."+message.from, that.handleMessages);
+                    that.baseStub.sendOtherMessages(message);
+                }
+                else if(message.type == MessageType.CONTEXT){
+                    //that.eventbus.registerHandler("presence."+message.from, that.handleMessages);
+                    that.baseStub.sendOtherMessages(message);
+                }
+                else if(message.action != "subscribe"){
                     Idp.getInstance().createIdentity(message.from, function(identity) {
                         message.from = identity;
 
