@@ -25,7 +25,7 @@
  * This constructor will throw an exception if it is used directly.
  */
 function Identity(rtcIdentity, idpRtcIdentity) {
-
+	console.log("idpRtcIdentity",idpRtcIdentity)
 	if ( rtcIdentity )
 		throw "Illegal attempt to create an Identity --> Please use Idp.getInstance().createIdentity(...) instead."
 	
@@ -37,7 +37,20 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 	console.trace();
 	console.log( "####################");
 	this.idp = "";
-	this.status = IdentityStatus.IDLE; // not initialized yet TODO: do state changes in a central place
+	this.presence = {
+		status: IdentityStatus.IDLE
+		//app: this.prototype.resolveMyApp()
+	};
+	
+	// TODO: initialise presence status
+    //this.presence.status = IdentityStatus.IDLE; // not initialized yet TODO: do state changes in a central place
+	//this.presence.app = this.prototype.resolveMyApp(); // not initialized yet TODO: do state changes in a central place
+
+	//this.status = IdentityStatus.IDLE; // TODO: to be replaced with Identity.presence
+	this.context;
+
+
+	this.sessionId = "";
 	
 	this.messagingStubLibUrl = "";
 	this.messagingStub;
@@ -46,6 +59,20 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 	this.credentials;
 	this.tone;
 	this.avatar;
+};
+
+
+/**
+ * resolveMyApp
+ * 
+ * @returns AppType ... private function to resolve the type of Application used by the user 
+ * 
+ */
+Identity.prototype.resolveMyApp = function() {
+    // TODO: to check what kind of App is used:
+	//     - Case is Web App running in a mobile browser it should return AppType.MOBILE_WEB_APP
+	//     - Case is Mobile Web App running in a pc browser it should return AppType.WEB_APP
+	
 };
 
 /**
@@ -107,45 +134,155 @@ Identity.prototype.resolve = function( callback ) {
 };
 
 
-/**@ignore 
+/** 
  * 
+ * This method subscribes to add a listener to receive status information (CONTEXT message type) from the user associated to this Identity. 
+ * The Signalling on the fly concept is also used to ensure cross domain Presence management interoperability
+ * by calling the Identiy.resolve() function
  * @param subscriber :
  *            Identity ... The identity of the subscriber
+ * @param type :
+ *            SubscriptionType ... The subscription type
+ *
  */
 Identity.prototype.subscribe = function(subscriber) {
-	// TODO: This is presence related stuff --> postponed
+	// TODO: get messagingStub by invoking Identity.resolve() function, add Identity as messagingStub listener (including the subscription contextId)  and send SUBSCRIBE message through the MessagingStub
+	this.context = guid(); //check this
+	that = this;
+	var from = subscriber.rtcIdentity;
+	var to = this.rtcIdentity;
+	console.log("Identity to subscribe", to);
+	console.log("Identity subscriber", subscriber);
+
+	console.log("Identity subscribe");
+	this.resolve(function(stub){
+		
+	    //message.contextId = guid();
+		stub.addListener(that.onMessage(that), "presence." + to, that.context);
+		stub.sendMessage(MessageFactory.createSubscribeMessage(from, to, ""));
+	});
 };
 
-/**@ignore 
- * publish
+/** 
+ * 
+ * This method removes a listener previously added with "subscribe()"  function to receive status information 
+ * (CONTEXT message type) from the user associated to this Identity
+ * @param subscriber :
+ *            Identity ... The identity of the subscriber
+ * @param type :
+ *            SubscriptionType ... The subscription type
+ *
+ */
+Identity.prototype.unsubscribe = function(subscriber, type) {
+	// TODO: get messagingStub by invoking Identity.resolve() function and send BYE message through the MessagingStub
+	this.messagingStub.sendMessage(MessageFactory.createUnsubscribeMessage(message));
+};
+
+
+/**
+ * To set Identity status and to publish it by sending a CONTEXT message to address "rtcIdentity.presence"
  * 
  * @param status :
- *            String ... The status to publish
- * @param target :
- *            Identity [] ... The identity/identities to publish the status to
- * @param context :
- *            String ... The context
+ *            String ... The status to set
  * 
  */
-Identity.prototype.publish = function(status, target, context) {
-	// TODO: This is presence related stuff --> postponed
-	// TODO Send a publish message
+ 
+Identity.prototype.setStatus = function(status, login) {
+	//var message = new Object();
+	//message.contextId = this.context;
+
+	//from = identity.rtcIdentity;
+	//to = this.rtcIdentity;
+	var that = this;
+	console.log("Identity SetStatus: ", status);
+
+	this.presence.status = status;// TODO: change to that.presence.status = status;
+	this.messagingStub.sendMessage(MessageFactory.createContextMessage(that.rtcIdentity, "", status, login, that.sessionId));	
+    // TODO: check status transitions according to IdentityStatus state machine
+	// TODO: Send a CONTEXT message to address "rtcIdentity.presence"
 };
 
-/**@ignore 
+/**getPresence
+ * To set Identity presence and to publish it by sending a CONTEXT message to address "rtcIdentity.presence"
+ * 
+ * @param presence :
+ *            String ... The presence to set
+ * 
+ */
+ 
+Identity.prototype.setPresence = function(presence) {
+
+	var that = this;
+	that.presence.status = presence;
+	
+    // TODO: check status transitions according to IdentityStatus state machine
+	// TODO: Send a CONTEXT message to address "rtcIdentity.presence"
+};
+
+/**
+ * To set Identity context and to publish it by sending a CONTEXT message to address "rtcIdentity.context"
+ * 
+ * @param context :
+ *            String ... The context to set
+ * 
+ */
+ 
+Identity.prototype.setContext = function(context) {
+
+	this.context = context;
+	this.messagingStub.sendMessage(MessageFactory.createContextMessage());
+	// TODO: Send a CONTEXT message to address "rtcIdentity.context"
+};
+
+
+/**
  * getStatus
  * 
- * @returns IdentityStatus ... gets the status attribute for a participant
+ * @returns IdentityStatus ... gets the presence status attribute for this Identity
  * 
  */
 Identity.prototype.getStatus = function() {
-	return this.status;
+// TODO: change to return this.presence.status;
+	return this.presence.status;
 };
 
-/**@ignore 
+/**
+ * getPresence
+ * 
+ * @returns Presence ... gets the presence  attribute for this Identity
+ * 
+ */
+Identity.prototype.getPresence = function() {
+	return this.presence;
+};
+
+
+/**
+ * sendMessage
+ * 
+ * @sendmessage ...sendMessage
+ * 
+ */
+
+
+Identity.prototype.sendMessage = function(message) {
+	this.messagingStub.sendMessage(message);
+};
+
+/**
+ * getContext
+ * 
+ * @returns ContextData ... gets the context attribute for this Identity
+ * 
+ */
+Identity.prototype.getContext = function() {
+	return this.context;
+};
+
+/** 
  * getMessagingStubDownloadUrl
  * 
- * @returns IdentityStatus ... gets the status attribute for a participant
+ * @returns URL ... gets the URL to download the MessagingStub for this Identity
  * 
  */
 Identity.prototype.getMessagingStubDownloadUrl = function() {
@@ -154,7 +291,7 @@ Identity.prototype.getMessagingStubDownloadUrl = function() {
 };
 
 
-/**@ignore
+/**
  *
  * OnLastMessagingListerner is invoked by the MessagingStub as soon as the last listener has un-subscribed.
  * We use this callback to disconnect and unload the MessagingStub. 
@@ -180,3 +317,20 @@ Identity.prototype.loadJSfile = function(url) {
 		document.getElementsByTagName("head")[0].appendChild(fileref);
 };
 
+Identity.prototype.onMessage = function(message){
+	console.log("MESSAGES-->",message)
+	switch(message.type){
+		case MessageType.CONTEXT:
+			this.setStatus(message.identityPresence.status);
+			break;
+		case MessageType.ACCEPTED:
+			break;
+		case MessageType.NOT_ACCEPTED:
+			break;
+		case MessageType.CANCEL:
+			break;
+		default:
+			break;
+	}
+
+}

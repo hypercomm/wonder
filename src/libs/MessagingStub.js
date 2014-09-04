@@ -165,11 +165,12 @@ MessagingStub.prototype.sendOtherMessages = function(message){
 	var idxConversation = this.listeners[2].indexOf(message.contextId);
 
 	console.log("idxParticipant ", idxParticipant);
-
+	console.log("idxConversation ", idxConversation);
 	if(idxParticipant == -1){
 		if(idxConversation == -1){
-			if(message.type == MessageType.INVITATION || !message.contextId || message.type == MessageType.BYE){
+			if(message.type == MessageType.INVITATION || message.type == MessageType.CONTEXT || !message.contextId || message.type == MessageType.BYE){
 				this.listeners[0][0](message);
+
 			} else {
 				this.buffer.push(message);
 			}

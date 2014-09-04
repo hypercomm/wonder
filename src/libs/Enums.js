@@ -22,27 +22,27 @@ var MessageType = {
         CONNECTIVITY_CANDIDATE  : "connectivityCandidate",
         /** Answer for conversation not accepted. */
         NOT_ACCEPTED            : "notAccepted",
-        /** Message to cancel an invitation */
-        CANCEL                  : "cancel",
-        /** Message to add a {@link Resource} to the conversation */
-        ADD_RESOURCE            : "addResource",
-        /** Message to remove a {@link Participant} from the conversation */
-        REMOVE_PARTICIPANT      : "removeParticipant",
         /** Message to finish the communication with a peer */
         BYE                     : "bye",
         /** Message to add a new {@link Resource} */
         UPDATE                  : "update",
         /** Answer to add a new {@link Resource} */
         UPDATED                 : "updated",
-    
+        /** To publish Identity Presence and Context data  */
+        CONTEXT                 : "context",
+        /** To subscribe to receive Context messages from an Identity */
+        SUBSCRIBE                 : "subscribe",
+   
         /** Message to offer a role (TO BE IMPLEMENTED) */
         OFFER_ROLE              : "offerRole",
         /** Message to setup redirection (TO BE IMPLEMENTED) */
         REDIRECT                : "redirect",
-        /** Message to remove a {@link Resource} from the conversation (TO BE IMPLEMENTED) */
-        RESOURCE_REMOVED        : "resourceRemoved",
         /** Message to share a {@link Resource} in the conversation (TO BE IMPLEMENTED) */
-        SHARE_RESOURCE          : "shareResource"
+        SHARE_RESOURCE          : "shareResource",
+        /** Message to share a {@link Resource} in the conversation (TO BE IMPLEMENTED) */
+        MESSAGE                 : "messageChat",
+        /** Message to Creat/Read/Update/Delete in mongoDB or SQL */
+        CRUD_OPERATION          : "crud_operation"
 };
 
 /**
@@ -130,4 +130,23 @@ var ResourceStatus = {
         ENDED                   : "ended",
         RECORDING               : "recording",
         LIVE                    : "live"
+};
+
+var SubscriptionType = {
+        IDENTITY_STATUS_SUBSCRIPTION         : "statusSubscription",
+        IDENTITY_CONTEXT_SUBSCRIPTION        : "contextSubscription"
+};
+
+var NotAcceptedType = {
+        BUSY        : "busy",
+        NOT_FOUND   : "notFound",
+        REJECTED    : "rejected",
+        TIME_OUT    : "timeout" 
+};
+
+var AppType = {
+        MOBILE_NOTIFICATION_APP         : "mobileNotificationApp",
+        NOTIFICATION_APP                        : "notificationApp",
+        MOBILE_WEB_APP                          : "mobileWebApp",
+        WEB_APP                                         : "WebApp"
 };

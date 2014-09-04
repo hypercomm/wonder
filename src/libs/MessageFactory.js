@@ -177,3 +177,43 @@ MessageFactory.createNotAccepted =  function(message) {
     return notAcceptedMessage;
 }
 
+
+MessageFactory.createContextMessage =  function(from, to, status, login, contextId) {
+    var contextbody = new Object();
+    contextbody.presence = status;
+    contextbody.login = login;
+
+    var contextMessage = new Message(from, to, contextbody, MessageType.CONTEXT, contextId);
+    return contextMessage;
+}
+
+
+MessageFactory.createSubscribeMessage =  function(from, to, message) {
+
+    var subscribebody = new Object();
+    subscribebody.presence = SubscriptionType.IDENTITY_CONTEXT_SUBSCRIPTION;
+
+    var subscribeMessage = new Message(from, to, subscribebody, MessageType.SUBSCRIBE, guid());
+    return subscribeMessage;
+}
+
+
+MessageFactory.createMessageChat =  function(from, to, text) {
+
+    console.log("MessageFactory.createMessageChat: " + to +" "+ from + 
+        " " + text);
+    var messageBody = text;
+
+
+    var messageChat = new Message(from, to, messageBody, MessageType.MESSAGE, guid());
+    return messageChat;
+}
+
+MessageFactory.createCRUDMessage =  function(from, operation, resource, doc) {
+    var crudbody = new Object();
+    crudbody.operation = operation;
+    crudbody.resource = resource;
+    crudbody.doc = doc;
+    var crudMessage = new Message(from, "",crudbody, MessageType.CRUD_OPERATION, "");
+    return crudMessage;
+}
