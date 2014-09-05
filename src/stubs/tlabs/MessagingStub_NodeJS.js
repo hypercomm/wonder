@@ -73,9 +73,9 @@ MessagingStub_Miguel.prototype.connect = function(ownRtcIdentity, credentials, c
 	this.credentials = credentials;
 
 	//DEFINE THE HOST ADDR
-	var signaling_server = "192.168.8.4:1337";
+	var signaling_server = "192.168.7.216:1337";
 	//signaling_server="172.16.62.66:1337";
-	signaling_server = "150.140.184.247:1337";
+	//signaling_server = "150.140.184.247:1337";
 
 	// If connect was already executed succesfully, it won't try to connect again, just execute the callback.
 	if (this.websocket) {
