@@ -2,7 +2,7 @@
  * Messaging Stub Class 
  * For websocket
  */
-function MessagingStub_Miguel() {
+function MessagingStub_NodeJS() {
 	this.ownRtcIdentity;
 	this.credentials;
 	this.websocket;
@@ -14,7 +14,7 @@ function MessagingStub_Miguel() {
  * SendMessage
  * @param message... Message 
  */
-MessagingStub_Miguel.prototype.sendMessage = function (message) {
+MessagingStub_NodeJS.prototype.sendMessage = function (message) {
     console.log("C->S: ", message);
     var full_message = new Object();
     full_message.type = "message";
@@ -68,7 +68,7 @@ MessagingStub_Miguel.prototype.sendMessage = function (message) {
 /**
  * Connect
  */
-MessagingStub_Miguel.prototype.connect = function(ownRtcIdentity, credentials, callbackFunction) {
+MessagingStub_NodeJS.prototype.connect = function(ownRtcIdentity, credentials, callbackFunction) {
 	this.ownRtcIdentity = ownRtcIdentity;
 	this.credentials = credentials;
 
@@ -127,7 +127,7 @@ MessagingStub_Miguel.prototype.connect = function(ownRtcIdentity, credentials, c
 /**
  * Disconnects from the server.
  */
-MessagingStub_Miguel.prototype.disconnect = function() {
+MessagingStub_NodeJS.prototype.disconnect = function() {
 	this.websocket.close();
 	this.websocket = null;
 	console.log("Websocket connection disconnected");
