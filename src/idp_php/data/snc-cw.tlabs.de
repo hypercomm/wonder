@@ -1,0 +1,11 @@
+{
+    "offset": 0,
+    "rows": [
+        {
+            "messagingStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_ClearwaterMS.js",
+            "localMsgStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_ClearwaterLocal.js"
+        }
+    ],
+    "total_rows": 1,
+    "millis": 0
+}
