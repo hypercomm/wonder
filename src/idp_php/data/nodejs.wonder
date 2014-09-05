@@ -2,7 +2,7 @@
     "offset": 0,
     "rows": [
         {
-            "messagingStubURL": "http://192.168.7.216/wonder/stubs/MessagingStub_Miguel.js"
+            "messagingStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_NodeJS.js"
         }
     ],
     "total_rows": 1,
