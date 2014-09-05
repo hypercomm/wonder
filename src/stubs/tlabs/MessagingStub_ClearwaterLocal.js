@@ -261,7 +261,7 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 				}, false);
 				socket.onopen = function() {
 					self.connectCallbackFunction(msg);
-					//self.baseStub.deliverMessage(msg);
+					//self.baseStub.sendOtherMessages(msg);
 				};
 				socket.onclose = function() {
 				};
@@ -269,7 +269,7 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 				self.socket.close();
 				self.socket = null;
 				self.errorConnectCallbackFunction(msg);
-				//self.baseStub.deliverMessage(msg);
+				//self.baseStub.sendOtherMessages(msg);
 			}
 			break;
 		case 'hellorequest':
@@ -317,13 +317,13 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 					Idp.getInstance().createIdentities(self.ownRtcIdentity, function(identityArr) {
 						wonderMsg.to = identityArr;
 						self.sessionIDs[wonderMsg.contextId] = msg.attributes.sessionId;
-						self.baseStub.deliverMessage(wonderMsg);
+						self.baseStub.sendOtherMessages(wonderMsg);
 					});
 				});
 			}
 			else {
 				self.sessionIDs[wonderMsg.contextId] = msg.attributes.sessionId;
-				self.baseStub.deliverMessage(wonderMsg);
+				self.baseStub.sendOtherMessages(wonderMsg);
 			}
 			break;
 		case 'terminatesessionrequest': // incoming bye
@@ -338,7 +338,7 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 				wonderMsg.type = MessageType.BYE;
 				wonderMsg.contextId = "todo";
 			}
-			self.baseStub.deliverMessage(wonderMsg);
+			self.baseStub.sendOtherMessages(wonderMsg);
 			break;
 		case 'callupdaterequest':
 			// can be incoming "denied", "cancel", "ringing", "ConnectivityCandidate"
@@ -348,12 +348,12 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 			var response = self.ims2CloudMessage("callupdateresponse", 10, attributes);
 			self.sendMessage(response);
 			if (wonderMsg) // should only be filled for connectivity candidates
-				self.baseStub.deliverMessage(wonderMsg);
+				self.baseStub.sendOtherMessages(wonderMsg);
 			break;
 		default:
 			console.log("?????? received unknown message: " + msg);
 			console.log("forwarding original message to listeners");
-			self.baseStub.deliverMessage(msg);
+			self.baseStub.sendOtherMessages(msg);
 			break;
 	}
 };

@@ -131,7 +131,7 @@ MessagingStub_OpenImsMS.prototype.connect = function(ownRtcIdentity, credentials
 				//message.to = new Array(identityArr);
 				message.to = identityArr;
 
-				that.baseStub.deliverMessage(message);
+				that.baseStub.sendOtherMessages(message);
 			});
 		});
 

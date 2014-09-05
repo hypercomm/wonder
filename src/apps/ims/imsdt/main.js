@@ -273,9 +273,9 @@ function doCall(type) {
 	conversation.open(peers, constraints, invitation, function() {
 		console.log("conversation opened");
 	},
-			function() {
-				console.log("error on opening conversation");
-			});
+	function() {
+		console.log("error on opening conversation");
+	});
 	setGUIState(GUI_STATES.CANCEL_ALLOWED);
 }
 

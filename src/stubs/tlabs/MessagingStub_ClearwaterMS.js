@@ -131,7 +131,7 @@ MessagingStub_ClearwaterMS.prototype.connect = function(ownRtcIdentity, credenti
 				//message.to = new Array(identityArr);
 				message.to = identityArr;
 
-				that.baseStub.deliverMessage(message);
+				that.baseStub.sendOtherMessages(message);
 			});
 		});
 
