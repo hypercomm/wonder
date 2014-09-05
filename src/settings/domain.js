@@ -2,13 +2,13 @@
 // Should be colocated with Vertx server.java
 
 
- idp_options = 
-	{
-		protocol : "https", 
-		domain : "pchainho.wonder.pt", 
-		port : "443", 
-		path: "/idp/index.php?jsonp=returnIdentity&filter_rtcIdentity="
-	}
+var idp_options = 
+        {
+                protocol : "http", 
+                domain : "192.168.7.216", 
+                port : '80', 
+                path: "/wonder/idp_php/index.php?jsonp=returnIdentity&filter_rtcIdentity="
+        };
 
 
 // IDP options for websockets, if nothing is given on application layer
