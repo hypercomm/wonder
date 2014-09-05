@@ -118,7 +118,7 @@ MessagingStub_NodeJS.prototype.connect = function(ownRtcIdentity, credentials, c
 			Idp.getInstance().createIdentities(message.to, function(identityArr) {
 				message.to = identityArr;
 
-				that.baseStub.deliverMessage(message);
+				that.baseStub.sendOtherMessages(message);
 			});
 		});
 	};
