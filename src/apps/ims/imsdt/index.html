@@ -2,7 +2,6 @@
 <html>
 	<head>
 		<title>WONDER WebRTC Demo</title>
-
 		<script src="jquery-1.9.1.js"></script>
 		<script src="storage.js"></script>
 
@@ -56,8 +55,8 @@
 				</tr>
 				<tr>
 					<td>SIP-Proxy</td>
-					<td><input id="proxy_host" value="imsserver.ece.upatras.gr" placeholder="imsserver.ece.upatras.gr"></td>
-					<td><input id="proxy_port" value="4060" placeholder="4060"></td>
+					<td><input id="proxy_host" value="" placeholder="imsserver.ece.upatras.gr"></td>
+					<td><input id="proxy_port" value="" placeholder="4060"></td>
 					<td></td>
 				</tr>
 				<tr>
@@ -78,7 +77,15 @@
 		<div id="login_div">
 			<table>
 				<tr>
-					<td colspan="3">Enter your credentials to register a new IMS client</td>
+					<td colspan="3">Enter your credentials to register a new IMS client at:</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="radio" name="ims" value="clearwater" checked onchange="handlePrefixChange('clearwater_')"/>Clearwater
+					</td>
+					<td>
+						<input type="radio" name="ims" value="openims" onchange="handlePrefixChange('openims_')"/>OpenIms
+					</td>
 				</tr>
 				<tr>
 					<td>ID</td>
@@ -104,7 +111,7 @@
 					<td colspan="3"><input id="callee" size="30" value=""></td>
 				</tr>
 				<tr>
-					<td></td>
+					<td><button type="button" id="btnCancel" onclick="doCancel();">Cancel</button></td>
 					<td><button type="button" id="btnChat" onclick="doCall('chat');">Chat</button></td>
 					<td><button type="button" id="btnCall" onclick="doCall('av');">A/V Call</button></td>
 					<td><button type="button" id="btnUpdate" onclick="updateConversation();">Add audio/video</button></td>
@@ -115,17 +122,17 @@
 
 		<div><label id="logging"></label></div>
 		<div id="chat_div" style="float: left; border: 1px solid black; position: relative;">
-			<div id="textChat">
-
-			</div>
-			<input type="text" id="datachannelmessage" />
+			<div id="textChat"></div>
+			<label><b>Messaging</b></label>
 			<br>
-			<button id="sentMessageData" onclick="sentMessageData()">send</button>
+			<input type="text" id="datachannelmessage" />
+			<button id="sendMessageData" onclick="sendMessageData()">send</button>
+			<br>
 			<div id="fileSharing">
 				<label><b>FileSharing</b></label>
 				<div id="sharedFiles" style="height: 0px; overflow:auto;"></div>
 				<input type="file" id="fileInput">
-				<button id="sentFile" onclick="sentMessageDataFile()">sendFile</button>
+				<button id="sendFile" onclick="sendMessageDataFile()">sendFile</button>
 			</div>
 		</div>
 

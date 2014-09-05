@@ -3,7 +3,11 @@ var GUI_STATES = {
 	'REGISTERED': '2',
 	'IN_CHAT_ONLY': '3',
 	'IN_CALL': '4',
-	'IN_CALL_WITH_CHAT': '5'
+	'IN_CALL_WITH_CHAT': '5',
+	'CHAT_INACTIVE' : '6',
+	'CHAT_ACTIVE' : '7',
+	'CANCEL_ALLOWED' : '8',
+	'CANCEL_NOT_ALLOWED' : '9'
 };
 
 
@@ -36,7 +40,7 @@ var onSetSessionDescriptionSuccess = function() {
 //$(document).on("ready", initialize);
 $(window).load(initialize);
 
-function setGUIState(state) {
+function setGUIState(state, msg) {
 	switch (state) {
 		case GUI_STATES.UNREGISTERED:
 			inCall = false;
@@ -46,6 +50,7 @@ function setGUIState(state) {
 			$("#video_div").hide();
 			$("#chat_div").hide();
 			cleanupVideo();
+			cleanupChat();
 			setInfo("UNREGISTERED");
 			break;
 		case GUI_STATES.REGISTERED:
@@ -57,6 +62,7 @@ function setGUIState(state) {
 			$("#btnChat").removeAttr("disabled");
 			$("#btnUpdate").attr("disabled", "true");
 			$("#btnHangup").attr("disabled", "true");
+			$("#btnCancel").hide();
 			cleanupVideo();
 			cleanupChat();
 			setInfo("REGISTERED");
@@ -72,10 +78,11 @@ function setGUIState(state) {
 			$("#btnChat").attr("disabled", "true");
 			$("#btnUpdate").removeAttr("disabled");
 			$("#btnHangup").removeAttr("disabled");
+			$("#btnCancel").hide();
 
 			$("#chat_div").removeClass("offset");
 
-			setInfo("Conversation started in Chat-Only mode.");
+			setInfo("Conversation in Chat-Only mode.");
 			break;
 		case GUI_STATES.IN_CALL:
 			inCall = true;
@@ -88,6 +95,7 @@ function setGUIState(state) {
 			$("#btnChat").attr("disabled", "true");
 			$("#btnUpdate").attr("disabled", "true");
 			$("#btnHangup").removeAttr("disabled");
+			$("#btnCancel").hide();
 
 			$("#localVideo").addClass("small");
 			$("#localVideo").removeClass("large");
@@ -106,6 +114,7 @@ function setGUIState(state) {
 			$("#btnChat").attr("disabled", "true");
 			$("#btnUpdate").attr("disabled", "true");
 			$("#btnHangup").removeAttr("disabled");
+			$("#btnCancel").hide();
 
 			$("#chat_div").addClass("offset");
 
@@ -115,9 +124,27 @@ function setGUIState(state) {
 			$("#remoteVideo").addClass("large");
 			setInfo("IN_CALL");
 			break;
+		case GUI_STATES.CHAT_INACTIVE:
+			$("#sendMessageData").attr("disabled", "true");
+			$("#sendFile").attr("disabled", "true");
+			$("#fileInput").attr("disabled", "true");
+			break;
+		case GUI_STATES.CHAT_ACTIVE:
+			$("#sendMessageData").removeAttr("disabled");
+			$("#sendFile").removeAttr("disabled");
+			$("#fileInput").removeAttr("disabled");
+			break;
+		case GUI_STATES.CANCEL_ALLOWED:
+			$("#btnCancel").show();
+			break;
+		case GUI_STATES.CANCEL_NOT_ALLOWED:
+			$("#btnCancel").hide();
+			break;
 		default:
 			break;
 	}
+	if ( msg )
+		setInfo(msg);
 }
 
 function cleanupVideo() {
@@ -128,6 +155,7 @@ function cleanupVideo() {
 }
 function cleanupChat() {
 	document.getElementById("textChat").innerHTML = "";
+	document.getElementById("datachannelmessage").value = "";
 }
 
 function initialize() {
@@ -135,7 +163,7 @@ function initialize() {
 	console.log('Initializing');
 	localVideo = document.getElementById('localVideo');
 	remoteVideo = document.getElementById('remoteVideo');
-	loadSettings();
+	handlePrefixChange("clearwater_");
 	setGUIState(GUI_STATES.UNREGISTERED);
 }
 
@@ -160,8 +188,7 @@ function login() {
 			stub.addListener(listener);
 			stub.connect(myRtcIdentity, credentials, function() {
 				$("#userID").text("Registered as: " + myIdentity.rtcIdentity);
-				setInfo("connected as: " + myRtcIdentity);
-				setGUIState(GUI_STATES.REGISTERED);
+				setGUIState(GUI_STATES.REGISTERED, "connected as: " + myRtcIdentity);
 			},
 					function() {
 						setInfo("REGISTRATION FAILED - please check the given credentials!");
@@ -228,7 +255,17 @@ function doCall(type) {
 	else {
 		constraints.push({
 			constraints: "",
+			type: ResourceType.CHAT,
+			direction: "in_out"
+		});
+		constraints.push({
+			constraints: "",
 			type: ResourceType.AUDIO_VIDEO,
+			direction: "in_out"
+		});
+		constraints.push({
+			constraints: "",
+			type: ResourceType.FILE,
 			direction: "in_out"
 		});
 		setInfo("Starting A/V conversation ...");
@@ -239,8 +276,15 @@ function doCall(type) {
 			function() {
 				console.log("error on opening conversation");
 			});
+	setGUIState(GUI_STATES.CANCEL_ALLOWED);
 }
 
+function doCancel() {
+	console.log("canceling action");
+    conversation.close();
+    conversation=null;
+	setGUIState(GUI_STATES.REGISTERED);
+}
 
 function hangUp() {
 	if (inCall) {
@@ -251,7 +295,7 @@ function hangUp() {
 	}
 }
 
-function setGUIMode(constraints) {
+function setGUIStateFromConstraints(constraints) {
 	var isAV = false;
 	var isChat = false;
 	for (var i = 0; i < constraints.length; i++) {
@@ -272,18 +316,21 @@ function onMessage(message) {
 	switch (message.type) {
 
 		case MessageType.ACCEPTED:
-			setGUIMode(message.body.constraints);
-			setInfo("received ACCEPTED message");
+			setGUIStateFromConstraints(message.body.constraints);
+			setInfo("received ACCEPTED message.");
 			break;
 		case MessageType.CONNECTIVITY_CANDIDATE:
 			break;
 		case MessageType.NOT_ACCEPTED:
-			alert("Call not ACCEPTED by peer");
-			setGUIState(GUI_STATES.REGISTERED);
+			console.log("Call not ACCEPTED by peer");
+			setGUIState(GUI_STATES.REGISTERED, "Call rejected by peer");
+			alert("Call rejected by peer");
 			break;
 		case MessageType.CANCEL:
+			console.log("######## CANCEL");
 			break;
 		case MessageType.ADD_RESOURCE:
+			console.log("######## ADD_RESOURCE");
 			break;
 		case MessageType.REDIRECT:
 			break;
@@ -306,15 +353,18 @@ function onMessage(message) {
 						function() {
 							console.log("error on accepting conversation");
 						});
-				setGUIMode(message.body.constraints);
+				setGUIStateFromConstraints(message.body.constraints);
 			}
-			else
-				alert("Rejected");
+			else {
+				Conversation.reject(message);
+			}
 			break;
 		case MessageType.RESOURCE_REMOVED:
+			console.log("######## REMOVED_RESOURCE");
 			break;
 		case MessageType.REMOVE_PARTICIPANT:
-			conversation.close();
+			console.log("received REMOVE_PARTICIPANT --> CANCEL");
+//			conversation.close();
 			setGUIState(GUI_STATES.REGISTERED);
 			localVideo.src = '';
 			conversation = null;
@@ -362,9 +412,10 @@ function onRTCEvt(event, evt) {
 		case 'oniceconnectionstatechange':
 			break;
 		case 'ondatachannel':
+			console.log("########## on datachannel event")
 			break;
 		case 'onResourceParticipantAddedEvt':
-			//setGUIState(GUI_STATES.IN_CHAT_ONLY);
+			setGUIState(GUI_STATES.CHAT_ACTIVE);
 			console.log("onResourceParticipantAddedEvt", evt);
 			if (evt.codec.type == "chat") {
 				codecIDChat = evt.codec.id;
@@ -389,49 +440,46 @@ function onRTCEvt(event, evt) {
 	}
 }
 
-/* HTML Related functions */
-
 function setInfo(state) {
 	document.getElementById('logging').innerHTML = state;
+}
+
+function appendInfo(msg) {
+	var info = document.getElementById('logging').innerHTML;
+	setInfo( info + " " + msg);
 }
 
 function resetInfo() {
 	setInfo('resetStatus');
 }
 
-
 function onData(code, msg) {
 	// TODO To implement and pass the events up
 	console.log(msg);
-	var iDiv = document.getElementById('textChat');
-	// Now create and append to iDiv
-	var innerDiv = document.createElement('div');
-	innerDiv.className = 'block-2';
-	// The variable iDiv is still good... Just append to it.
-	iDiv.appendChild(innerDiv);
-	innerDiv.innerHTML = "<b>" + msg.from + "</b>" + " : " + msg.body;
-}
-;
-function sentMessageData() {
+	appendChatMessage(msg.body, msg.from);
+};
 
+function sendMessageData() {
 	var newMessage = new DataMessage(codecIDChat, "", myRtcIdentity, document.getElementById("datachannelmessage").value);
 	codecChat.send(JSON.stringify(newMessage));
+	appendChatMessage(newMessage.body);
+};
 
+function appendChatMessage(msg, from) {
 	var iDiv = document.getElementById('textChat');
-
 	// Now create and append to iDiv
 	var innerDiv = document.createElement('div');
 	innerDiv.className = 'block-2';
 	iDiv.appendChild(innerDiv);
-	innerDiv.innerHTML = "You:" + " : " + newMessage.body;
-}
+	if ( from ) 
+		innerDiv.innerHTML = "<b>" + from + "</b>" + " : " + msg;
+	else
+		innerDiv.innerHTML = "You:" + " : " + msg;
+};
 
-sentMessageDataFile = function() {
+
+sendMessageDataFile = function() {
 	console.log("codecIDFile-------", codecIDFile)
-
-	// var fileElement = document.getElementById('fileInput');
-	//var file = fileElement.files[0];
-	//console.log("file.----",fileElement);
 	var newMessage = new DataMessage(codecIDFile, "", myRtcIdentity, 'fileInput');
 	codecFile.send(JSON.stringify(newMessage));
 };
@@ -443,6 +491,11 @@ function updateConversation() {
 			constraints: "",
 			type: ResourceType.AUDIO_VIDEO,
 			direction: "in_out"
-		}], "", function() {
+		}], "", 
+	function() {
+		console.log("addResource successCallback")
+	},
+	function() {
+		console.log("addResource errorCallback")
 	});
-}
+};

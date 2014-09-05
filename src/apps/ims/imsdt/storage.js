@@ -1,34 +1,42 @@
+var STORAGE_PREFIX = "";
+
 function loadSettings() {
-	setFieldFromLocalStorage("my_ID");
-	setFieldFromLocalStorage("realm");
-	setFieldFromLocalStorage("proxy_host");
-	setFieldFromLocalStorage("proxy_port");
-	setFieldFromLocalStorage("pass");
-	setFieldFromLocalStorage("stun");
-	setFieldFromLocalStorage("turn");
-	setFieldFromLocalStorage("turn_user");
-	setFieldFromLocalStorage("turn_pass");
-	setFieldFromLocalStorage("callee");
+	setFieldFromLocalStorage("my_ID", STORAGE_PREFIX);
+	setFieldFromLocalStorage("realm", STORAGE_PREFIX);
+	setFieldFromLocalStorage("proxy_host", STORAGE_PREFIX);
+	setFieldFromLocalStorage("proxy_port", STORAGE_PREFIX);
+	setFieldFromLocalStorage("pass", STORAGE_PREFIX);
+	setFieldFromLocalStorage("stun", STORAGE_PREFIX);
+	setFieldFromLocalStorage("turn", STORAGE_PREFIX);
+	setFieldFromLocalStorage("turn_user", STORAGE_PREFIX);
+	setFieldFromLocalStorage("turn_pass", STORAGE_PREFIX);
+	setFieldFromLocalStorage("callee", STORAGE_PREFIX);
 }
 
 function saveSettings() {
-	saveFieldToLocalStorage("my_ID");
-	saveFieldToLocalStorage("realm");
-	saveFieldToLocalStorage("proxy_host");
-	saveFieldToLocalStorage("proxy_port");
-	saveFieldToLocalStorage("pass");
-	saveFieldToLocalStorage("stun");
-	saveFieldToLocalStorage("turn");
-	saveFieldToLocalStorage("turn_user");
-	saveFieldToLocalStorage("turn_pass");
+	saveFieldToLocalStorage("my_ID", STORAGE_PREFIX);
+	saveFieldToLocalStorage("realm", STORAGE_PREFIX);
+	saveFieldToLocalStorage("proxy_host", STORAGE_PREFIX);
+	saveFieldToLocalStorage("proxy_port", STORAGE_PREFIX);
+	saveFieldToLocalStorage("pass", STORAGE_PREFIX);
+	saveFieldToLocalStorage("stun", STORAGE_PREFIX);
+	saveFieldToLocalStorage("turn", STORAGE_PREFIX);
+	saveFieldToLocalStorage("turn_user", STORAGE_PREFIX);
+	saveFieldToLocalStorage("turn_pass", STORAGE_PREFIX);
+	saveFieldToLocalStorage("callee", STORAGE_PREFIX);
 }
 
-function setFieldFromLocalStorage( id ) {
-	var value = localStorage.getItem(id);
-	if ( value )
+function setFieldFromLocalStorage( id, prefix ) {
+	var value = localStorage.getItem(prefix + id);
+	if ( typeof value !== "undefined")
 		$("#" + id).val(value);
 }
 
-function saveFieldToLocalStorage( id ) {
-	localStorage.setItem(id, $("#" + id).val());
+function saveFieldToLocalStorage( id, prefix ) {
+	localStorage.setItem(prefix + id, $("#" + id).val());
+}
+
+function handlePrefixChange(prefix) {
+	STORAGE_PREFIX = prefix;
+	loadSettings();
 }
