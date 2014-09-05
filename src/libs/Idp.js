@@ -276,16 +276,17 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 	pendingIdentity = new Identity(null, rtcIdentity);
 	this.pendingIdentities[rtcIdentity] = pendingIdentity;
 
-	if(/^-?[\d.]+(?:e-?\d+)?$/.test(rtcIdentity)){ 
-		rtcIdentity = "pstn@imsserver.ece.upatras.gr";
-	    }else{
-		var split = rtcIdentity.split('@')
-		if(split.length ==2){
-		    if(/^-?[\d.]+(?:e-?\d+)?$/.test(split[0])){ 
-		        rtcIdentity = "pstn@imsserver.ece.upatras.gr";
-		    }
-		}
-	    }
+//// This test is to generic. It also matches for Clearwater accounts, which are numbers.
+//	if(/^-?[\d.]+(?:e-?\d+)?$/.test(rtcIdentity)){ 
+//		rtcIdentity = "pstn@imsserver.ece.upatras.gr";
+//	    }else{
+//		var split = rtcIdentity.split('@')
+//		if(split.length ==2){
+//		    if(/^-?[\d.]+(?:e-?\d+)?$/.test(split[0])){ 
+//		        rtcIdentity = "pstn@imsserver.ece.upatras.gr";
+//		    }
+//		}
+//	    }
     
 
     if(this.protocol == "ws"){
