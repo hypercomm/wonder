@@ -152,7 +152,6 @@ MessagingStub_ClearwaterLocal.prototype.sendMessage = function(message) {
 			break;
 		case MessageType.UPDATE:
 		case MessageType.UPDATED:
-		case MessageType.REMOVE_PARTICIPANT:
 			var attributes = createAttributes(message, "update", message.contextId);
 			// this is required in IMS GW for setting the "to" of the Info message
 			attributes.sipUri = message.to[0];
