@@ -1,7 +1,8 @@
 var STORAGE_PREFIX = "";
 
 function loadSettings() {
-	setFieldFromLocalStorage("my_ID", STORAGE_PREFIX);
+	setFieldFromLocalStorage("private_ID", STORAGE_PREFIX);
+	setFieldFromLocalStorage("public_ID", STORAGE_PREFIX);
 	setFieldFromLocalStorage("realm", STORAGE_PREFIX);
 	setFieldFromLocalStorage("proxy_host", STORAGE_PREFIX);
 	setFieldFromLocalStorage("proxy_port", STORAGE_PREFIX);
@@ -14,7 +15,8 @@ function loadSettings() {
 }
 
 function saveSettings() {
-	saveFieldToLocalStorage("my_ID", STORAGE_PREFIX);
+	saveFieldToLocalStorage("private_ID", STORAGE_PREFIX);
+	saveFieldToLocalStorage("public_ID", STORAGE_PREFIX);
 	saveFieldToLocalStorage("realm", STORAGE_PREFIX);
 	saveFieldToLocalStorage("proxy_host", STORAGE_PREFIX);
 	saveFieldToLocalStorage("proxy_port", STORAGE_PREFIX);

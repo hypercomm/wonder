@@ -1,83 +1,163 @@
+<!DOCTYPE html>
 <html>
-<head>
-<title>WebRTC WONDER</title>
+	<head>
+		<title>WONDER WebRTC Demo</title>
+		<script src="jquery-1.9.1.js"></script>
+		<script src="Config.js"></script>
 
-<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+		<!--script src="../../../api/wonder_full.js"></script-->
+        <script src="../../libs/adapter.js"></script>
 
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="../../api/adapter.js"></script>
+        <script src="../../libs/Resource.js"></script>
+        <script src="../../libs/DataBroker.js"></script>
+        <script src="../../libs/DataMessage.js"></script>
+        <script src="../../libs/Codec.js"></script>
+        <script src="../../libs/Message.js"></script>
+        <script src="../../libs/Identity.js"></script>
+        <script src="../../libs/Enums.js"></script>
+        <script src="../../libs/helpfunctions.js"></script>
+        <script src="../../libs/Conversation.js"></script>
+        <script src="../../libs/Participant.js"></script>
+        <script src="../../libs/Idp.js"></script>
+        <script src="../../libs/MessageFactory.js"></script>
+        <script src="../../libs/MessagingStub.js"></script>
+        <script src="../../settings/domain.js"></script>
 
-<script src="../../api/Message.js"></script>
-<script src="../../api/Identity.js"></script>
-<script src="../../api/Enums.js"></script>
-<script src="../../api/helpfunctions.js"></script>
-<script src="../../api/Conversation.js"></script>
-<script src="../../api/Participant.js"></script>
-<script src="../../api/Idp.js"></script>
-<script src="../../api/MessageFactory.js"></script>
-<script src="../../api/Resource.js"></script>
-<script src="../../api/DataBroker.js"></script>
-<script src="../../api/Codec.js"></script>
-<script src="../../api/DataMessage.js"></script>
-<script src="main.js"></script>
+		<script src="main.js"></script>
 
-<script src="../../api/MessagingStub.js"></script>
-<script src="../../stubs/MessagingStub_IMS2Cloud.js"></script>
-    
-</head>
-<body>
-<script type="text/javascript">
-  var loginName;
+		<link rel="stylesheet" type="text/css" href="style.css">
 
-var TURN = {
- url:"turn:150.140.184.242:3479", 
- username: "wonder", 
- credential:"w0nd3r"
-};
-var STUN ={url: "stun:150.140.184.242:3479"};
-var iceServers = { "iceServers": [STUN, TURN]};
+	</head>
+	<body>
+		<h1><a href="#" onclick="$('#settings_div').toggle()"><img alt="" src="img/settings.jpg" height="24" width="24"></a>   WONDER Demo using DT IMS-GW</h1>
 
-var mediaConstraints = {optional: [{RtpDataChannels: true}]};
-</script>
-        <div id="login">
-            <input type="text" id="loginText" value="alice@imsserver.ece.upatras.gr">  passwd:<input type="password" id="password" value="alice"><button id="loginButton" onclick="initialize()">Login</button>
-        </div>
+		<div id="tests_div">
+			<table>
+				<tr>
+					<td colspan="4">Buttons for testing Gui-states</td>
+				</tr>
+				<tr>
+					<td><button id="btn1" onclick="setGUIState(GUI_STATES.UNREGISTERED)">UNREGISTERED</button></td>
+					<td><button id="btn2" onclick="setGUIState(GUI_STATES.REGISTERED)">REGISTERED</button></td>
+					<td><button id="btn3" onclick="setGUIState(GUI_STATES.IN_CHAT_ONLY)">IN_CHAT_ONLY</button></td>
+					<td><button id="btn4" onclick="setGUIState(GUI_STATES.IN_CALL)">IN_CALL</button></td>
+				</tr>
+			</table>
+		</div>
 
-        <div id="container">
-            <div id="card" ondblclick="">
-                <div id="local">
-                    <video id="localVideo" autoplay="autoplay" muted="true"></video>
-                </div>
-                <div id="remote">
-                    <video id="remoteVideo" autoplay="autoplay">
-                    </video>
-                    <div id="mini">
-                        <video id="miniVideo" autoplay="autoplay" muted="true"></video>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <!-- <div id="call">Call user: <input type="text" id="callTo" value="steffen@snc-ims.tlabs.de"><button id="callButton" onclick="doCall()">Call</button></div> -->
-                <div id="call">Call user: <input type="text" id="callTo" value="miguel@MiguelDomain.com"><button id="callButton" onclick="doCall()">Call</button></div>
-                <button id="updateConversation" onclick="updateConversation()">updateConversation</button>
-                <button id="hangup" onclick="hangup()">Hangup</button>
-            </div>
-                <footer id="status"></footer>
-                <div id="infoDiv"></div>
-            </div>
-        </div>
-        <div id="chat" style="float: left; border: 1px solid black;">
-            <div id="textChat">
+		<div id="settings_div">
+			<table>
+				<tr>
+					<td>Testing of Gui states</td>
+					<td><button id="btnTests" onclick="$('#tests_div').toggle()">toggle state buttons</button></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>private ID</td>
+					<td><input id="private_ID" value="" placeholder="steffen">@</td>
+					<td><input id="realm" value="" placeholder="snc-ims.tlabs.de"/></td>
+				</tr>
+				<tr>
+					<td>public ID</td>
+					<td><input id="public_ID" value="" placeholder="steffen"></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>password</td>
+					<td><input id="pass" type="password" value=""></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>SIP-Proxy</td>
+					<td><input id="proxy_host" value="" placeholder="imsserver.ece.upatras.gr"></td>
+					<td><input id="proxy_port" value="" placeholder="4060"></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>Stun-Server</td>
+					<td><input id="stun" value="150.140.184.242" size="20" placeholder="150.140.184.242:3478"></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>Turn-Server</td>
+					<td><input id="turn" value="" size="20" placeholder="150.140.184.242"></td>
+					<td>user/pass<input id="turn_user" size="10" value="" placeholder="wonder"></td>
+					<td><input id="turn_pass" size="10" type="password" value=""/></td>
+				</tr>
+				<tr>
+					<td><b>Profile Name:</b></td>
+					<td><input id="profile" value="" placeholder="profile name"></td>
+					<td><button id="saveConfig" onclick="config.saveProfile();
+							config.loadProfileNames();
+							config.toggleConfig();">Save profile</button></td>
+					<td><button id="resetConfig" onclick="config.resetProfile();">Cancel</button></td>
+					<td><button id="deleteConfig" onclick="config.deleteProfile();">Delete</button></td>
+				</tr>
 
-            </div>
-            <input type="text" id="datachannelmessage" /><br>
-            <button id="sentMessageData" onclick="sentMessageData()">send</button>
-        </div>
+			</table>
+		</div>
 
-        <script>
-            document.getElementById('login').style.visibility = 'visible';
-            document.getElementById('container').style.visibility = 'hidden';
-            document.getElementById('chat').style.visibility = 'hidden';
-            document.getElementById('updateConversation').style.visibility = 'hidden';
-        </script>
+		<div id="login_div">
+			<table>
+				<tr>
+					<td>Select the Account profile:</td>
+					<td>    
+						<select id="profiles" name="profiles">
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td><button id="btnLogin" onclick="login()">Login</button></td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="logout_div">
+			<table>
+				<tr>
+					<td colspan="4"><label id="userID"></label></td>
+					<td><button id="btnLogout" onclick="logout()">Logout</button></td>
+				</tr>
+				<tr>
+					<td>callee-address:</td>
+					<td colspan="3"><input id="callee" size="30" value=""></td>
+				</tr>
+				<tr>
+					<td><button type="button" id="btnCancel" onclick="doCancel();">Cancel</button></td>
+					<td><button type="button" id="btnChat" onclick="doCall('chat');">Chat</button></td>
+					<td><button type="button" id="btnCall" onclick="doCall('av');">A/V Call</button></td>
+					<td><button type="button" id="btnUpdate" onclick="updateConversation();">Add audio/video</button></td>
+					<td><button type="button" id="btnHangup" onclick="hangUp();">Hang Up</button></td>
+				</tr>
+			</table>
+		</div>
+
+		<div><label id="logging"></label></div>
+		<div id="chat_div" style="float: left; border: 1px solid black; position: relative;">
+			<div id="textChat"></div>
+			<label><b>Messaging</b></label>
+			<br>
+			<input type="text" id="datachannelmessage" />
+			<button id="sendMessageData" onclick="sendMessageData()">send</button>
+			<br>
+			<div id="fileSharing">
+				<label><b>FileSharing</b></label>
+				<div id="sharedFiles" style="height: 0px; overflow:auto;"></div>
+				<input type="file" id="fileInput">
+				<button id="sendFile" onclick="sendMessageDataFile()">sendFile</button>
+			</div>
+		</div>
+
+		<div id="video_div" style="position: relative;">
+			<video id="remoteVideo" class="video small" autoplay></video>
+			<video id="localVideo" class="video large" autoplay></video>
+		</div>
+
+
+		<script>
+		</script>
+
+	</body>
 </html>
