@@ -370,7 +370,7 @@ function onMessage(message) {
 
             removeVideoTag(message.from.rtcIdentity);
         
-            $('#modalInvite').modal({backdrop: 'static'}).modal('hide');
+            //$('#modalInvite').modal({backdrop: 'static'}).modal('hide');
             
             break;
         case MessageType.OFFER_ROLE: // set new moderator of the conversatoin
