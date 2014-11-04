@@ -251,7 +251,11 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 		case 'registerresponse':
 			// This must be handled internally in this lib, and a final event must be emitted to app-layer
 			if (msg.status == 10) {
-				controlWSUri = msg.attributes.wsuri;
+				// fix for handling internal vs. public ip -> use configured ip/port from initial WS
+				// only take id from returned URL
+				var arr = msg.attributes.wsuri.split("/");
+				var wsID = arr[arr.length-1];
+				var controlWSUri = this.initialWSUri + "/" + wsID;
 				console.log("got wsuri = " + controlWSUri + " --> opening Control-Api channel");
 				socket = new WebSocket(controlWSUri);
 				self.socket = socket;

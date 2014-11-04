@@ -1,6 +1,17 @@
 // Default settings to be used by IDP Server, Vertx Msg Server and Vertx Msg Stub
 // Should be colocated with Vertx server.java
 
+//for H.W. showcase
+//var a = document.createElement("a");
+//a.setAttribute("href", window.location.href);
+//
+//var idp_options = 
+//        {
+//                protocol : "http", 
+//                domain : a.hostname, 
+//                port : a.port, 
+//                path: "/wonder/idp_php/index.php?jsonp=returnIdentity&filter_rtcIdentity="
+//        };
 
 var idp_options = 
         {
