@@ -110,6 +110,9 @@ Config.prototype.saveProfile = function() {
 	this.putProfileName(profileName);
 	// make the saved profile the active one
 	this.currentProfile = profileName;
+	this.loadProfileNames();
+	// make the current profile active
+	$('#' + this.profileCombo + ' option[value="' + profileName + '"]').prop("selected", "true");
 };
 
 Config.prototype.deleteProfile = function() {
