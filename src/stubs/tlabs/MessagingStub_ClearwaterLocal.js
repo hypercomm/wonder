@@ -255,7 +255,7 @@ MessagingStub_ClearwaterLocal.prototype.handleMessage = function(msg, wonderMsg,
 				// only take id from returned URL
 				var arr = msg.attributes.wsuri.split("/");
 				var wsID = arr[arr.length-1];
-				var controlWSUri = this.initialWSUri + "/" + wsID;
+				var controlWSUri = this.initialWSUri + wsID;
 				console.log("got wsuri = " + controlWSUri + " --> opening Control-Api channel");
 				socket = new WebSocket(controlWSUri);
 				self.socket = socket;
