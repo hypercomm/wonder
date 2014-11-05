@@ -91,8 +91,8 @@ define("MessagingStub_NodeJS", function (require, exports, module) {
 			return;
 		}
 
-		console.log('Opening channel: ' + signaling_server);
-		this.websocket = new WebSocket(signaling_server);
+		console.log('Opening channel: ' + this.signaling_server);
+		this.websocket = new WebSocket(this.signaling_server);
 
 		var socket = this.websocket;
 		this.websocket.onopen = function () {
