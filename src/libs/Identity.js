@@ -111,7 +111,7 @@ Identity.prototype.resolve = function (callback) {
 			}
 		};
 		config.urlArgs = "r=" + (new Date()).getTime();
-
+		require.config(config);
 
 //		require.config({
 //			paths: {
