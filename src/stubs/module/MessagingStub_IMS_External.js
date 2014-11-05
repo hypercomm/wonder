@@ -3,7 +3,7 @@
  * This avoids name-spacing issues.
  * @returns {MessagingStub_IMS_External}
  */
-define("stub", function () {
+define("stub", function (require, exports, module) {
 
 	/*********************************************************************************
 	 * Messaging Stub Class 

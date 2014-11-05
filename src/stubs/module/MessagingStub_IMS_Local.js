@@ -3,7 +3,7 @@
  * This avoids name-spacing issues.
  * @returns {MessagingStub_IMS_Local}
  */
-define("stub", function () {
+define("stub", function (require, exports, module) {
 
 	var CON = {
 		WONDER: "wonder"
@@ -30,9 +30,8 @@ define("stub", function () {
 	 * This file is a translating stub between the Messages from the Wonder-Lib and
 	 * the IMS2Cloud.
 	 * For this purpose it implements the MessagingStub-Interface of the Wonder-Lib.
-	 * @param {String} connectURI The websocket URI for connection to the IMSGW.
 	 */
-	function MessagingStub_IMS_Local(connectURI) {
+	function MessagingStub_IMS_Local() {
 		this.ownRtcIdentity;
 		this.credentials;
 		this.connectCallbackFunction;
@@ -46,8 +45,8 @@ define("stub", function () {
 		this.inviteContextId;
 
 		this.socket;
-		this.initialWSUri = "ws://192.168.7.216:2701/";
-//		this.initialWSUri = connectURI;
+//		this.initialWSUri = "ws://192.168.7.216:2701/";
+		this.initialWSUri = module.config().connectURL;
 
 		this.delayedMessages = {};
 	}

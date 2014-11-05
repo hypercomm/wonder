@@ -59,7 +59,8 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 	this.credentials;
 	this.tone;
 	this.avatar;
-};
+}
+;
 
 
 /**
@@ -97,8 +98,14 @@ Identity.prototype.resolve = function (callback) {
 		console.log("downloading Messaging stub from: " + this.messagingStubLibUrl);
 		// apply require.js config; remove ".js" extension from path
 		require.config({
-			paths : {
-				"stub" : this.messagingStubLibUrl.substring(0, this.messagingStubLibUrl.length - 3)
+			paths: {
+				"stub": this.messagingStubLibUrl.substring(0, this.messagingStubLibUrl.length - 3)
+			},
+			// hand-over the connectURL as configuration to the stub module
+			config: {
+				"stub": {
+					"connectURL": that.connectURL
+				}
 			}
 		});
 		require(["stub"], function (stubImpl) {

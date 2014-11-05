@@ -165,6 +165,8 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
             
 			var localStubURL = data.rows[0].localMsgStubURL;
 			var generalStubURL = data.rows[0].messagingStubURL;
+			var localConnectURL = data.rows[0].localConnectURL;
+			var generalConnectURL = data.rows[0].connectURL;
 
 			// first identity is expected to be the own identity !?
 			if (that.identities.length <= 0) {
@@ -188,9 +190,12 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 			if (localStubURL === that.ownMessagingLibUrl) {
 				console.log("use localMsgStubURL for new Identity: " + localStubURL);
 				identity.messagingStubLibUrl = that.ownMessagingLibUrl;
+				identity.connectURL = localConnectURL;
 			}
-			else
+			else {
 				identity.messagingStubLibUrl = generalStubURL;
+				identity.connectURL = generalConnectURL;
+			}
 
 			//create the identity with the right fields
 			identity.messagingAddress = data.rows[0].messagingAddress;
