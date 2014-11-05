@@ -16,7 +16,7 @@ define("MessagingStub_NodeJS", function (require, exports, module) {
 
 		this.conversations = new Array();
 //		var signaling_server = "192.168.7.216:1337";
-		var signaling_server = module.config().connectURL;
+		this.signaling_server = module.config().connectURL;
 	}
 
 	/**
