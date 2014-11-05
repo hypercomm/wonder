@@ -102,14 +102,13 @@ Identity.prototype.resolve = function (callback) {
 		// apply require.js config; remove ".js" extension from path
 		var paths = new Object();
 		paths[stubName] = path;
-		var config = new Object();
-		config.paths = paths;
 		// hand-over the connectURL as configuration to the stub module
-		config.config = {
-			'stub': {
-				"connectURL": that.connectURL
-			}
-		};
+		var moduleConfig = new Object();
+		moduleConfig[stubName] = {"connectURL": that.connectURL};
+		
+		var config = new Object();
+		config.config = moduleConfig;
+		config.paths = paths;
 		config.urlArgs = "r=" + (new Date()).getTime();
 		require.config(config);
 
