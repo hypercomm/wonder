@@ -190,7 +190,7 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 			// SD: This check is not valid anymore with require.js and its injected configuration for the stubs, 
 			// Check is wrong if same stub (from same download url) serves different domains.
 			// --> must compare also the domains
-			var ownDomain = that.ownRtcIdentity.substring(that.ownRtcIdentity.indexOf("@")+1);
+			var ownDomain = that.ownRtcIdentity ? that.ownRtcIdentity.substring(that.ownRtcIdentity.indexOf("@")+1) : "";
 			var otherDomain = rtcIdentity.substring(rtcIdentity.indexOf("@") + 1);
 			console.log( "owndomain / otherdomain: " + ownDomain + " / " + otherDomain);
 			if (localStubURL === that.ownMessagingLibUrl && ownDomain === otherDomain) {
