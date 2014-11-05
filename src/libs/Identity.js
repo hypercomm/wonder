@@ -108,32 +108,6 @@ Identity.prototype.resolve = function (callback) {
 			// return container-stub in callback
 			callback(that.messagingStub);
 		});
-
-		
-		var check = function(stub, callback, count) {
-			if ( typeof(window[stub]) == "function" ) {
-				// instantiate stub
-				var messagingStub = new window[stub]();
-				//  should be an object now
-				if ( typeof(messagingStub) == "object" ) {
-					// assign the new messagingStub object to the "impl" field of the container stub
-					that.messagingStub.setImpl(messagingStub);
-					that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
-					// return container-stub in callback
-					callback(that.messagingStub);
-				}
-			}
-			else {
-				count++;
-				if ( count < 20 )
-					setTimeout( check, 500,  stub, callback, count );
-				else {
-					callback(); 
-				}
-			}
-		};
-		this.loadJSfile( this.messagingStubLibUrl );
-		setTimeout( check, 100, stubName, callback, 0 );
 	}
 	else {
 		console.log(this.rtcIdentity + ": no need to download stub from: " + this.messagingStubLibUrl);
