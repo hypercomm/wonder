@@ -2,7 +2,8 @@
     "offset": 0,
     "rows": [
         {
-            "messagingStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_NodeJS.js"
+            "messagingStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_NodeJS.js",
+			"connectURL" : "ws://192.168.7.216:1337"
         }
     ],
     "total_rows": 1,
