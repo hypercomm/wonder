@@ -9,14 +9,14 @@ define("MessagingStub_IMS_External", function (require, exports, module) {
 	 * Messaging Stub Class 
 	 * For websocket
 	 */
-	function MessagingStub_IMS_External(connectURI) {
+	function MessagingStub_IMS_External() {
 		this.ownRtcIdentity;
 		this.credentials;
 
 		this.websocket;
 		this.delayedMessages = {};
-		this.signaling_server = "192.168.7.126:8282";
-//		this.signaling_server = connectURI;
+//		this.signaling_server = "192.168.7.126:8282";
+		this.signaling_server = module.config().connectURL;
 	}
 
 	/**
