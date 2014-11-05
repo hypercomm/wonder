@@ -96,22 +96,36 @@ Identity.prototype.resolve = function (callback) {
 		}
 
 		var path = this.messagingStubLibUrl.substring(0, this.messagingStubLibUrl.length - 3);
+		var stubName = path.substring(path.lastIndexOf("/") + 1);
 		console.log("downloading Messaging stub from: " + this.messagingStubLibUrl);
 		console.log("setting path to : " + path);
 		// apply require.js config; remove ".js" extension from path
-		require.config({
-			paths: {
-				'stub': path
-			},
-			// hand-over the connectURL as configuration to the stub module
-			config: {
-				'stub': {
-					"connectURL": that.connectURL
-				}
-			},
-			urlArgs: "r=" +  (new Date()).getTime()
-		});
-		require(["stub"], function (stubImpl) {
+		var paths = new Object();
+		paths[stubname] = path;
+		var config = new Object();
+		config.paths = paths;
+		// hand-over the connectURL as configuration to the stub module
+		config.config = {
+			'stub': {
+				"connectURL": that.connectURL
+			}
+		};
+		config.urlArgs = "r=" + (new Date()).getTime();
+
+
+//		require.config({
+//			paths: {
+//				'stub': path
+//			},
+//			// hand-over the connectURL as configuration to the stub module
+//			config: {
+//				'stub': {
+//					"connectURL": that.connectURL
+//				}
+//			},
+//			urlArgs: "r=" + (new Date()).getTime()
+//		});
+		require([stubName], function (stubImpl) {
 			// assign the new messagingStub object to the "impl" field of the container stub
 			that.messagingStub.setImpl(stubImpl);
 			that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
