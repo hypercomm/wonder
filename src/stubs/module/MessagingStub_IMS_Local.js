@@ -3,7 +3,7 @@
  * This avoids name-spacing issues.
  * @returns {MessagingStub_IMS_Local}
  */
-define("stub", function (require, exports, module) {
+define("MessagingStub_IMS_Local", function (require, exports, module) {
 
 	var CON = {
 		WONDER: "wonder"
@@ -390,5 +390,5 @@ define("stub", function (require, exports, module) {
 		return msg;
 	};
 
-	return MessagingStub_IMS_Local;
+	return new MessagingStub_IMS_Local();
 });

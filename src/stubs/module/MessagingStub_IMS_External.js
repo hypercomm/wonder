@@ -3,7 +3,7 @@
  * This avoids name-spacing issues.
  * @returns {MessagingStub_IMS_External}
  */
-define("stub", function (require, exports, module) {
+define("MessagingStub_IMS_External", function (require, exports, module) {
 
 	/*********************************************************************************
 	 * Messaging Stub Class 
@@ -151,5 +151,5 @@ define("stub", function (require, exports, module) {
 		this.websocket = null;
 	};
 
-	return MessagingStub_IMS_External;
+	return new MessagingStub_IMS_External();
 });
