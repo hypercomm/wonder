@@ -187,7 +187,13 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 			identity = pendingIdentity;
 
 			// if new identity has the same local stub url as the idp itself, then use this one
-			if (localStubURL === that.ownMessagingLibUrl) {
+			// SD: This check is not valid anymore with require.js and its injected configuration for the stubs, 
+			// Check is wrong if same stub (from same download url) serves different domains.
+			// --> must compare also the domains
+			var ownDomain = that.ownRtcIdentity.substring(that.ownMessagingLibUrl.indexOf("@")+1);
+			var otherDomain = rtcIdentity.substring(rtcIdentity.indexOf("@") + 1);
+			console.log( "owndomain / otherdomain: " + ownDomain + " / " + otherDomain);
+			if (localStubURL === that.ownMessagingLibUrl && ownDomain === otherDomain) {
 				console.log("use localMsgStubURL for new Identity: " + localStubURL);
 				identity.messagingStubLibUrl = that.ownMessagingLibUrl;
 				identity.connectURL = localConnectURL;
