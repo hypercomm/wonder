@@ -95,8 +95,9 @@ Identity.prototype.resolve = function (callback) {
 		}
 
 		console.log("downloading Messaging stub from: " + this.messagingStubLibUrl);
+		// apply require.js config; remove ".js" extension from path
 		require.config({
-			'baseUrl': this.messagingStubDownloadUrl
+			'baseUrl': this.messagingStubDownloadUrl.substring(0, this.messagingStubDownloadUrl.length - 3)
 		});
 		require(['stub'], function (stub) {
 			// assign the new messagingStub object to the "impl" field of the container stub
