@@ -101,7 +101,7 @@ Identity.prototype.resolve = function (callback) {
 		console.log("setting path to : " + path);
 		// apply require.js config; remove ".js" extension from path
 		var paths = new Object();
-		paths[stubname] = path;
+		paths[stubName] = path;
 		var config = new Object();
 		config.paths = paths;
 		// hand-over the connectURL as configuration to the stub module
