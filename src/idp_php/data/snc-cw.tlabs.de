@@ -5,7 +5,7 @@
 			"messagingStubURL": "http://192.168.7.216/wonder/stubs/module/MessagingStub_IMS_External.js",
             "localMsgStubURL": "http://192.168.7.216/wonder/stubs/module/MessagingStub_IMS_Local.js",
 			"connectURL": "ws://192.168.7.126:8282",
-			"localConnectURL": "ws://192.168.7.126:8282"
+			"localConnectURL": "ws://192.168.7.216:2701"
         }
     ],
     "total_rows": 1,
