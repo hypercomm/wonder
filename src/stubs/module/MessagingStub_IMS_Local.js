@@ -390,5 +390,5 @@ define("stub", function (require, exports, module) {
 		return msg;
 	};
 
-	return new MessagingStub_IMS_Local();
+	return MessagingStub_IMS_Local;
 });

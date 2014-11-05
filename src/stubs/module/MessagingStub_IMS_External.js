@@ -151,5 +151,5 @@ define("stub", function (require, exports, module) {
 		this.websocket = null;
 	};
 
-	return new MessagingStub_IMS_External();
+	return MessagingStub_IMS_External;
 });
