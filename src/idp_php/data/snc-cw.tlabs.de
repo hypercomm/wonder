@@ -2,8 +2,10 @@
     "offset": 0,
     "rows": [
         {
-            "messagingStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_ClearwaterMS.js",
-            "localMsgStubURL": "http://192.168.7.216/wonder/stubs/tlabs/MessagingStub_ClearwaterLocal.js"
+			"messagingStubURL": "http://192.168.7.216/wonder/stubs/module/MessagingStub_IMS_External.js",
+            "localMsgStubURL": "http://192.168.7.216/wonder/stubs/module/MessagingStub_IMS_Local.js",
+			"connectURI": "ws://192.168.7.126:8282",
+			"localConnectURI": "ws://192.168.7.126:8282",
         }
     ],
     "total_rows": 1,
