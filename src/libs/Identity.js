@@ -95,48 +95,51 @@ Identity.prototype.resolve = function (callback) {
 		}
 
 		console.log("downloading Messaging stub from: " + this.messagingStubLibUrl);
+		// parse the downloadURL to get the name of the Stub
+		var i = this.messagingStubLibUrl.lastIndexOf("/");
+		var path = this.messagingStubLibUrl.substring(0, i);
+		var stubName = this.messagingStubLibUrl.substring(i+1);
+		stubName = stubName.substring(0, stubName.lastIndexOf("."));
+		console.log("path is: " + path );
+		console.log("stub-name is: " + stubName );
+		
 		// apply require.js config; remove ".js" extension from path
 		require.config({
-			'baseUrl': this.messagingStubLibUrl.substring(0, this.messagingStubLibUrl.length - 3)
+			'baseUrl': path
 		});
-		require(['stub'], function (stub) {
+		require([stubName], function (stub) {
 			// assign the new messagingStub object to the "impl" field of the container stub
-			stub.setImpl(stub);
-			stub.message = "stub downloaded from: " + that.messagingStubLibUrl;
+			that.messagingStub.setImpl(stub);
+			that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
 			// return container-stub in callback
-			callback(stub);
+			callback(that.messagingStub);
 		});
 
-//		// parse the downloadURL to get the name of the Stub
-//		var pathArr = this.messagingStubLibUrl.split("/");
-//		var stubName = pathArr[pathArr.length-1];
-//		stubName = stubName.substring(0, stubName.lastIndexOf("."));
-//		console.log("stub-name is: " + stubName );
-//		
-//		var check = function(stub, callback, count) {
-//			if ( typeof(window[stub]) == "function" ) {
-//				// instantiate stub
-//				var messagingStub = new window[stub]();
-//				//  should be an object now
-//				if ( typeof(messagingStub) == "object" ) {
-//					// assign the new messagingStub object to the "impl" field of the container stub
-//					that.messagingStub.setImpl(messagingStub);
-//					that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
-//					// return container-stub in callback
-//					callback(that.messagingStub);
-//				}
-//			}
-//			else {
-//				count++;
-//				if ( count < 20 )
-//					setTimeout( check, 500,  stub, callback, count );
-//				else {
-//					callback(); 
-//				}
-//			}
-//		};
-//		this.loadJSfile( this.messagingStubLibUrl );
-//		setTimeout( check, 100, stubName, callback, 0 );
+		
+		var check = function(stub, callback, count) {
+			if ( typeof(window[stub]) == "function" ) {
+				// instantiate stub
+				var messagingStub = new window[stub]();
+				//  should be an object now
+				if ( typeof(messagingStub) == "object" ) {
+					// assign the new messagingStub object to the "impl" field of the container stub
+					that.messagingStub.setImpl(messagingStub);
+					that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
+					// return container-stub in callback
+					callback(that.messagingStub);
+				}
+			}
+			else {
+				count++;
+				if ( count < 20 )
+					setTimeout( check, 500,  stub, callback, count );
+				else {
+					callback(); 
+				}
+			}
+		};
+		this.loadJSfile( this.messagingStubLibUrl );
+		setTimeout( check, 100, stubName, callback, 0 );
 	}
 	else {
 		console.log(this.rtcIdentity + ": no need to download stub from: " + this.messagingStubLibUrl);
