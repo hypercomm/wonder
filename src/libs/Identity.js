@@ -95,21 +95,15 @@ Identity.prototype.resolve = function (callback) {
 		}
 
 		console.log("downloading Messaging stub from: " + this.messagingStubLibUrl);
-		// parse the downloadURL to get the name of the Stub
-		var i = this.messagingStubLibUrl.lastIndexOf("/");
-		var path = this.messagingStubLibUrl.substring(0, i);
-		var stubName = this.messagingStubLibUrl.substring(i+1);
-		stubName = stubName.substring(0, stubName.lastIndexOf("."));
-		console.log("path is: " + path );
-		console.log("stub-name is: " + stubName );
-		
 		// apply require.js config; remove ".js" extension from path
 		require.config({
-			'baseUrl': path
+			paths : {
+				"stub" : this.messagingStubLibUrl.substring(0, this.messagingStubLibUrl.length - 3)
+			}
 		});
-		require([stubName], function (stub) {
+		require(["stub"], function (stubImpl) {
 			// assign the new messagingStub object to the "impl" field of the container stub
-			that.messagingStub.setImpl(stub);
+			that.messagingStub.setImpl(stubImpl);
 			that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
 			// return container-stub in callback
 			callback(that.messagingStub);
