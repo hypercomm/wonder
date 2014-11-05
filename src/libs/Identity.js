@@ -106,7 +106,8 @@ Identity.prototype.resolve = function (callback) {
 				"stub": {
 					"connectURL": that.connectURL
 				}
-			}
+			},
+			urlArgs: "r=" +  (new Date()).getTime()
 		});
 		require(["stub"], function (stubImpl) {
 			// assign the new messagingStub object to the "impl" field of the container stub
