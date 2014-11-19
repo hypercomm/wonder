@@ -302,6 +302,7 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
                             toIdentity.messagingStub = recvInvitation.from.messagingStub;
                         }
                         else{
+							toIdentity.originalStub = toIdentity.messagingStub;
                             toIdentity.messagingStub = that.myParticipant.identity.messagingStub;
                         }
 
@@ -494,7 +495,7 @@ Conversation.prototype.close = function() {
     if(this.owner==this.myParticipant)
     {
         this.participants.forEach(function(element,index,array){
-            element.status=ParticipantStatus.PARTICIPATED;
+			element.status=ParticipantStatus.PARTICIPATED;
             element.identity.messagingStub.removeListener("",element.identity.rtcIdentity,"");
             element.sendMessage("",MessageType.BYE,"","",function(){},function(){});
             if(element.RTCPeerConnection.signalingState && element.RTCPeerConnection.signalingState != "closed")
@@ -516,6 +517,7 @@ Conversation.prototype.close = function() {
 Conversation.prototype.bye = function() {
     this.participants.forEach(function(element,index,array){
                                 element.leave(true);
+								element.identity.messagingStub = element.identity.originalStub; 
                                 delete array[index];
     });
     this.myParticipant.leave(true);
