@@ -21,8 +21,9 @@
  *
  */
 
-function Codec(type, CodecLibUrl, dataBroker){
+function Codec(type, CodecLibUrl, dataBroker, sink){
     this.listeners = [];
+    this.sink = sink;
     this.id = guid();
     this.type = type;
     this.description;
@@ -40,12 +41,19 @@ function Codec(type, CodecLibUrl, dataBroker){
  */
 
 Codec.prototype.send = function( input ){
-    var aux = JSON.parse(input);
+   
+    if(this.type=="chat" && this.dataBroker){
+        //var aux = JSON.parse(input);
+    }
     //How to change the mimetype of input.body is equal to this.mimetype 
-    if(!this.dataBroker)
+    if(!this.dataBroker && !this.sink)
         return;
     if(this.type=="chat"){
-        this.dataBroker.send(input);
+        if(this.dataBroker){
+            this.dataBroker.send(input);
+        }else{
+            this.sink.identity.sendMessage(input);
+        }
     }else{ // case file Sharing...
         var reader = new window.FileReader();
 
@@ -96,20 +104,24 @@ Codec.prototype.getReport = function( reportHandler ){
  */
 
 Codec.prototype.onData = function( dataMsg ){
-
     //take data and treat it
-    console.log(this.listeners);
-    if(this.type=="chat"){
-        this.listeners.every(function(element, index, array){
-            element('ondatamessage',dataMsg);
-        });
-    }else{
-        //var data = JSON.parse(dataMsg.body.message);
-        this.arrayToStoreChunks.push(dataMsg.body.message);
-        if (dataMsg.body.last) {
-            this.saveToDisk(this.arrayToStoreChunks.join(''), 'fileName');
-            this.arrayToStoreChunks = []; // resetting array
+    console.log(this);
+    console.log(dataMsg);
+    if(this.dataBroker){
+        if(this.type=="chat"){
+            this.listeners.every(function(element, index, array){
+                element('ondatamessage',dataMsg);
+            });
+        }else{
+            //var data = JSON.parse(dataMsg.body.message);
+            this.arrayToStoreChunks.push(dataMsg.body.message);
+            if (dataMsg.body.last) {
+                this.saveToDisk(this.arrayToStoreChunks.join(''), 'fileName');
+                this.arrayToStoreChunks = []; // resetting array
+            }
         }
+    }else{
+        this.listeners[0]("",dataMsg);
     }
 }
 

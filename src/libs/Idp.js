@@ -34,7 +34,7 @@ function Idp(rtcIdentity, options) {
 	//needs to know the domain of my identity
 	var that = this;
     this.instance;
-	this.domain = options.domain || '150.140.184.246';
+	this.domain = options.domain || '127.0.0.1';
     this.protocol = options.protocol || 'http';
     this.wsQuery = options.wsQuery;
 	this.port = options.port || '28017';
@@ -89,12 +89,13 @@ Idp.getInstance = function(rtcIdentity, options) {
 
 Idp.prototype.checkForIdentity = function(rtcIdentity) {
 	// do we already have this rtcIdentity in the identities array ?
-	for (var i = 0; i < this.identities.length; i++) {
-		if (rtcIdentity == this.identities[i].identity.rtcIdentity) {
-			return this.identities[i].identity;
+	if(this.identities)
+		for (var i = 0; i < this.identities.length; i++) {
+			if (rtcIdentity == this.identities[i].identity.rtcIdentity) {
+				return this.identities[i].identity;
+			}
 		}
-	}
-	return null;
+	return null;	
 };
 
 Idp.prototype.getResolvedStub = function(downloadUri) {
@@ -134,8 +135,9 @@ Idp.prototype.createIdentities = function(rtcIdentities, onSuccessCallback, onEr
 		results.push(identity);
 		if(count < ids.length)
 			that.createIdentity(ids[count], internalSuccessCallback, internalErrorCallback);
-		else //if(count == ids.length){
+		else{ //if(count == ids.length){
 			onSuccessCallback(results);
+		}
 			
 	};
 
@@ -154,7 +156,7 @@ Idp.prototype.createIdentities = function(rtcIdentities, onSuccessCallback, onEr
 
 
 Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorCallback) {
-    
+   
     // @callback function in the url
 	this.returnIdentity = function(data) {
         console.log("data ", data);
@@ -195,6 +197,8 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 			//create the identity with the right fields
 			identity.messagingAddress = data.rows[0].messagingAddress;
 			identity.idp = that;
+			identity.username = data.rows[0].username; 
+ 			identity.avatar = data.rows[0].avatar;
 
 			identity.credentials = {
 				"username": data.rows[0].rtcIdentity,
@@ -278,25 +282,107 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 
 	if(/^-?[\d.]+(?:e-?\d+)?$/.test(rtcIdentity)){ 
 		rtcIdentity = "pstn@imsserver.ece.upatras.gr";
-	    }else{
+    }else{
 		var split = rtcIdentity.split('@')
 		if(split.length ==2){
 		    if(/^-?[\d.]+(?:e-?\d+)?$/.test(split[0])){ 
 		        rtcIdentity = "pstn@imsserver.ece.upatras.gr";
 		    }
 		}
-	    }
+    }
     
 
     if(this.protocol == "ws"){
-        this.wsQuery(rtcIdentity, this.returnIdentity);
+    	if(domainUrl && this.messagingstubs.length ==0){
+	    	 var identityIdp = new Identity(null, rtcIdentity );
+	    	 identityIdp.idp = that;
+	    	 identityIdp.messagingStubLibUrl = domainUrl;
+	    	 var stub = new MessagingStub(identityIdp);
+	    	 identityIdp.messagingStub = stub;
+	    	 
+	    	 this.messagingstubs.push({
+				"name": identityIdp.messagingStubLibUrl,
+				"messagingStub": stub //put the general messagingstub in a way that can be shared to the other clients and then use It
+			 });
+			this.identities.push({
+				"messagingAddress": domainUrl,
+				"identity": identityIdp
+			});
+	    	 onSuccessCallback(identityIdp);
+	    	 returnIdentity = identityIdp;
+	    }else{
+	    	if(this.messagingstubs.length !=0 ){
+	    		var message = new MessageFactory.createCRUDMessage( "read", "Identities.<" + rtcIdentity + ">","");	
+				var that = this;
+				var stubUrl = new Object();
+				this.messagingstubs[0].messagingStub.sendMessage(message, function(message){
+					var identityIdp = new Identity(null, rtcIdentity );
+	    	 		identityIdp.idp = that;
+	    	 		identityIdp.username = message.results[0].username;
+	    	 		identityIdp.avatar = message.results[0].avatar;
+	    	 		identityIdp.presence = message.results[0].presence;
+	    	 		if (message.results[0].presence=="online"){
+						identityIdp.statecss ="fa fa-circle green font14"
+					}
+					if (message.results[0].presence=="ausente"){
+						identityIdp.statecss ="fa fa-circle red font14"
+					}
+					if (message.results[0].presence=="ocupado"){
+						identityIdp.statecss ="fa fa-circle yellow font14"
+					}
+					if (message.results[0].presence=="offline"){
+						identityIdp.statecss ="fa fa-circle-o font14"
+					}
+	    	 		var thatIdp = that;
+					var stub = stubUrl;
+					var callBack = onSuccessCallback;
+					if(message.results.length>0 && message.results[0].domainId){
+						var messageDomain = new MessageFactory.createCRUDMessage( "read", "Identities.<" + rtcIdentity + ">.Domains.<" + message.results[0].domainId +">" ,"");
+						
+						that.messagingstubs[0].messagingStub.sendMessage(messageDomain, function(message){
+							if(message.results.length>0){
+								stub = message.results[0].messagingStubUrl;
+							
+								identityIdp.messagingStubLibUrl = message.results[0].messagingStubUrl;
+								var stubI;
+								if(that.messagingstubs[0].name ==  message.results[0].messagingStubUrl)
+									stubI = that.messagingstubs[0].messagingStub;
+								else
+									stubI = new MessagingStub(identityIdp);
+						    	identityIdp.messagingStub = stubI;
+						    	
+						    	if(!Idp.getInstance().getResolvedStub(message.results[0].messagingStubUrl)){
+							    	Idp.getInstance().messagingstubs.push({
+										"name": identityIdp.messagingStubLibUrl,
+										"messagingStub": stub //put the general messagingstub in a way that can be shared to the other clients and then use It
+									});
+								}
+								Idp.getInstance().identities.push({
+									"messagingAddress": message.results[0].messagingStubUrl,
+									"identity": identityIdp
+								});
+								callBack(identityIdp);
+								
+							}
+
+						})
+					}
+				})
+	    	}
+	    }
+        //this.wsQuery(rtcIdentity, this.returnIdentity);
     }else{
         // do a lookup in the IDP-DB
 //        loadJSfile('http://' + this.domain + ':' + this.port + '/webrtc/users/?filter_rtcIdentity=' + rtcIdentity +'&jsonp=returnIdentity');
 		var urlString = this.protocol + '://' + this.domain + ':' + this.port + this.path + rtcIdentity;
 		console.log( "loading Identity from: " +  urlString);
 	    loadJSfile(urlString);
-        returnIdentity = this.returnIdentity;
+	    //console.log("onSuccessCallback----->", onSuccessCallback);
+	 
+    	loadJSfile(urlString);
+    	returnIdentity = this.returnIdentity;
+	    
+        
     }
 	
     //loadJSfile(this.protocol + '://' + this.domain + ':' + this.port + '/' + this.path + rtcIdentity);
@@ -323,7 +409,24 @@ loadJSfile = function(url) {
 };
 
 
+/*
+Creat Identity from Crud Operation
+**/
+Idp.prototype.createIdentityWithCrudOperation = function(rtcIdentity, onSuccessCallback, onErrorCallback) {
+    
+    /*var messagePresence = new MessageFactory.createCRUDMessage( "read", "Identities.<" + rtcIdentity + ">","");	
+	console.log("myIdentity subscribe", this.messagingstubs);
+	var that = this;
+	this.messagingstubs[0].messagingStub.sendMessage(messagePresence, function(message){
+		console.log("message", message)
+		var messageDomain = new MessageFactory.createCRUDMessage( "read", "Identities.<" + rtcIdentity + ">.Domains.<" + message.results[0].id +">" ,"");
+		that.messagingstubs[0].messagingStub.sendMessage(messageDomain, function(message){
 
+		})
+
+	})
+   	*/
+}
 /*
  This class implement the creation of remote identities and the creation of me
  

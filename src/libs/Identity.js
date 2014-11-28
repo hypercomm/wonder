@@ -30,6 +30,7 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 		throw "Illegal attempt to create an Identity --> Please use Idp.getInstance().createIdentity(...) instead."
 	
 	// We use a string, RTCIdentityAssertion is not available.
+	this.listeners = new Array(new Array(), new Array());
 	this.rtcIdentity = idpRtcIdentity;
 	this.id = new Date().getTime();
 	console.log( "####################");
@@ -37,10 +38,9 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 	console.trace();
 	console.log( "####################");
 	this.idp = "";
-	this.presence = {
-		status: IdentityStatus.IDLE
+	this.status= IdentityStatus.IDLE;
 		//app: this.prototype.resolveMyApp()
-	};
+
 	
 	// TODO: initialise presence status
     //this.presence.status = IdentityStatus.IDLE; // not initialized yet TODO: do state changes in a central place
@@ -48,10 +48,10 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 
 	//this.status = IdentityStatus.IDLE; // TODO: to be replaced with Identity.presence
 	this.context;
-
-
+	this.username;
+	this.presence;
 	this.sessionId = "";
-	
+	this.user_agent = ""
 	this.messagingStubLibUrl = "";
 	this.messagingStub;
 	this.notificationAddress;
@@ -85,51 +85,54 @@ Identity.prototype.resolveMyApp = function() {
 Identity.prototype.resolve = function( callback ) {
 	var that = this;
 	console.log( "resolving identity: " + this.rtcIdentity);
-	if ( ! this.messagingStub.impl ) {
-		// not resolved yet --> let's ask Idp for a stub with the same downloadUri
-		var knownStub = Idp.getInstance().getResolvedStub(this.messagingStubLibUrl);
-		if ( knownStub) {
-			this.messagingStub = knownStub;
-			callback(this.messagingStub);
-			return;
-		}
-		
-		console.log( "downloading Messaging stub from: " + this.messagingStubLibUrl );
+	console.log( "this.messagingStubLibUrl: " , Idp.getInstance().getResolvedStub(this.messagingStubLibUrl));
+	if(this.messagingStub){
+		if ( ! this.messagingStub.impl ) {
+			// not resolved yet --> let's ask Idp for a stub with the same downloadUri
+			var knownStub = Idp.getInstance().getResolvedStub(this.messagingStubLibUrl);
+			if ( knownStub) {
+				this.messagingStub = knownStub;
+				callback(this.messagingStub);
+				return;
+			}
+			
+			console.log( "downloading Messaging stub from: " + this.messagingStubLibUrl );
 
-		// parse the downloadURL to get the name of the Stub
-		var pathArr = this.messagingStubLibUrl.split("/");
-		var stubName = pathArr[pathArr.length-1];
-		stubName = stubName.substring(0, stubName.lastIndexOf("."));
-		console.log("stub-name is: " + stubName );
-		
-		var check = function(stub, callback, count) {
-			if ( typeof(window[stub]) == "function" ) {
-				// instantiate stub
-				var messagingStub = new window[stub]();
-				//  should be an object now
-				if ( typeof(messagingStub) == "object" ) {
-					// assign the new messagingStub object to the "impl" field of the container stub
-					that.messagingStub.setImpl(messagingStub);
-					that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
-					// return container-stub in callback
-					callback(that.messagingStub);
+			// parse the downloadURL to get the name of the Stub
+			var pathArr = this.messagingStubLibUrl.split("/");
+			var stubName = pathArr[pathArr.length-1];
+			stubName = stubName.substring(0, stubName.lastIndexOf("."));
+			console.log("stub-name is: " + stubName );
+			
+			var check = function(stub, callback, count) {
+				if ( typeof(window[stub]) == "function" ) {
+					// instantiate stub
+					var messagingStub = new window[stub]();
+					//  should be an object now
+					if ( typeof(messagingStub) == "object" ) {
+						// assign the new messagingStub object to the "impl" field of the container stub
+						that.messagingStub.setImpl(messagingStub);
+						that.messagingStub.message = "stub downloaded from: " + that.messagingStubLibUrl;
+						// return container-stub in callback
+						callback(that.messagingStub);
+					}
 				}
-			}
-			else {
-				count++;
-				if ( count < 20 )
-					setTimeout( check, 500,  stub, callback, count );
 				else {
-					callback(); 
+					count++;
+					if ( count < 20 )
+						setTimeout( check, 500,  stub, callback, count );
+					else {
+						callback(); 
+					}
 				}
-			}
-		};
-		this.loadJSfile( this.messagingStubLibUrl );
-		setTimeout( check, 100, stubName, callback, 0 );
-	}
-	else {
-		console.log( this.rtcIdentity + ": no need to download stub from: " + this.messagingStubLibUrl);
-		callback( this.messagingStub );
+			};
+			this.loadJSfile( this.messagingStubLibUrl );
+			setTimeout( check, 100, stubName, callback, 0 );
+		}
+		else {
+			console.log( this.rtcIdentity + ": no need to download stub from: " + this.messagingStubLibUrl);
+			callback( this.messagingStub );
+		}
 	}
 };
 
@@ -196,8 +199,10 @@ Identity.prototype.setStatus = function(status, login) {
 	var that = this;
 	console.log("Identity SetStatus: ", status);
 
-	this.presence.status = status;// TODO: change to that.presence.status = status;
-	this.messagingStub.sendMessage(MessageFactory.createContextMessage(that.rtcIdentity, "", status, login, that.sessionId));	
+	this.status = status;// TODO: change to that.presence.status = status;
+	this.messagingStub.sendMessage(MessageFactory.createContextMessage(that.rtcIdentity, "", status, login, that.sessionId));
+	if(IdentityStatus.UNAVAILABLE == status)
+		this.messagingStub.removeListener();	
     // TODO: check status transitions according to IdentityStatus state machine
 	// TODO: Send a CONTEXT message to address "rtcIdentity.presence"
 };
@@ -213,7 +218,7 @@ Identity.prototype.setStatus = function(status, login) {
 Identity.prototype.setPresence = function(presence) {
 
 	var that = this;
-	that.presence.status = presence;
+	that.status = presence;
 	
     // TODO: check status transitions according to IdentityStatus state machine
 	// TODO: Send a CONTEXT message to address "rtcIdentity.presence"
@@ -243,7 +248,7 @@ Identity.prototype.setContext = function(context) {
  */
 Identity.prototype.getStatus = function() {
 // TODO: change to return this.presence.status;
-	return this.presence.status;
+	return this.status;
 };
 
 /**
@@ -253,7 +258,7 @@ Identity.prototype.getStatus = function() {
  * 
  */
 Identity.prototype.getPresence = function() {
-	return this.presence;
+	return this.status;
 };
 
 
@@ -318,7 +323,7 @@ Identity.prototype.loadJSfile = function(url) {
 };
 
 Identity.prototype.onMessage = function(message){
-	console.log("MESSAGES-->",message)
+
 	switch(message.type){
 		case MessageType.CONTEXT:
 			this.setStatus(message.identityPresence.status);
@@ -329,8 +334,45 @@ Identity.prototype.onMessage = function(message){
 			break;
 		case MessageType.CANCEL:
 			break;
+		case MessageType.MESSAGE:
+			var idxCodec = this.listeners[1].indexOf(message.from);
+			if(idxCodec != -1)
+				this.listeners[idxCodec][idxCodec](message);
+			break;
 		default:
 			break;
 	}
 
 }
+
+/**
+ * addListener function
+ * @param.. listener
+ */
+
+Identity.prototype.addListener = function( listener, rtcIdentity ){
+
+    this.listeners[0].push(listener);
+    this.listeners[1].push(rtcIdentity);
+}
+
+
+/**
+ * removeListener function
+ * @param.. listener
+ */
+
+Identity.prototype.removeListener = function( listener, rtcIdentity ){
+
+    var index = 0;
+    var index2=0;
+    if(this.listeners.indexOf(listener, index) !== -1){
+        index = this.listeners[0].indexOf(listener, index);
+        index2 = this.listeners[1].indexOf(rtcIdentity, index2);
+        this.listeners[0].splice(index, 1);
+        this.listeners[1].splice(index2, 1);
+    }
+
+
+}
+
