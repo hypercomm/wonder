@@ -84,7 +84,7 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
 
     addParticipantAnonymous = function (that, identity, constraints, invitationBody){
 
-            console.log("addParticipantAnonymous: ". identity);
+            console.log("addParticipantAnonymous: " + identity);
 
             var participant = new Participant();
             toIdentity = identity;
@@ -137,6 +137,9 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
             console.log("subject: ", subject);
             
             localIDP.createIdentities(rtcIdentity, function (identity) {
+				console.log( "°°°°°°°°°°°°°°°°°°°°°°")
+				console.trace();
+				//console.log("created Identity: " + JSON.stringify(identity) );
                 if (identity instanceof Array) {
                     identity.forEach(function (element, index, array) {
                         console.log("ELEMENTTT: ", element);
@@ -536,7 +539,8 @@ Conversation.prototype.bye = function() {
 								element.identity.messagingStub = element.identity.originalStub; 
                                 delete array[index];
     });
-    this.myParticipant.leave(true);
+	// SD: 01.12.2014, now that all participants are in the list, we don't need to leave the myParticipant explicitely
+    // this.myParticipant.leave(true);
     this.setStatus(ConversationStatus.CLOSED);
 };
 
@@ -628,7 +632,8 @@ Conversation.prototype.onMessage = function(message) {
                     element.leave(true);
                     delete array[index];
                 });
-                this.myParticipant.leave(false);
+				// SD: 01.12.2014, now that all participants are in the list, we don't need to leave the myParticipant explicitely
+//                this.myParticipant.leave(false);
                 this.setStatus(ConversationStatus.CLOSED);
             }
             else {

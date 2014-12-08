@@ -229,7 +229,7 @@ function doCall() {
     $("#callingModal").text("Calling: " + peersString);
     $('#modalInviting').modal('show');
 
-    conversation.open(peers, "", constraints, invitation, function(){}, function(){});
+    conversation.open(peers, "", constraints, invitation, "dummy-subject", function(){}, function(){});
 
     var Cancelbtn = document.getElementById('CancelButton');
     Cancelbtn.onclick = function(){

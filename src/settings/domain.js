@@ -16,7 +16,7 @@
 var idp_options = 
         {
                 protocol : "http", 
-                domain : "192.168.7.216", 
+                domain : "localhost", 
                 port : '80', 
                 path: "/wonder/idp_php/index.php?jsonp=returnIdentity&filter_rtcIdentity="
         };
