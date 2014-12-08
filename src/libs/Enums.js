@@ -31,8 +31,9 @@ var MessageType = {
         /** To publish Identity Presence and Context data  */
         CONTEXT                 : "context",
         /** To subscribe to receive Context messages from an Identity */
-        SUBSCRIBE                 : "subscribe",
-   
+        SUBSCRIBE               : "subscribe",
+        /**Response to subscribe message**/
+        SUBSCRIBE_ACCEPTED      : "subscribeAccepted",
         /** Message to offer a role (TO BE IMPLEMENTED) */
         OFFER_ROLE              : "offerRole",
         /** Message to setup redirection (TO BE IMPLEMENTED) */
@@ -116,7 +117,9 @@ var ResourceType = {
         /** Video (TO BE IMPLEMENTED) */
         VIDEO                   : "video",
         /** Music (TO BE IMPLEMENTED) */
-        MUSIC                   : "music"
+        MUSIC                   : "music",
+        /**chat addHocChat**/
+        ADHOC_CHAT              : "addHocChat"
 };
 
 

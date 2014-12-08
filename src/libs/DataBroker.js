@@ -31,8 +31,7 @@ DataBroker.prototype.onDataChannelEvt = function( msg ){
 	console.log(this.channels);*/
 	for(var i = 0; i < this.channels.length; i++){
 		this.channels[i].channel.onmessage = function(msg){
-			var msgObject = JSON.parse(msg.data);
-			console.log("MESSAGE: ", msg);
+			var msgObject = msg.data; //JSON.parse(msg.data);
 			//that.codecs[0].onData(msgObject);
 			for(var i = 0; i < that.codecs.length; i++){
 				console.log("that.codecs[i].id: ", that.codecs[i].id);
@@ -41,6 +40,8 @@ DataBroker.prototype.onDataChannelEvt = function( msg ){
 					console.log("that.codecs[i], ", that.codecs[i]);
 					that.codecs[i].onData(msgObject);
 					break;
+				}else{
+					that.codecs[i].onData(msgObject);
 				}
 					
 			}
@@ -127,7 +128,7 @@ DataBroker.prototype.send = function( msg ){
 	
 	console.log("MENSAGEM: ", msg);
 	var index = -1;
-	var msgObject = JSON.parse(msg);
+	var msgObject =msg;// JSON.parse(msg);
 	
 	if( msgObject.to == "" || typeof msgObject.to === 'undefined' ){
 		for(var i = 0; i < this.channels.length; i++){

@@ -188,7 +188,7 @@ MessageFactory.createContextMessage =  function(from, to, status, login, context
 }
 
 
-MessageFactory.createSubscribeMessage =  function(from, to, message) {
+MessageFactory.createIdentitySubscribeMessage =  function(from, to, message) {
 
     var subscribebody = new Object();
     subscribebody.presence = SubscriptionType.IDENTITY_CONTEXT_SUBSCRIPTION;
@@ -197,23 +197,36 @@ MessageFactory.createSubscribeMessage =  function(from, to, message) {
     return subscribeMessage;
 }
 
+/**
+response to subscribe message
+**/
+MessageFactory.createSubscriptionAcceptedMessage = function(subscribeFriends){
+    var subscribeMessage = new Message("", "", subscribeFriends, MessageType.SUBSCRIBE_ACCEPTED, guid());
+    return subscribeMessage;
+}
 
-MessageFactory.createMessageChat =  function(from, to, text) {
 
-    console.log("MessageFactory.createMessageChat: " + to +" "+ from + 
+MessageFactory.createDataMessage =  function(from, to, text, context) {
+
+    console.log("MessageFactory.createMessageChat: " + to +" " + 
         " " + text);
-    var messageBody = text;
+    var messageBody = new Object();
+    messageBody.text = text;
+    //messageBody.conversationId =conversationId
 
 
-    var messageChat = new Message(from, to, messageBody, MessageType.MESSAGE, guid());
+    var messageChat = new Message(from, to, messageBody, MessageType.MESSAGE, context);
     return messageChat;
 }
 
-MessageFactory.createCRUDMessage =  function(from, operation, resource, doc) {
+// document is var reserved for javascript or html ...
+MessageFactory.createCRUDMessage =  function(operation, resource, criteria, syntax, doc) {
     var crudbody = new Object();
     crudbody.operation = operation;
-    crudbody.resource = resource;
+    crudbody.syntax = syntax;
     crudbody.doc = doc;
-    var crudMessage = new Message(from, "",crudbody, MessageType.CRUD_OPERATION, "");
+    crudbody.resource = resource;
+    crudbody.criteria = criteria;
+    var crudMessage = new Message("", "",crudbody, MessageType.CRUD_OPERATION, "");
     return crudMessage;
 }

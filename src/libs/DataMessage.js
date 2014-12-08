@@ -21,4 +21,5 @@ function DataMessage (codecId, to, from, body){
 	this.to = to; //in case empty it sends the message to all clients
 	this.body = body;
 	this.from = from;
+	this.timestamp;
 }
