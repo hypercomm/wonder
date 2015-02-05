@@ -309,7 +309,7 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
                             toIdentity.messagingStub = recvInvitation.from.messagingStub;
                         }
                         else{
-							toIdentity.originalStub = toIdentity.messagingStub;
+                            toIdentity.originalStub = toIdentity.messagingStub;
                             toIdentity.messagingStub = that.myParticipant.identity.messagingStub;
                         }
 
@@ -536,7 +536,7 @@ Conversation.prototype.bye = function() {
     }*/
     this.participants.forEach(function(element,index,array){
                                 element.leave(true);
-								element.identity.messagingStub = element.identity.originalStub; 
+				element.identity.messagingStub = element.identity.originalStub; 
                                 delete array[index];
     });
 	// SD: 01.12.2014, now that all participants are in the list, we don't need to leave the myParticipant explicitely
