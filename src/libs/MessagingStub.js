@@ -15,10 +15,10 @@
  * It defines a set of methods that must be implemented in order to support a new domain.
  * 
  */
-function MessagingStub() {
+function MessagingStub(identity) {
 	this.impl = null;
 	this.message = "No implementation downloaded and assigned to this stub yet!";
-
+	this.manager = identity;
 	// do the listener handling already here
 	this.listeners = new Array(new Array(), new Array(), new Array());
 	this.buffer = new Array();
@@ -74,9 +74,9 @@ MessagingStub.prototype.addListener = function(listener, rtcIdentity, contextId)
  * sendMessage - Sends the specified message.
  * @param {Message} message - Message to send. 
  */
-MessagingStub.prototype.sendMessage = function(message) {
+MessagingStub.prototype.sendMessage = function(message, callback) {
 	if (this.impl) {
-		this.impl.sendMessage(message);
+		this.impl.sendMessage(message, callback);
 	}
 	else {
 		console.log(this.message);
@@ -123,7 +123,7 @@ MessagingStub.prototype.removeListener = function (listener, rtcIdentity, contex
  * @param {Object} credentials - Credentials to connect to the server.
  * @param {callback} callbackFunction - Callback to execute when the connection is done.
  */
-MessagingStub.prototype.connect = function(ownRtcIdentity, credentials, callbackFunction) {
+MessagingStub.prototype.connect = function(ownRtcIdentity, credentials, callbackFunction, SessionEvent) {
 	if (this.impl) {
 		this.impl.connect(ownRtcIdentity, credentials, callbackFunction);
 	}
@@ -138,7 +138,8 @@ MessagingStub.prototype.connect = function(ownRtcIdentity, credentials, callback
  */
 MessagingStub.prototype.disconnect = function() {
 	if (this.impl) {
-		this.impl.disconnect();
+		if(IdentityStatus.UNAVAILABLE == this.manager.status)
+			this.impl.disconnect();
 	}
 	else {
 		console.log(this.message);
@@ -160,25 +161,28 @@ MessagingStub.prototype.getListeners = function() {
 * @ignore
 */
 MessagingStub.prototype.sendOtherMessages = function(message){
-
+	
 	var idxParticipant = this.listeners[1].indexOf(message.from.rtcIdentity);
 	var idxConversation = this.listeners[2].indexOf(message.contextId);
 
 	console.log("idxParticipant ", idxParticipant);
 	console.log("idxConversation ", idxConversation);
+	
 	if(idxParticipant == -1){
 		if(idxConversation == -1){
 			if(message.type == MessageType.INVITATION || message.type == MessageType.CONTEXT || !message.contextId || message.type == MessageType.BYE){
-				this.listeners[0][0](message);
-
+				if(message.type == MessageType.CONNECTIVITY_CANDIDATE){
+					this.buffer.push(message);
+				}else{
+					this.listeners[0][0](message);
+				}
 			} else {
 				this.buffer.push(message);
 			}
 		} else {
-			this.listeners[0][idxConversation](message);
+				this.listeners[0][idxConversation](message);
 		}
 	} else {
 		this.listeners[0][idxParticipant](message);
 	}
-	
 }

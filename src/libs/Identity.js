@@ -25,33 +25,33 @@
  * This constructor will throw an exception if it is used directly.
  */
 function Identity(rtcIdentity, idpRtcIdentity) {
-	console.log("idpRtcIdentity", idpRtcIdentity)
-	if (rtcIdentity)
+	console.log("idpRtcIdentity",idpRtcIdentity)
+	if ( rtcIdentity )
 		throw "Illegal attempt to create an Identity --> Please use Idp.getInstance().createIdentity(...) instead."
 
 	// We use a string, RTCIdentityAssertion is not available.
+	this.listeners = new Array(new Array(), new Array());
 	this.rtcIdentity = idpRtcIdentity;
 	this.id = new Date().getTime();
-	console.log("####################");
-	console.log("created new Identiy for: " + this.rtcIdentity + " with id = " + this.id);
+	console.log( "####################");
+	console.log( "created new Identiy for: " + this.rtcIdentity + " with id = " + this.id);
 	console.trace();
-	console.log("####################");
+	console.log( "####################");
 	this.idp = "";
-	this.presence = {
-		status: IdentityStatus.IDLE
+	this.status= IdentityStatus.IDLE;
 				//app: this.prototype.resolveMyApp()
-	};
 
+	
 	// TODO: initialise presence status
 	//this.presence.status = IdentityStatus.IDLE; // not initialized yet TODO: do state changes in a central place
 	//this.presence.app = this.prototype.resolveMyApp(); // not initialized yet TODO: do state changes in a central place
 
 	//this.status = IdentityStatus.IDLE; // TODO: to be replaced with Identity.presence
 	this.context;
-
-
+	this.username;
+	this.presence;
 	this.sessionId = "";
-
+	this.user_agent = ""
 	this.messagingStubLibUrl = "";
 	this.messagingStub;
 	this.notificationAddress;
@@ -59,8 +59,7 @@ function Identity(rtcIdentity, idpRtcIdentity) {
 	this.credentials;
 	this.tone;
 	this.avatar;
-}
-;
+};
 
 
 /**
@@ -69,7 +68,7 @@ function Identity(rtcIdentity, idpRtcIdentity) {
  * @returns AppType ... private function to resolve the type of Application used by the user 
  * 
  */
-Identity.prototype.resolveMyApp = function () {
+Identity.prototype.resolveMyApp = function() {
 	// TODO: to check what kind of App is used:
 	//     - Case is Web App running in a mobile browser it should return AppType.MOBILE_WEB_APP
 	//     - Case is Mobile Web App running in a pc browser it should return AppType.WEB_APP
@@ -83,17 +82,18 @@ Identity.prototype.resolveMyApp = function () {
  * 
  * @param callback {callback(MessagingStub)} callback that is invoked with messagingStub as param; if download failed then the stub param is empty
  */
-Identity.prototype.resolve = function (callback) {
+Identity.prototype.resolve = function( callback ) {
 	var that = this;
-	console.log("resolving identity: " + this.rtcIdentity);
-	if (!this.messagingStub.impl) {
+	console.log( "resolving identity: " + this.rtcIdentity);
+	console.log( "this.messagingStubLibUrl: " , Idp.getInstance().getResolvedStub(this.messagingStubLibUrl));
+	if(this.messagingStub && ! this.messagingStub.impl ) {
 		// not resolved yet --> let's ask Idp for a stub with the same downloadUri
 		var knownStub = Idp.getInstance().getResolvedStub(this.messagingStubLibUrl);
-		if (knownStub) {
+			if ( knownStub) {
 			this.messagingStub = knownStub;
 			callback(this.messagingStub);
 			return;
-		}
+			}
 
 		var path = this.messagingStubLibUrl.substring(0, this.messagingStubLibUrl.length - 3);
 		var stubName = path.substring(path.lastIndexOf("/") + 1);
@@ -109,7 +109,7 @@ Identity.prototype.resolve = function (callback) {
 		var config = new Object();
 		config.config = moduleConfig;
 		config.paths = paths;
-		config.urlArgs = "r=" + (new Date()).getTime();
+		//config.urlArgs = "r=" + (new Date()).getTime();
 		require.config(config);
 
 //		require.config({
@@ -150,7 +150,7 @@ Identity.prototype.resolve = function (callback) {
  *            SubscriptionType ... The subscription type
  *
  */
-Identity.prototype.subscribe = function (subscriber) {
+Identity.prototype.subscribe = function(subscriber) {
 	// TODO: get messagingStub by invoking Identity.resolve() function, add Identity as messagingStub listener (including the subscription contextId)  and send SUBSCRIBE message through the MessagingStub
 	this.context = guid(); //check this
 	that = this;
@@ -160,7 +160,7 @@ Identity.prototype.subscribe = function (subscriber) {
 	console.log("Identity subscriber", subscriber);
 
 	console.log("Identity subscribe");
-	this.resolve(function (stub) {
+	this.resolve(function(stub){
 
 		//message.contextId = guid();
 		stub.addListener(that.onMessage(that), "presence." + to, that.context);
@@ -178,7 +178,7 @@ Identity.prototype.subscribe = function (subscriber) {
  *            SubscriptionType ... The subscription type
  *
  */
-Identity.prototype.unsubscribe = function (subscriber, type) {
+Identity.prototype.unsubscribe = function(subscriber, type) {
 	// TODO: get messagingStub by invoking Identity.resolve() function and send BYE message through the MessagingStub
 	this.messagingStub.sendMessage(MessageFactory.createUnsubscribeMessage(message));
 };
@@ -192,7 +192,7 @@ Identity.prototype.unsubscribe = function (subscriber, type) {
  * 
  */
 
-Identity.prototype.setStatus = function (status, login) {
+Identity.prototype.setStatus = function(status, login) {
 	//var message = new Object();
 	//message.contextId = this.context;
 
@@ -201,8 +201,10 @@ Identity.prototype.setStatus = function (status, login) {
 	var that = this;
 	console.log("Identity SetStatus: ", status);
 
-	this.presence.status = status;// TODO: change to that.presence.status = status;
+	this.status = status;// TODO: change to that.presence.status = status;
 	this.messagingStub.sendMessage(MessageFactory.createContextMessage(that.rtcIdentity, "", status, login, that.sessionId));
+	if(IdentityStatus.UNAVAILABLE == status)
+		this.messagingStub.removeListener();	
 	// TODO: check status transitions according to IdentityStatus state machine
 	// TODO: Send a CONTEXT message to address "rtcIdentity.presence"
 };
@@ -215,10 +217,10 @@ Identity.prototype.setStatus = function (status, login) {
  * 
  */
 
-Identity.prototype.setPresence = function (presence) {
+Identity.prototype.setPresence = function(presence) {
 
 	var that = this;
-	that.presence.status = presence;
+	that.status = presence;
 
 	// TODO: check status transitions according to IdentityStatus state machine
 	// TODO: Send a CONTEXT message to address "rtcIdentity.presence"
@@ -232,7 +234,7 @@ Identity.prototype.setPresence = function (presence) {
  * 
  */
 
-Identity.prototype.setContext = function (context) {
+Identity.prototype.setContext = function(context) {
 
 	this.context = context;
 	this.messagingStub.sendMessage(MessageFactory.createContextMessage());
@@ -246,9 +248,9 @@ Identity.prototype.setContext = function (context) {
  * @returns IdentityStatus ... gets the presence status attribute for this Identity
  * 
  */
-Identity.prototype.getStatus = function () {
+Identity.prototype.getStatus = function() {
 // TODO: change to return this.presence.status;
-	return this.presence.status;
+	return this.status;
 };
 
 /**
@@ -257,8 +259,8 @@ Identity.prototype.getStatus = function () {
  * @returns Presence ... gets the presence  attribute for this Identity
  * 
  */
-Identity.prototype.getPresence = function () {
-	return this.presence;
+Identity.prototype.getPresence = function() {
+	return this.status;
 };
 
 
@@ -270,7 +272,7 @@ Identity.prototype.getPresence = function () {
  */
 
 
-Identity.prototype.sendMessage = function (message) {
+Identity.prototype.sendMessage = function(message) {
 	this.messagingStub.sendMessage(message);
 };
 
@@ -280,7 +282,7 @@ Identity.prototype.sendMessage = function (message) {
  * @returns ContextData ... gets the context attribute for this Identity
  * 
  */
-Identity.prototype.getContext = function () {
+Identity.prototype.getContext = function() {
 	return this.context;
 };
 
@@ -290,7 +292,7 @@ Identity.prototype.getContext = function () {
  * @returns URL ... gets the URL to download the MessagingStub for this Identity
  * 
  */
-Identity.prototype.getMessagingStubDownloadUrl = function () {
+Identity.prototype.getMessagingStubDownloadUrl = function() {
 	//will be needed to the Idp 
 	return this.messagingStubDownloadUrl;
 };
@@ -302,8 +304,8 @@ Identity.prototype.getMessagingStubDownloadUrl = function () {
  * We use this callback to disconnect and unload the MessagingStub. 
  * 
  */
-Identity.prototype.onLastMessagingListener = function () {
-	if (this.messagingStub)
+Identity.prototype.onLastMessagingListener = function() {
+	if ( this.messagingStub )
 		this.messagingStub.disconnect();
 	// "undefine" messagingStub 
 	delete this.messagingStub;
@@ -314,7 +316,7 @@ Identity.prototype.onLastMessagingListener = function () {
  * TODO: This might be a security risk, because the file is executed immediately.
  * @param url ... url of the file to be loaded
  */
-Identity.prototype.loadJSfile = function (url) {
+Identity.prototype.loadJSfile = function(url) {
 	var fileref = document.createElement('script');
 	fileref.setAttribute("type", "text/javascript");
 	fileref.setAttribute("src", url);
@@ -322,9 +324,9 @@ Identity.prototype.loadJSfile = function (url) {
 		document.getElementsByTagName("head")[0].appendChild(fileref);
 };
 
-Identity.prototype.onMessage = function (message) {
-	console.log("MESSAGES-->", message)
-	switch (message.type) {
+Identity.prototype.onMessage = function(message){
+
+	switch(message.type){
 		case MessageType.CONTEXT:
 			this.setStatus(message.identityPresence.status);
 			break;
@@ -334,8 +336,45 @@ Identity.prototype.onMessage = function (message) {
 			break;
 		case MessageType.CANCEL:
 			break;
+		case MessageType.MESSAGE:
+			var idxCodec = this.listeners[1].indexOf(message.from);
+			if(idxCodec != -1)
+				this.listeners[idxCodec][idxCodec](message);
+			break;
 		default:
 			break;
 	}
 
 }
+
+/**
+ * addListener function
+ * @param.. listener
+ */
+
+Identity.prototype.addListener = function( listener, rtcIdentity ){
+
+    this.listeners[0].push(listener);
+    this.listeners[1].push(rtcIdentity);
+}
+
+
+/**
+ * removeListener function
+ * @param.. listener
+ */
+
+Identity.prototype.removeListener = function( listener, rtcIdentity ){
+
+    var index = 0;
+    var index2=0;
+    if(this.listeners.indexOf(listener, index) !== -1){
+        index = this.listeners[0].indexOf(listener, index);
+        index2 = this.listeners[1].indexOf(rtcIdentity, index2);
+        this.listeners[0].splice(index, 1);
+        this.listeners[1].splice(index2, 1);
+    }
+
+
+}
+

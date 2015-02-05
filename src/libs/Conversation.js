@@ -20,7 +20,7 @@
  * @param msgHandler {@link Message} handler implemented by the Application to receive and process Messages from the {@link MessagingStub}
  *
  */
-function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constraints) {
+function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constraints, id) {
      /**
      * The list of {@link Participant} in the Conversation.
      * @private
@@ -32,7 +32,7 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
      * @private
      * @type string
      */
-    this.id;
+    this.id = id;
     
      /**
      * The {@link Participant} that manages the Conversation having additional features 
@@ -79,11 +79,12 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
     //this.eventHandler;
     this.myParticipant = new Participant();
     this.myParticipant.identity = myIdentity;
+    this.participants.push(this.myParticipant);
     thisConversation = this;
 
     addParticipantAnonymous = function (that, identity, constraints, invitationBody){
 
-            console.log("addParticipantAnonymous: ". identity);
+            console.log("addParticipantAnonymous: " + identity);
 
             var participant = new Participant();
             toIdentity = identity;
@@ -106,7 +107,7 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
 
     //function to open a conversation, used in the conversation.open and in the conversation.acceptRequest
     
-    openaConversation = function(that, rtcIdentity, hosting, resourceConstraints, invitationBody, callback, errorCallback){
+    openaConversation = function(that, rtcIdentity, hosting, resourceConstraints, invitationBody, subject, callback, errorCallback){
 
         that.myParticipant.createMyself(that.myParticipant.identity, resourceConstraints, that.onRTCEvt.bind(that), that.onMessage.bind(that), function () {
 
@@ -114,6 +115,7 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
                 that.id = "context-" + guid();
             that.owner = that.myParticipant;
             that.owner.contextId = that.id;
+            that.subject = subject;
 
             that.myParticipant.identity.messagingStub.addListener(that.onMessage.bind(that), undefined, that.id);
 
@@ -131,8 +133,13 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
             //add a verification if rtcIdentity is already an identity or if is a rtcIdentity only
             //
             console.log("SEND INVITATION TO: ", rtcIdentity);
-
+            console.log("invitationBody ", invitationBody);
+            console.log("subject: ", subject);
+            
             localIDP.createIdentities(rtcIdentity, function (identity) {
+				console.log( "°°°°°°°°°°°°°°°°°°°°°°")
+				console.trace();
+				//console.log("created Identity: " + JSON.stringify(identity) );
                 if (identity instanceof Array) {
                     identity.forEach(function (element, index, array) {
                         console.log("ELEMENTTT: ", element);
@@ -163,8 +170,8 @@ function Conversation(myIdentity, rtcEvtHandler, msgHandler, iceServers, constra
  * @param {string} [invitation] body to be attached to INVITATION {@link MESSAGE}
  * @@callback callback to handle responses triggered by this operation
  */
-Conversation.prototype.open = function (rtcIdentity, hosting, resourceConstraints, invitationBody, callback, errorCallback) {
-    openaConversation(this, rtcIdentity, hosting, resourceConstraints, invitationBody, callback, errorCallback);
+Conversation.prototype.open = function (participant, hosting, resourceConstraints, invitationBody, subject, callback, errorCallback) {
+    openaConversation(this, participant, hosting, resourceConstraints, invitationBody, subject, callback, errorCallback);
 };
 
 
@@ -180,7 +187,7 @@ Conversation.prototype.open = function (rtcIdentity, hosting, resourceConstraint
  */
 Conversation.prototype.acceptRequest = function (request, callback, errorCallback) {
     //this.id = request.contextId;
-    openaConversation(this, request.body.peers, request.body.hosting, request.body.resourceConstraints, request.body, callback, errorCallback);
+    openaConversation(this, request.body.peers, request.body.hosting, request.body.resourceConstraints, request.body, request.subject, callback, errorCallback);
 };
 
 
@@ -302,6 +309,7 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
                             toIdentity.messagingStub = recvInvitation.from.messagingStub;
                         }
                         else{
+                            toIdentity.originalStub = toIdentity.messagingStub;
                             toIdentity.messagingStub = that.myParticipant.identity.messagingStub;
                         }
 
@@ -326,8 +334,10 @@ Conversation.prototype.acceptInvitation = function(recvInvitation, answerBody, c
                         if(recvInvitation.from.rtcIdentity === toIdentity.rtcIdentity){
                             //Only do the RTCPeerConnection to the identity that is inviting
                             //for the other identities only creates the participants
-                            var description = new RTCSessionDescription(recvInvitation.body.connectionDescription);
-                            participant.RTCPeerConnection.setRemoteDescription(description, onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+                            if(recvInvitation.body.connectionDescription){
+                                var description = new RTCSessionDescription(recvInvitation.body.connectionDescription);
+                                participant.RTCPeerConnection.setRemoteDescription(description, onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+                            }   
                         }
                         participant.connectStub(function() {
                             if(recvInvitation.from.rtcIdentity === toIdentity.rtcIdentity){
@@ -491,11 +501,12 @@ Conversation.prototype.getStatus = function() {
  * @return {boolean} True if successful, false if the participant is not the owner.
  */
 Conversation.prototype.close = function() {
-    if(this.owner==this.myParticipant)
-    {
+    console.log("RESOURCES-----", this.myParticipant.resources )
+   //if(this.owner==this.myParticipant)
+    //{
         this.participants.forEach(function(element,index,array){
             element.status=ParticipantStatus.PARTICIPATED;
-            element.identity.messagingStub.removeListener("",element.identity.rtcIdentity,"");
+            //element.identity.messagingStub.removeListener("",element.identity.rtcIdentity,"");
             element.sendMessage("",MessageType.BYE,"","",function(){},function(){});
             if(element.RTCPeerConnection.signalingState && element.RTCPeerConnection.signalingState != "closed")
                 element.RTCPeerConnection.close();
@@ -503,8 +514,8 @@ Conversation.prototype.close = function() {
         this.myParticipant.leave(false);
         this.setStatus(ConversationStatus.CLOSED);
         return true;
-    }
-    return false;
+    //}
+    //return false;
 }
 
 
@@ -514,11 +525,22 @@ Conversation.prototype.close = function() {
  * @param {Message} message the final message to be sent to ALL participants of this conversation
  */
 Conversation.prototype.bye = function() {
+    console.log("RESOURCES-----", this.participants )
+    console.log("RESOURCES-----", this.myParticipant )
+   /* for(var i = 0; i<this.participants.length; i++){
+        
+        if(this.participants[i].RTCPeerConnection.signalingState != "closed"){
+            this.participants[i].RTCPeerConnection.close();
+        }
+        
+    }*/
     this.participants.forEach(function(element,index,array){
                                 element.leave(true);
+				element.identity.messagingStub = element.identity.originalStub; 
                                 delete array[index];
     });
-    this.myParticipant.leave(true);
+	// SD: 01.12.2014, now that all participants are in the list, we don't need to leave the myParticipant explicitely
+    // this.myParticipant.leave(true);
     this.setStatus(ConversationStatus.CLOSED);
 };
 
@@ -576,6 +598,10 @@ Conversation.prototype.onMessage = function(message) {
             // TODO: change state of the conversation and forward to app-layer
             this.msgHandler(message);
             break;
+        case MessageType.MESSAGE:
+            // TODO: change state of the conversation and forward to app-layer
+            this.msgHandler(message);
+            break;
         case MessageType.CONNECTIVITY_CANDIDATE:
             console.log("MessageType.CONNECTIVITY_CANDIDATE: ", message);
             break;
@@ -606,7 +632,8 @@ Conversation.prototype.onMessage = function(message) {
                     element.leave(true);
                     delete array[index];
                 });
-                this.myParticipant.leave(false);
+				// SD: 01.12.2014, now that all participants are in the list, we don't need to leave the myParticipant explicitely
+//                this.myParticipant.leave(false);
                 this.setStatus(ConversationStatus.CLOSED);
             }
             else {
@@ -775,7 +802,7 @@ Conversation.prototype.addResource = function(resourceConstraints, message, onSu
     }
     else{
         thisConversation.myParticipant.addResource(resourceConstraints,message,function() {
-            thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback); debugger;
+            thisConversation.getParticipant(message.from).addResource(resourceConstraints,message,onSuccessCallback,onErrorCallback); 
         }, onErrorCallback);
 
 
