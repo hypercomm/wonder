@@ -48,7 +48,7 @@ function Idp(rtcIdentity, options) {
 	this.ownRtcIdentity = rtcIdentity;
     this.returnIdentity;
 	// initialize with a new MessagingStub delegator/container
-	this.myOwnMessagingStub = new MessagingStub();
+	this.myOwnMessagingStub = new MessagingStub(rtcIdentity);
 	/*console.log("created idp with domain:port: " + this.domain + ":" + this.port);
     console.log("Idp rtcIdentity: ", rtcIdentity);
     console.log("options: ", rtcIdentity);*/
