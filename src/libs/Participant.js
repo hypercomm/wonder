@@ -1042,7 +1042,9 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
 
 Participant.prototype.leave = function(sendMessage) {
     setStatus(ParticipantStatus.PARTICIPATED);  // false when conversation.bye()
-    this.identity.messagingStub.removeListener("",this.identity.rtcIdentity,"");
+    // SD: 06.02.2015: this method is called more than once per participant (needs to be checked why)
+    if ( this.identity.messagingStub )
+        this.identity.messagingStub.removeListener("",this.identity.rtcIdentity,"");
 
     if(this.identity.rtcIdentity == this.me.identity.rtcIdentity){ // !true for callee
         this.RTCPeerConnection.getLocalStreams().forEach(function(element, index, array){
