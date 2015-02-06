@@ -234,7 +234,7 @@ Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorC
 						identity.messagingStub = that.messagingstubs[index].messagingStub;
 					} else {
 						// @pchainho TODO should only instantiate a general messagingStub, the MessagingStub lib is not downloaded at this point
-						var stub = new MessagingStub();
+						var stub = new MessagingStub(identity);
 						identity.messagingStub = stub;
 						that.messagingstubs.push({
 							"name": identity.messagingStubLibUrl,
