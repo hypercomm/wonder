@@ -1,0 +1,12 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/reTHINK-project/architecture/master/docs/uml/arch_base.plantuml?token=ADtpMYbpi2sbPQXUnV73g8ltWHVuzEDlks5U5wGBwA%3D%3D
+
+
+Host1 -right-> Ho2No : msg1
+Host2 <-left- Ho2No : msg2
+
+Host2 -left-> Ho2No : msg3
+Host1 <-right- Ho2No : msg4
+
+@enduml

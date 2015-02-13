@@ -1,0 +1,39 @@
+@startuml
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+interface "Manager 2 Manager" as Ma2Ma
+interface "Host 2 Manager" as Ho2Ma
+interface "Host 2 Node" as Ho2No
+interface "Host 2 Host" as Ho2Ho
+
+node Manager {
+}
+
+node Manager2 {
+}
+
+node Node {
+	
+}
+
+node Host2 {
+}
+
+node Host1 {
+}
+
+Manager -right- Ma2Ma
+Ma2Ma -right- Manager2
+
+Host1 -right- Ho2Ho
+Host2 -left- Ho2Ho
+
+Host1 -down- Ho2No
+Host2 -down- Ho2No
+Ho2No -down- Node
+
+Host1 -up- Ho2Ma
+Host2 -up- Ho2Ma
+Ho2Ma -up- Manager
+
+@enduml
