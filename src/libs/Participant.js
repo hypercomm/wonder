@@ -423,7 +423,8 @@ Participant.prototype.createRemotePeer = function(identity, myParticipant, conte
         }else{
             try {
                 // Create an RTCPeerConnection via the polyfill (adapter.js).
-                var mediaConstraints = {optional: [{RtpDataChannels: true}]};
+//                var mediaConstraints = {optional: [{RtpDataChannels: true}]};
+                var mediaConstraints = {optional: []};
                 if(!iceServers) iceServers = {'iceServers': new Array()};
                 console.log('Creating RTCPeerConnection with:\n' + '  config: \'' + JSON.stringify(iceServers) + '\';\n' + '  constraints: \'' + JSON.stringify(mediaConstraints) + '\'.');
 
