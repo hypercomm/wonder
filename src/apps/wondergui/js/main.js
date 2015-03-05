@@ -230,7 +230,7 @@ function doCall() {
     $('#modalInviting').modal('show');
     document.getElementById('callSound').play();
 
-    conversation.open(peers, "", constraints, invitation, function () {}, function () {});
+    conversation.open(peers, "", constraints, invitation, "", function () {}, function () {});
 
 }
 
