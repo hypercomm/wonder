@@ -270,7 +270,7 @@ function doCall(type) {
 		});
 		setInfo("Starting A/V conversation ...");
 	}
-	conversation.open(peers, "", constraints, invitation, function() {
+	conversation.open(peers, "", constraints, invitation, "", function() {
 		console.log("conversation opened");
 	},
 	function() {

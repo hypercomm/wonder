@@ -23,6 +23,7 @@ function Resource( resourceConstraint, codec ) {
   this.constraint = resourceConstraint;      
   this.connections = new Array();
   this.owner;
+  this.stream;
     
   if(codec) 
   {

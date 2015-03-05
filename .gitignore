@@ -3,3 +3,4 @@ src/apps/WonderApp/
 src/build.xml
 src/manifest.mf
 src/nbproject/
+/nbproject/private/
