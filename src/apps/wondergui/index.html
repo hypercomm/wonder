@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>Wonder GUI</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- used to start like an app with google chrome on android -->
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Vendor Stylesheets -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="//bootflat.github.io/bootflat/css/bootflat.css" rel="stylesheet" type="text/css" />
+    <link href="css/video_ui.css" rel="stylesheet" type="text/css" />
+    <link href="css/summernote.css" rel="stylesheet" type="text/css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Style -->
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+
+    <!-- jQuery -->
+    <script src="js/jquery-1.11.1.min.js"></script>
+
+    <!-- Bootstrap js -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="//bootflat.github.io/bootflat/js/icheck.min.js"></script>
+    <script src="//bootflat.github.io/bootflat/js/jquery.fs.selecter.min.js"></script>
+    <script src="//bootflat.github.io/bootflat/js/jquery.fs.stepper.min.js"></script>
+
+    <!-- Video UI -->
+    <script src="js/jquery.videoui.js"></script>
+
+    <!-- Summernote text editor -->
+    <script src="js/summernote.min.js"></script>
+
+    <!-- localstorage -->
+    <script src="js/localstorage.js"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript">
+        var loginName;
+
+        var TURN = {
+            url: "turn:150.140.184.242:3478",
+            username: "wonder",
+            credential: "w0nd3r"
+        };
+        var STUN = {
+            url: "stun:150.140.184.242:3478"
+        };
+        iceServers = {
+            "iceServers": [ /* STUN, TURN */ ]
+        };
+    </script>
+
+</head>
+
+<body>
+    <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand">WONDER</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="navigation">
+                <ul class="nav navbar-nav navbar-left">
+                    <li class="dropdown" id="domain-select">
+                        <a class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-globe"></span> Select your Domain <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu" id="selectDomain">
+                            <li><a domain="nodejs">NodeJS</a>
+                            </li>
+                            <li><a domain="ims">IMS</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- login-form -->
+                    <form class="navbar-form navbar-left form-horizontal nodejsLoginForm hidden" role="form" id="login">
+                        <!-- nodejs-login-form -->
+                        <div class="form-group">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="user@domain" id="loginText" value="alice@nodejs.wonder" autofocus>
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-primary" focus id="loginButton">Login <span class="glyphicon glyphicon-log-in"></span>
+                                    </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.nodejs-login-form -->
+                    </form>
+                    <!-- /.login-form -->
+                    <!-- logout-form -->
+                    <form class="navbar-form navbar-left form-horizontal after_login hidden" id="logout" role="form">
+                        <div class="form-group">
+                            <label class="col-md-8 col-sm-8 col-xs-8 control-label" id="status"><span class="glyphicon glyphicon-user hidden-sm"></span>
+                            </label>
+                            <div class="col-md-4 col-sm-4 col-xs-4">
+                                <button class="btn btn-danger pull-right" id="logout_btn"><span class="hidden-sm">Logout </span><span class="glyphicon glyphicon-log-out"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- /.logout-form -->
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right after_login hidden">
+                    <li class="dropdown" id="contact-block">
+                        <a class="dropdown-toggle" data-toggle="dropdown" id="contact_btn"><span class="glyphicon glyphicon-book"></span><span class="hidden-sm"> Contacts </span><span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu" id="contact_list">
+                        </ul>
+                    </li>
+                    <!-- calling-form -->
+                    <form class="navbar-form navbar-right  form-horizontal after_login hidden" role="search" id="call-block">
+                        <div class="form-group">
+                            <div class="col-md-7 col-sm-8 col-xs-8">
+                                <input type="text" class="form-control" autofocus id="callTo" placeholder="aliceORbob@nodejs.wonder">
+                            </div>
+                            <div class="col-md-5 col-sm-4 col-xs-4">
+                                <div class="btn-group pull-right">
+                                    <!--
+                                    <button id="voice_call_btn" type="button" class="btn btn-success call_btn"><span class="glyphicon glyphicon-earphone"></span>
+                                    </button>
+                                    -->
+                                    <button id="video_call_btn" type="button" class="btn btn-success call_btn"><span class="glyphicon glyphicon-facetime-video"></span>
+                                    </button>
+                                    <button id="open_chat_btn" type="button" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- /.calling-form -->
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <span class="help-block"></span>
+    <!-- /.webrtc_tabs -->
+
+    <div class="jumbotron" id="welcome_div">
+        <div class="container-fluid">
+            <h1>Welcome to WONDER!</h1>
+            <p>This is a page for testing the WONDER Javascript framework, which uses Signaling-On-The-Fly for intercommunication between WebRTC domains and providers.</p>
+            <p>Please log on to your domain to use this service.</p>
+            <button type="button" class="btn btn-link disabled btn-lg btn-block">
+                <span class="glyphicon glyphicon-earphone"></span>
+                <span class="glyphicon glyphicon-plus"></span>
+                <span class="glyphicon glyphicon-facetime-video"></span>
+                <span class="glyphicon glyphicon-plus"></span>
+                <span class="glyphicon glyphicon-comment"></span>
+            </button>
+            <img class="img-responsive" src="img/hftl_logo.png">
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- video container -->
+            <div class="col-md-8 col-sm-8 col-xs-12">
+                <div class="panel panel-success hidden" id="video_container">
+                    <div class="panel-heading">
+                        <span class="glyphicon glyphicon-user"></span>
+                        <span class="person_name"></span>
+                        <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="embed-responsive embed-responsive-4by3" id="remote"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.video container -->
+            <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="row">
+                    <!-- own_video container -->
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-primary btn-block hidden" id="show_own_video">Show my video</button>
+                        <div class="panel panel-success hidden" id="own_video_container">
+                            <div class="panel-heading">
+                                Me
+                                <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <div class="embed-responsive embed-responsive-4by3 videoUiWrapper">
+                                    <video id="localVideo" width="100%" autoplay loop>
+                                    </video>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.own_video container -->
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- chat container -->
+
+                        <div class="panel panel-primary hidden" id="chat">
+                            <div class="panel-heading">
+                                <span class="glyphicon glyphicon-comment"></span> Chat
+                                <button type="button" class="close"><span aria-hidden="true"><span class="glyphicon glyphicon-collapse-up"></span></span><span class="sr-only">Close</span>
+                                </button>
+                            </div>
+                            <ul class="list-group" id="textChat">
+                                <!--
+                                <li class="list-group-item">
+                                    <span class="label label-primary">User1</span>
+                                    <p> This is how a message should look like!
+                                    </p>
+                                </li>
+                                -->
+                            </ul>
+                            <textarea class="form-control summernote" rows="3" id="datachannelmessage" placeholder="Please enter your message"></textarea>
+                            <div class="panel-footer">
+                                <button type="button" class="btn btn-primary btn-block" id="send_message" onclick="return false;">Send <span class="glyphicon glyphicon-send"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.chat container -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalInvite">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Receiving</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="receivingModal"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" id="AcceptButton">Accept</button>
+                    <button class="btn btn-success" id="RejectButton">Reject</button>
+                </div>
+                <audio loop preload="auto" id="ringingSound" src="sounds/ringing.mp3"></audio>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+    <!-- Modal Cancel-->
+    <div class="modal fade" id="modalInviting">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Call</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-info active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                            <span id="callingModal">Calling...</span>
+                        </div>
+                    </div>
+                    <audio loop preload="auto" id="callSound" src="sounds/calling.mp3"></audio>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" id="CancelInviting">Hang up</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+    <!-- Modal Cancel-->
+    <div class="modal fade" id="modalAdContact">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Add a new contact</h4>
+                </div>
+                <div class="modal-body">
+
+
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input_login_name">Name</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="input_login_name" placeholder="Doe">
+                            </div>
+                            <label class="col-sm-2 control-label" for="input_login_surname">Surname</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="input_login_surname" placeholder="John">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input_logindata">Login</label>
+                            <div class="col-sm-10">
+                                <input type="email" class="form-control" id="input_logindata" placeholder="alice@nodejs.wonder">
+                            </div>
+                        </div>
+                    </form>
+
+
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="modal_add_contact_btn"><span class="glyphicon glyphicon-plus"></span> Add</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+
+    <!-- Modal IMS-->
+    <div class="modal fade" id="modalIMS">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">IMS Login</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- ims-login-form -->
+                    <div class="container-fluid">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label for="imsPrivateId" class="col-sm-3 control-label">Private-ID</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" placeholder="user@domain" id="imsPrivateId" autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="imsPublicId" class="col-sm-3 control-label">Public-ID</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" placeholder="user" id="imsPublicId">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="imsProxy" class="col-sm-3 control-label">Proxy</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" placeholder="proxyurl:port" id="imsProxy">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="imsPass" class="col-sm-3 control-label">Password</label>
+                                <div class="col-sm-8">
+                                    <input type="password" class="form-control" placeholder="Password" id="imsPass">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-xs-offset-0 col-sm-4 col-xs-6">
+                                    <button type="button" id="imsLoginButton" class="btn btn-success btn-block">Login <span class="glyphicon glyphicon-log-in"></span>
+                                    </button>
+                                </div>
+                                <div class="col-sm-4 col-xs-6">
+                                    <button class="btn btn-danger btn-block" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.ims-login-form -->
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /. ims-modal -->
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/modules.js"></script>
+    <script src="js/notify.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/notify.js"></script>
+
+    <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+    <script src="../../libs/adapter.js"></script>
+    <script src="../../libs/require.js"></script>
+
+    <script src="../../libs/Resource.js"></script>
+    <script src="../../libs/DataBroker.js"></script>
+    <script src="../../libs/DataMessage.js"></script>
+    <script src="../../libs/Codec.js"></script>
+    <script src="../../libs/Message.js"></script>
+    <script src="../../libs/Identity.js"></script>
+    <script src="../../libs/Enums.js"></script>
+    <script src="../../libs/helpfunctions.js"></script>
+    <script src="../../libs/Conversation.js"></script>
+    <script src="../../libs/Participant.js"></script>
+    <script src="../../libs/Idp.js"></script>
+    <script src="../../libs/MessageFactory.js"></script>
+    <script src="../../libs/MessagingStub.js"></script>
+    <script src="../../settings/domain.js"></script>
+</body>
+
+</html>

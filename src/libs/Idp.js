@@ -157,6 +157,10 @@ Idp.prototype.createIdentities = function(rtcIdentities, onSuccessCallback, onEr
 
 Idp.prototype.createIdentity = function(rtcIdentity, onSuccessCallback, onErrorCallback) {
    
+   if ( ! rtcIdentity ) {
+       console.log("rtcIdentity is empty"); 
+       return;
+   }
     // @callback function in the url
 	this.returnIdentity = function(data) {
         console.log("data ", data);

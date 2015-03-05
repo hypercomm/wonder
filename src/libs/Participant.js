@@ -1080,6 +1080,8 @@ Participant.prototype.sendMessage = function(messageBody, messageType, constrain
 Participant.prototype.leave = function(sendMessage) {
 
     setStatus(ParticipantStatus.PARTICIPATED);
+    if ( ! this.identity.messagingStub )
+        return;
     this.identity.messagingStub.removeListener("",this.identity.rtcIdentity,"");
 
     if(this.identity.rtcIdentity == this.me.identity.rtcIdentity){
@@ -1102,6 +1104,7 @@ Participant.prototype.leave = function(sendMessage) {
         this.dataBroker.removeDataChannel(this.identity);
         if(this.RTCPeerConnection.signalingState && this.RTCPeerConnection.signalingState != "closed")
             this.RTCPeerConnection.close();
+        this.identity.messagingStub=this.identity.originalStub; // makes recall possible
     }
 }
 

@@ -138,7 +138,7 @@ MessagingStub.prototype.connect = function(ownRtcIdentity, credentials, callback
  */
 MessagingStub.prototype.disconnect = function() {
 	if (this.impl) {
-		if(IdentityStatus.UNAVAILABLE == this.manager.status)
+		//if(IdentityStatus.UNAVAILABLE == this.manager.status)
 			this.impl.disconnect();
 	}
 	else {

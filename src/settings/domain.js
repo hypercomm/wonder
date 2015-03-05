@@ -55,6 +55,7 @@ vertx_settings =
 
 // ICE Servers
 
+/*
 var TURN = {
 url:"turn:150.140.184.242:3478", 
 username: "wonder", 
@@ -62,3 +63,5 @@ credential:"w0nd3r"
 };
 var STUN ={url: "stun:150.140.184.242:3478"};
 iceServers = { "iceServers": [STUN, TURN]};
+*/
+iceServers = { "iceServers": []};
