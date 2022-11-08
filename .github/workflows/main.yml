@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Hello world action step
         id: hello
-        uses: pchainho/gantt-action@1.0
+        uses: pchainho/gantt-action@v1.0
         with:
           who-to-greet: 'Paulo'
       # Use the output from the `hello` step
